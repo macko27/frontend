@@ -1,0 +1,8 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/d7c79272-76f8-471f-98c6-6a7a20d8f370/resourceGroups/IngProjekt/providers/Microsoft.Web/sites/IngProjektFE",
+    "appService.deploySubpath": "build",
+    "appService.zipIgnorePattern": [
+        "node_modules{,/**}",
+        ".vscode{,/**}"
+    ]
+}
