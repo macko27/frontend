@@ -51,6 +51,8 @@ import DetailCourse from "../pages/veduci zamestnanec/Courses/DetailCourse";
 import NewAdaptation from "../pages/veduci zamestnanec/Adaptation/NewAdaptation";
 import UpdateAdaptation from "../pages/veduci zamestnanec/Adaptation/UpdateAdaptation";
 import MyAdaptation from "../pages/zamestnanec/MyAdaptation";
+import ManageSurveys from "../pages/veduci zamestnanec/Survey/ManageSurveys";
+import CreateSurvey from "../pages/veduci zamestnanec/Survey/CreateSurvey";
 
 const App: React.FC = () => {
     const auth = useAuth();
@@ -95,6 +97,7 @@ const App: React.FC = () => {
                                     <Route path="/manageWorkPositions" element={<ManageWorkPositions />} />
                                     <Route path="/newWorkPosition" element={<NewWorkPosition />} />
                                     <Route path="/editWorkPosition" element={<EditWorkPosition />} />
+
                                 </Route>
 
                                 <Route element={<ProtectedRoute allowedRoles={[Roles.Veduci, Roles.Zamestnanec]} />}>
@@ -102,6 +105,9 @@ const App: React.FC = () => {
                                     <Route path="/newFeedback" element={<NewFeedback />} />
                                     <Route path="/manageCourses" element={<ManageCourses/>} />
                                     <Route path="/detailCourse" element={<DetailCourse/>} />
+
+                                    <Route path="/surveys" element={<ManageSurveys/>}></Route>
+                                    <Route path="/createSurvey" element={<CreateSurvey/>}></Route>
                                 </Route>
 
                                 <Route element={<ProtectedRoute allowedRoles={[Roles.Veduci]}/>}>
