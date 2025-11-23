@@ -58,7 +58,6 @@ const CreateSurvey: React.FC = () => {
   };
 
   const handleSubmit = async () => {
-    console.log(creator)
     // Validácia
     if (!creator) {
         openSnackbar("Nepodarilo sa získať prihláseného používateľa", "error");

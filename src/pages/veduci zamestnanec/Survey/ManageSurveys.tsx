@@ -23,6 +23,8 @@ import { dataGridStyles } from '../../../styles/gridStyle';
 import { useNavigate } from 'react-router-dom';
 import { useSnackbar } from '../../../hooks/SnackBarContext';
 import { useAuth } from "../../../hooks/AuthProvider";
+import { EmployeeCard } from "../../../types/EmployeeCard";
+import api from "../../../app/api";
 
 // Local mock type for survey (since backend isn't ready yet)
 type Survey = {
@@ -48,20 +50,56 @@ const ManageSurveys: React.FC = () => {
   const profile = useAuth();
   const role = profile.userProfile?.role;
   const isVeducko = role === "Vedúci zamestnanec"; 
+  const [creator, setCreator] = useState<EmployeeCard | null>(null);
 
-  // create some mock data for now
+
   useEffect(() => {
-    const mock: Survey[] = Array.from({ length: 10 }).map((_, i) => ({
-      id: `s-${i + 1}`,
-      name: `Anketa na zistenie spokojnosti s kávovarom ${i + 1}`,
-      question: 'Ako spokojný/á ste s kvalitou a dostupnosťou kávovaru v našich kanceláriách?',
-      status: i % 3 === 0 ? 'Uzavretá' : 'Aktívna',
-      ownerId: i % 2 === 0 ? 'me' : 'other',
-    }));
-    setSurveys(mock);
-    setRows(mock);
-    setLoaded(true);
-  }, []);
+    api.get(`/EmployeeCard/GetEmployeeCardLoggedIn/`)
+        .then(res => setCreator(res.data))
+        .catch(err => console.error(err));
+    }, []);
+
+  //nacitanie dat
+  useEffect(() => {
+    if (!creator) {
+        return;
+    }
+
+    const loadSurveys = async () => {
+      try {
+        const employeeId = creator.employeeId;
+
+        if (!employeeId) return;
+
+        const response = await api.get(`/Survey/GetByEmployee/${employeeId}`);
+
+        if (response.status !== 200) {
+          console.error("Chyba pri načítaní ankiet");
+          return;
+        }
+
+        const data = response.data;
+
+        // MAP BACKEND → FRONTEND FORMAT
+        const mapped: Survey[] = data.map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          question: s.question,
+          status: s.status,
+          ownerId: s.createdById === employeeId ? "me" : "other",
+        }));
+
+        setSurveys(mapped);
+        setRows(mapped);
+        setLoaded(true);
+
+      } catch (error) {
+        console.error("Chyba počas fetch:", error);
+      }
+    };
+
+    loadSurveys();
+  }, [creator]);
 
   useEffect(() => {
     // apply tab filtering
