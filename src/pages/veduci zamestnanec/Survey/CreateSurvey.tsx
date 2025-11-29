@@ -6,16 +6,26 @@ import { useNavigate } from "react-router-dom";
 import { useSnackbar } from '../../../hooks/SnackBarContext';
 import api from "../../../app/api";
 import { EmployeeCard } from "../../../types/EmployeeCard";
+import RecipientsSelector from "../../veduci zamestnanec/Survey/RecipientsSelector";
+import { Recipient } from "../../../types/Survey/Recipient";
+import { Answer } from "../../../types/Survey/Answer";
+import { QuestionProps } from "../../../types/Survey/QuestionProps";
+import SurveyQuestion from "./SurveyQuestion";
+import SurveyTypeSelector from "./SurveyTypeSelector";
 
-type Answer = {
+type Question = {
   id: string;
   text: string;
+  answers: Answer[];
 };
+
 
 const CreateSurvey: React.FC = () => {
   const [surveyName, setSurveyName] = useState('');
   const [surveyInfo, setSurveyInfo] = useState('');
-  const [question, setQuestion] = useState('');
+  const [questions, setQuestions] = useState<Question[]>([
+    { id: '1', text: '', answers: [{ id: '1', text: '' }] }
+  ]);
   const [answers, setAnswers] = useState<Answer[]>([
     { id: '1', text: '' },
     { id: '2', text: '' },
@@ -31,9 +41,18 @@ const CreateSurvey: React.FC = () => {
     const today = new Date();
     return today.toISOString().split('T')[0];
   });
+  const [startDate, setStartDate] = useState<string>(() => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  });
   const [creator, setCreator] = useState<EmployeeCard | null>(null);
   const { openSnackbar } = useSnackbar();
   const nav = useNavigate();
+
+  const [recipients, setRecipients] = useState<Recipient[]>([]);
+
+  const [surveyType, setSurveyType] = useState<'anonymous' | 'non-anonymous'>('anonymous');
+
 
   useEffect(() => {
     api.get(`/EmployeeCard/GetEmployeeCardLoggedIn/`)
@@ -42,20 +61,48 @@ const CreateSurvey: React.FC = () => {
     }, []);
 
 
-  const addAnswer = () => {
-    const newId = (Math.max(...answers.map(a => parseInt(a.id))) + 1).toString();
-    setAnswers([...answers, { id: newId, text: '' }]);
-  };
+  
+    const addQuestion = () => {
+      const newId = (Math.max(...questions.map(q => parseInt(q.id))) + 1).toString();
+      setQuestions([...questions, { id: newId, text: '', answers: [{ id: '1', text: '' }] }]);
+    };
 
-  const removeAnswer = (id: string) => {
-    if (answers.length > 1) {
-      setAnswers(answers.filter(a => a.id !== id));
-    }
-  };
+    const removeQuestion = (questionId: string) => {
+      if (questions.length > 1) setQuestions(questions.filter(q => q.id !== questionId));
+    };
 
-  const updateAnswer = (id: string, text: string) => {
-    setAnswers(answers.map(a => a.id === id ? { ...a, text } : a));
-  };
+    const changeQuestionText = (questionId: string, text: string) => {
+      setQuestions(questions.map(q => q.id === questionId ? { ...q, text } : q));
+    };
+
+    const addAnswer = (questionId: string) => {
+      setQuestions(questions.map(q => {
+        if (q.id === questionId && q.answers.length < 6) {
+          const newId = (Math.max(...q.answers.map(a => parseInt(a.id))) + 1).toString();
+          return { ...q, answers: [...q.answers, { id: newId, text: '' }] };
+        }
+        return q;
+      }));
+    };
+
+    const removeAnswer = (questionId: string, answerId: string) => {
+      setQuestions(questions.map(q => {
+        if (q.id === questionId && q.answers.length > 1) {
+          return { ...q, answers: q.answers.filter(a => a.id !== answerId) };
+        }
+        return q;
+      }));
+    };
+
+    const changeAnswerText = (questionId: string, answerId: string, text: string) => {
+      setQuestions(questions.map(q => {
+        if (q.id === questionId) {
+          return { ...q, answers: q.answers.map(a => a.id === answerId ? { ...a, text } : a) };
+        }
+        return q;
+      }));
+    };
+
 
   const handleSubmit = async () => {
     // Validácia
@@ -64,7 +111,7 @@ const CreateSurvey: React.FC = () => {
         return;
     }
 
-    if (!surveyName.trim() || !question.trim() || !surveyInfo.trim()) {
+    if (!surveyName.trim() || !surveyInfo.trim()) {
       openSnackbar("Vyplňte všetky povinné polia", "error");
       return;
     }
@@ -72,12 +119,21 @@ const CreateSurvey: React.FC = () => {
 
     const surveyRequest = {
       name: surveyName,
-      question,
       info: surveyInfo,
       status: 0,
       createdById: creator.employeeId,
+      start: startDate,
       end: endDate,
-      options: answers.map(a => ({ answer: a.text })),
+      surveyType,
+      recipients,
+      questions: questions
+        .filter(q => q.text.trim() !== '') // len vyplnené otázky
+        .map(q => ({
+          question: q.text,
+          options: q.answers
+            .filter(a => a.text.trim() !== '') // len vyplnené odpovede
+            .map(a => ({ answer: a.text }))
+        }))
     };
 
     console.log(JSON.stringify(surveyRequest))
@@ -177,112 +233,142 @@ const CreateSurvey: React.FC = () => {
             />
             </div>
 
+            <div style={{ marginBottom: "24px" }}>
+              <RecipientsSelector selected={recipients} setSelected={setRecipients} />
+            </div>
+
+
             {/* Otázka ankety */}
-            <div style={{ marginBottom: '24px' }}>
-            <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '8px', fontWeight: 500 }}>
-                Otázka ankety <span style={{ color: 'red' }}>*</span>
-            </label>
-            <textarea
-                placeholder="textový Text"
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-                rows={2}
-                style={{
-                width: '100%',
-                padding: '8px 12px',
-                fontSize: '14px',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                boxSizing: 'border-box',
-                fontFamily: 'inherit',
-                resize: 'vertical'
-                }}
-            />
-            </div>
+            <div>
+              {questions.map(q => (
+                <SurveyQuestion
+                  key={q.id}
+                  id={q.id}
+                  text={q.text}
+                  answers={q.answers}
+                  onChangeQuestion={changeQuestionText}
+                  onAddAnswer={addAnswer}
+                  onRemoveAnswer={removeAnswer}
+                  onChangeAnswer={changeAnswerText}
+                  onRemoveQuestion={removeQuestion}
+                />
+              ))}
 
-            {/* Odpovede - len ak je výber z odpovedí */}
-            <div style={{ marginBottom: '24px' }}>
-                <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '8px', fontWeight: 500 }}>
-                Odpovede v ankete (max 6 odpovedi) <span style={{ color: 'red' }}>*</span>
-                </label>
-                
-                {answers.map((answer, index) => (
-                <div 
-                    key={answer.id} 
-                    style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}
-                >
-                    <span style={{ minWidth: '90px', fontSize: '14px' }}>
-                    Odpoveď č. {index + 1}
-                    </span>
-                    <input
-                    type="text"
-                    value={answer.text}
-                    onChange={(e) => updateAnswer(answer.id, e.target.value)}
-                    style={{
-                        flex: 1,
-                        padding: '8px 12px',
-                        fontSize: '14px',
-                        border: '1px solid #ccc',
-                        borderRadius: '4px',
-                        boxSizing: 'border-box'
-                    }}
-                    />
-                    <button
-                    onClick={() => removeAnswer(answer.id)}
-                    disabled={answers.length <= 1}
-                    style={{
-                        padding: '8px 12px',
-                        backgroundColor: answers.length <= 1 ? '#ccc' : '#f44336',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: answers.length <= 1 ? 'not-allowed' : 'pointer',
-                        fontSize: '14px'
-                    }}
-                    >
-                    🗑️
-                    </button>
-                </div>
-                ))}
-
-                {answers.length < 6 && (
-                <button 
-                    onClick={addAnswer}
-                    style={{
-                    marginTop: '8px',
-                    padding: '6px 12px',
-                    backgroundColor: 'transparent',
-                    color: '#1976d2',
+              <div style={{ textAlign: 'center', marginTop: '16px', marginBottom: '16px' }}>
+                <button
+                  onClick={addQuestion}
+                  style={{
+                    padding: '10px 20px',
+                    backgroundColor: '#1976d2',
+                    color: 'white',
                     border: 'none',
+                    borderRadius: '8px',
                     cursor: 'pointer',
-                    fontSize: '14px'
-                    }}
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    transition: 'background-color 0.2s, transform 0.1s',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.15)'
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#115293')}
+                  onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#1976d2')}
+                  onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.95)')}
+                  onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
                 >
-                    + Pridať odpoveď
+                  + Pridať otázku
                 </button>
-                )}
+              </div>
+
+            </div>
+
+            <SurveyTypeSelector onChange={(type) => setSurveyType(type)} />
+
+
+            {/* Dátumy ankety vedľa seba */}
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
+              {/* Dátum začatia ankety */}
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '8px', fontWeight: 500 }}>
+                  Dátum začatia ankety
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    fontSize: '14px',
+                    border: '1px solid #ccc',
+                    borderRadius: '4px',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              {/* Dátum ukončenia ankety */}
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '8px', fontWeight: 500 }}>
+                  Dátum ukončenia ankety
+                </label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    fontSize: '14px',
+                    border: '1px solid #ccc',
+                    borderRadius: '4px',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
             </div>
 
 
-            {/* Dátum ukončenia ankety */}
-            <div style={{ marginBottom: '24px' }}>
-            <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '8px', fontWeight: 500 }}>
-                Dátum ukončenia ankety
-            </label>
-            <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                style={{
-                width: '200px',
-                padding: '8px 12px',
-                fontSize: '14px',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                boxSizing: 'border-box'
-                }}
-            />
+            {/* Zhrnutie ankety */}
+            <div
+              style={{
+                border: '1px solid #ddd',
+                borderRadius: '8px',
+                padding: '16px',
+                marginBottom: '24px',
+                backgroundColor: '#f9f9f9',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+              }}
+            >
+              <h3 style={{ margin: '0 0 12px 0' }}>Zhrnutie ankety</h3>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span>Celkový počet príjemcov:</span>
+                <span>{recipients.length}</span>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span>Počet otázok:</span>
+                <span>{questions.length}</span>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span>Trvanie ankety:</span>
+                <span>
+                  {Math.max(
+                    0,
+                    Math.ceil(
+                      (new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)
+                    )
+                  )} dni
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Typ ankety:</span>
+                <span>{surveyType === 'anonymous' ? 'Anonymná' : 'Neanonymná'}</span>
+              </div>
             </div>
+
+
 
             
             {/* Tlačidlá */}
