@@ -81,6 +81,7 @@ const RecipientsSelector: React.FC<Props> = ({ selected, setSelected }) => {
                     "&:hover": { backgroundColor: "#f5f5f5" }
                 }}
                 >
+                  {r.name}
                 </Box>
             ))
             ) : (

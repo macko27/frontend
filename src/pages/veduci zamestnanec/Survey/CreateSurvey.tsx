@@ -12,6 +12,7 @@ import { Answer } from "../../../types/Survey/Answer";
 import { QuestionProps } from "../../../types/Survey/QuestionProps";
 import SurveyQuestion from "./SurveyQuestion";
 import SurveyTypeSelector from "./SurveyTypeSelector";
+import { useAuth } from "../../../hooks/AuthProvider";
 
 type Question = {
   id: string;
@@ -21,6 +22,9 @@ type Question = {
 
 
 const CreateSurvey: React.FC = () => {
+  const profile = useAuth();
+  const role = profile.userProfile?.role;
+  const isVeducko = role === "Vedúci zamestnanec";
   const [surveyName, setSurveyName] = useState('');
   const [surveyInfo, setSurveyInfo] = useState('');
   const [questions, setQuestions] = useState<Question[]>([
@@ -111,32 +115,71 @@ const CreateSurvey: React.FC = () => {
         return;
     }
 
-    if (!surveyName.trim() || !surveyInfo.trim()) {
-      openSnackbar("Vyplňte všetky povinné polia", "error");
+    if (!surveyName.trim()) {
+      openSnackbar("Názov ankety je povinný", "error");
+      return;
+    }
+    if (!surveyInfo.trim()) {
+      openSnackbar("Popis ankety je povinný", "error");
       return;
     }
 
+    if (!startDate || !endDate) {
+      openSnackbar("Nesprávne alebo zle vyplnené dátumy", "error");
+      return;
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      openSnackbar("Neplatný formát dátumov", "error");
+      return;
+    }
+
+    if (end < start) {
+      openSnackbar("Dátum ukončenia musí byť po dátume začiatku", "error");
+      return;
+    }
+
+    if (!recipients || recipients.length === 0) {
+      openSnackbar("Musíte vybrať aspoň jedného príjemcu", "error");
+      return;
+    }
+
+    const validQuestions = questions
+      .filter(q => q.text.trim() !== '')
+      .map(q => ({
+        question: q.text.trim(),
+        options: q.answers.filter(a => a.text.trim() !== '')
+                          .map(a => ({ answer: a.text.trim() }))
+      }));
+
+    if (validQuestions.length === 0) {
+      openSnackbar("Musíte pridať aspoň jednu otázku s odpoveďou", "error");
+      return;
+    }
+
+    for (let i = 0; i < validQuestions.length; i++) {
+      if (validQuestions[i].options.length === 0) {
+        openSnackbar(`Otázka "${validQuestions[i].question}" musí mať aspoň jednu odpoveď`, "error");
+        return;
+      }
+    }
 
     const surveyRequest = {
-      name: surveyName,
-      info: surveyInfo,
+      name: surveyName.trim(),
+      info: surveyInfo.trim(),
       status: 0,
       createdById: creator.employeeId,
       start: startDate,
       end: endDate,
       surveyType,
       recipients,
-      questions: questions
-        .filter(q => q.text.trim() !== '') // len vyplnené otázky
-        .map(q => ({
-          question: q.text,
-          options: q.answers
-            .filter(a => a.text.trim() !== '') // len vyplnené odpovede
-            .map(a => ({ answer: a.text }))
-        }))
+      questions: validQuestions
     };
 
-    console.log(JSON.stringify(surveyRequest))
+    //console.log(JSON.stringify(surveyRequest))
 
     try {
       const response = await api.post("/Survey/Create", surveyRequest);
@@ -149,7 +192,6 @@ const CreateSurvey: React.FC = () => {
   };
 
   const handleCancel = () => {
-    // Návrat späť na zoznam ankiet
     window.history.back();
   };
 

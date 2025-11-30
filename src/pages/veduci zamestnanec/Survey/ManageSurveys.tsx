@@ -38,7 +38,6 @@ type Survey = {
 
 const ManageSurveys: React.FC = () => {
   const [surveys, setSurveys] = useState<Survey[]>([]);
-  const [rows, setRows] = useState<Survey[]>([]);
   const [tab, setTab] = useState(0);
   const [openConfirm, setOpenConfirm] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -53,65 +52,53 @@ const ManageSurveys: React.FC = () => {
   const [creator, setCreator] = useState<EmployeeCard | null>(null);
 
 
+  const loadSurveys = async (employeeId: string, selectedTab: number) => {
+    setSurveys([]);
+    try {
+      let url = "";
+
+      if (selectedTab === 0) {
+        // všetky relevantné ankety
+        url = `/Survey/GetByEmployee/${employeeId}`;
+      } else if (selectedTab === 1) {
+        // moje ankety
+        url = `/Survey/GetMySurveys/${employeeId}`;
+      } else if (selectedTab === 2) {
+        // výsledky – tiež GetByEmployee, ale neskôr ich prefiltrujeme
+        url = `/Survey/GetByEmployee/${employeeId}`;
+      }
+
+      const res = await api.get(url);
+
+      const mapped: Survey[] = res.data.map((s: any) => ({
+        id: s.id,
+        name: s.name,
+        question: s.questions?.[0]?.question ?? "",
+        status: s.status,
+        ownerId: s.createdById === employeeId ? "me" : "other",
+      }));
+
+      setSurveys(mapped);
+      setLoaded(true);
+
+    } catch (err) {
+      console.error("Chyba pri načítaní ankiet:", err);
+    }
+  };
+
   useEffect(() => {
     api.get(`/EmployeeCard/GetEmployeeCardLoggedIn/`)
-        .then(res => setCreator(res.data))
-        .catch(err => console.error(err));
-    }, []);
-
-  //nacitanie dat
-  useEffect(() => {
-    if (!creator) {
-        return;
-    }
-
-    const loadSurveys = async () => {
-      try {
-        const employeeId = creator.employeeId;
-
-        if (!employeeId) return;
-
-        const response = await api.get(`/Survey/GetByEmployee/${employeeId}`);
-
-        if (response.status !== 200) {
-          console.error("Chyba pri načítaní ankiet");
-          return;
-        }
-
-        const data = response.data;
-
-        // MAP BACKEND → FRONTEND FORMAT
-        const mapped: Survey[] = data.map((s: any) => ({
-          id: s.id,
-          name: s.name,
-          question: s.question,
-          status: s.status,
-          ownerId: s.createdById === employeeId ? "me" : "other",
-        }));
-
-        setSurveys(mapped);
-        setRows(mapped);
-        setLoaded(true);
-
-      } catch (error) {
-        console.error("Chyba počas fetch:", error);
-      }
-    };
-
-    loadSurveys();
-  }, [creator]);
+      .then(res => setCreator(res.data))
+      .catch(err => console.error(err));
+  }, []);
 
   useEffect(() => {
-    // apply tab filtering
-    if (tab === 0) {
-      setRows(surveys);
-    } else if (tab === 1) {
-      setRows(surveys.filter((s) => s.ownerId === 'me'));
-    } else if (tab === 2) {
-      // results - show closed only for preview
-      setRows(surveys.filter((s) => s.status === 'Uzavretá'));
-    }
-  }, [tab, surveys]);
+    if (!creator?.employeeId) return;
+
+    loadSurveys(creator.employeeId, tab);
+
+  }, [creator, tab]);
+
 
   const handleVote = (id: string) => {
     // no backend yet — show snackbar and pretend navigation to voting page
@@ -164,19 +151,38 @@ const ManageSurveys: React.FC = () => {
       sortable: false,
       editable: false,
       disableColumnMenu: true,
-      renderCell: (params) => (
-        <Stack direction="row" alignItems="center" width="100%" justifyContent="flex-end">
-          <Button
-            variant="contained"
-            onClick={() => handleVote(params.row.id)}
-            endIcon={<PlayArrowIcon />}
-            size="small"
-            disabled={params.row.status !== 'Aktívna'}
-          >
-            Hlasovať
-          </Button>
-        </Stack>
-      ),
+      renderCell: (params) => {
+        if (tab === 0) {
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', height: '100%' }}>
+              <Button
+                variant="contained"
+                onClick={() => handleVote(params.row.id)}
+                endIcon={<PlayArrowIcon />}
+                size="small"
+                disabled={params.row.status !== 'Aktívna'}
+              >
+                Hlasovať
+              </Button>
+            </Box>
+          );
+        } else if (tab === 1) {
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', height: '100%' }}>
+              <Button
+                variant="contained"
+                size="small"
+                //onClick={() => handleVote(params.row.id)}
+              >
+                Zobraziť
+              </Button>
+            </Box>
+          );
+        }
+        return null;
+      }
+
+
     },
   ];
 
@@ -189,8 +195,7 @@ const ManageSurveys: React.FC = () => {
           </Typography>
         </Stack>
 
-        {isVeducko && (
-            <Button
+        <Button
                 variant="contained"
                 color="primary"
                 sx={{ marginLeft: 'auto' }}
@@ -198,7 +203,6 @@ const ManageSurveys: React.FC = () => {
             >
                 Vytvoriť anketu
             </Button>
-          )}
 
         <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
           <Tab label="Zoznam ankiet" />
@@ -207,19 +211,54 @@ const ManageSurveys: React.FC = () => {
         </Tabs>
 
         <Box sx={{ width: '100%' }}>
-          <DataGrid
-            columns={columns}
-            loading={!loaded}
-            rows={rows}
-            sx={dataGridStyles}
-            initialState={{
-              pagination: { paginationModel: { pageSize: 10 } },
-            }}
-            pageSizeOptions={[5, 10, 25]}
-            pagination
-            getRowId={(row) => row.id}
-            autoHeight
-          />
+          
+          {/* -------- ZÁLOŽKA 0: Zoznam ankiet -------- */}
+          {/* TAB 0 – Zoznam ankiet */}
+          {tab === 0 && (
+            <DataGrid
+              columns={columns}
+              loading={!loaded}
+              rows={surveys}
+              sx={dataGridStyles}
+              initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+              pageSizeOptions={[5, 10, 25]}
+              pagination
+              getRowId={(row) => row.id}
+              autoHeight
+            />
+          )}
+
+          {/* TAB 1 – Moje ankety */}
+          {tab === 1 && (
+            <DataGrid
+              columns={columns}
+              loading={!loaded}
+              rows={surveys}
+              sx={dataGridStyles}
+              initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+              pageSizeOptions={[5, 10, 25]}
+              pagination
+              getRowId={(row) => row.id}
+              autoHeight
+            />
+          )}
+
+          {/* TAB 2 – Výsledky ankety */}
+          {tab === 2 && (
+            <DataGrid
+              columns={columns}
+              loading={!loaded}
+              rows={surveys.filter(s => s.status === 'Uzavretá')}
+              sx={dataGridStyles}
+              initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+              pageSizeOptions={[5, 10, 25]}
+              pagination
+              getRowId={(row) => row.id}
+              autoHeight
+            />
+          )}
+
+
 
           <Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
             <DialogTitle>Hlasovať</DialogTitle>
@@ -244,6 +283,7 @@ const ManageSurveys: React.FC = () => {
             <Alert severity="success">{localSnackMsg}</Alert>
           </Snackbar>
         </Box>
+
       </Box>
     </Layout>
   );
