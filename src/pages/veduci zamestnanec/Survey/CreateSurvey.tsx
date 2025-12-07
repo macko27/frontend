@@ -131,9 +131,16 @@ const CreateSurvey: React.FC = () => {
 
     const start = new Date(startDate);
     const end = new Date(endDate);
+    const today = new Date();
+    today.setHours(0,0,0,0); 
 
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
       openSnackbar("Neplatný formát dátumov", "error");
+      return;
+    }
+
+    if (start < today) {
+      openSnackbar("Dátum začiatku ankety nemôže byť pred dnešným dňom", "error");
       return;
     }
 

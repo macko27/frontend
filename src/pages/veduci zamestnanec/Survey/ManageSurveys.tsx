@@ -36,6 +36,26 @@ type Survey = {
 };
 
 
+type ShowSurvey = {
+  id: string;
+  name: string;
+  info: string | null;
+  type: string;
+  status: string;
+  start: string;
+  end: string;
+  createdBy: string;
+  totalRecipients: number;
+  totalVotes: number;
+  questions: {
+    id: string;
+    question: string;
+    options: { id: string; answer: string }[];
+  }[];
+};
+
+
+
 const ManageSurveys: React.FC = () => {
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [tab, setTab] = useState(0);
@@ -50,6 +70,85 @@ const ManageSurveys: React.FC = () => {
   const role = profile.userProfile?.role;
   const isVeducko = role === "Vedúci zamestnanec"; 
   const [creator, setCreator] = useState<EmployeeCard | null>(null);
+  const [openDetail, setOpenDetail] = useState(false);
+  const [detailSurvey, setDetailSurvey] = useState<ShowSurvey | null>(null);
+  const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
+  const [surveyToDelete, setSurveyToDelete] = useState<string | null>(null);
+
+
+
+  const formatDateTime = (dateStr?: string) => {
+    if (!dateStr) return "-";
+    const date = new Date(dateStr);
+    return date.toLocaleString('sk-SK', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  const handleDeleteClick = (id: string) => {
+    setSurveyToDelete(id);
+    setOpenDeleteConfirm(true);
+  };
+
+
+  const confirmDelete = async () => {
+    if (!surveyToDelete) return;
+
+    try {
+      await api.delete(`/Survey/${surveyToDelete}`);
+      openSnackbar("Anketa bola úspešne vymazaná", "success");
+
+      // Zatvor detail, ak je otvorený
+      setOpenDetail(false);
+      setDetailSurvey(null);
+
+      // Aktualizujeme zoznam ankiet
+      if (creator?.employeeId) loadSurveys(creator.employeeId, tab);
+    } catch (err) {
+      console.error(err);
+      openSnackbar("Chyba pri vymazaní ankety", "error");
+    } finally {
+      setOpenDeleteConfirm(false);
+      setSurveyToDelete(null);
+    }
+  };
+
+
+
+  const deleteSurvey = async () => {
+    if (!detailSurvey?.id) return;
+
+    try {
+      // Zavolanie DELETE endpointu
+      const res = await api.delete(`/Survey/${detailSurvey.id}`);
+
+      if (res.status !== 200) {
+        openSnackbar(res.data?.message || "Chyba pri vymazávaní ankety", "error");
+        return;
+      }
+
+      // Zavrie detail a refreshne tabuľku
+      setOpenDetail(false);
+      setDetailSurvey(null);
+
+      if (creator?.employeeId) {
+        loadSurveys(creator.employeeId, tab);
+      }
+
+      // Snackbar na úspech
+      if (openSnackbar) openSnackbar("Anketa bola vymazaná.", "success");
+      else {
+        setLocalSnackMsg("Anketa bola vymazaná.");
+        setLocalSnackOpen(true);
+      }
+
+    } catch (err) {
+      console.error(err);
+      openSnackbar("Chyba pri vymazávaní ankety", "error");
+    }
+  };
 
 
   const loadSurveys = async (employeeId: string, selectedTab: number) => {
@@ -118,6 +217,17 @@ const ManageSurveys: React.FC = () => {
     }
   };
 
+  const handleShowDetail = async (survey: Survey) => {
+    try {
+      const res = await api.get(`/Survey/GetDetail/${survey.id}`);
+      setDetailSurvey(res.data);
+      setOpenDetail(true);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+
   const columns: GridColDef[] = [
     {
       field: 'name',
@@ -172,7 +282,7 @@ const ManageSurveys: React.FC = () => {
               <Button
                 variant="contained"
                 size="small"
-                //onClick={() => handleVote(params.row.id)}
+                onClick={() => handleShowDetail(params.row)}
               >
                 Zobraziť
               </Button>
@@ -282,10 +392,110 @@ const ManageSurveys: React.FC = () => {
           >
             <Alert severity="success">{localSnackMsg}</Alert>
           </Snackbar>
+
+          <Dialog
+            open={openDetail}
+            onClose={() => setOpenDetail(false)}
+            maxWidth="md"
+            fullWidth
+          >
+            <DialogTitle sx={{ fontWeight: 'bold' }}>
+              {detailSurvey?.name}
+              <IconButton
+                onClick={() => setOpenDetail(false)}
+                sx={{ position: 'absolute', right: 16, top: 16 }}
+              >
+                ✕
+              </IconButton>
+            </DialogTitle>
+
+            <DialogContent sx={{ pt: 2 }}>
+              <Stack spacing={2}>
+
+                <Box>
+                  <Typography fontWeight="bold">Popis ankety</Typography>
+                  <Typography>
+                    {detailSurvey?.info ?? "Bez popisu"}
+                  </Typography>
+                </Box>
+
+                <Box>
+                  {detailSurvey?.questions?.map((q, index) => (
+                    <Box key={q.id} sx={{ mt: 1 }}>
+                      <Typography fontWeight="bold">Otázka {index + 1}</Typography>
+                      <Typography>{q.question}</Typography>
+
+                      <Typography fontWeight="bold" sx={{ mt: 1 }}>Možnosti</Typography>
+                      <ul>
+                        {q.options.map((o) => (
+                          <li key={o.id}>{o.answer}</li>
+                        ))}
+                      </ul>
+                    </Box>
+                  ))}
+                </Box>
+
+
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography fontWeight="bold">Typ ankety</Typography>
+                  <Typography>{detailSurvey?.type}</Typography>
+                </Box>
+
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography fontWeight="bold">Celkový počet príjemcov</Typography>
+                  <Typography>{detailSurvey?.totalRecipients}</Typography>
+                </Box>
+
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography fontWeight="bold">Celkový počet doteraz hlasujúcich</Typography>
+                  <Typography>{detailSurvey?.totalVotes}</Typography>
+                </Box>
+
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography fontWeight="bold">Dátum a čas začiatku ankety</Typography>
+                  <Typography>{formatDateTime(detailSurvey?.start)}</Typography>
+                </Box>
+
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography fontWeight="bold">Dátum a čas ukončenia ankety</Typography>
+                  <Typography>{formatDateTime(detailSurvey?.end)}</Typography>
+                </Box>
+
+              </Stack>
+            </DialogContent>
+
+            <DialogActions sx={{ p: 3 }}>
+              <Button variant="contained" color="error" onClick={() => handleDeleteClick(detailSurvey?.id!)}>
+                Vymazať
+              </Button>
+
+            </DialogActions>
+
+          </Dialog>
+
+          <Dialog
+            open={openDeleteConfirm}
+            onClose={() => setOpenDeleteConfirm(false)}
+          >
+            <DialogTitle>Vymazať anketu?</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Ste si istý, že chcete vymazať túto anketu? Táto akcia je nevratná.
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOpenDeleteConfirm(false)}>Zrušiť</Button>
+              <Button variant="contained" color="error" onClick={confirmDelete}>
+                Vymazať
+              </Button>
+            </DialogActions>
+          </Dialog>
+
         </Box>
 
       </Box>
     </Layout>
+
   );
 };
 
