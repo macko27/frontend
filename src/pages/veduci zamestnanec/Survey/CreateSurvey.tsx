@@ -18,6 +18,7 @@ type Question = {
   id: string;
   text: string;
   answers: Answer[];
+  answerType: 'single' | 'multiple';
 };
 
 
@@ -28,7 +29,7 @@ const CreateSurvey: React.FC = () => {
   const [surveyName, setSurveyName] = useState('');
   const [surveyInfo, setSurveyInfo] = useState('');
   const [questions, setQuestions] = useState<Question[]>([
-    { id: '1', text: '', answers: [{ id: '1', text: '' }] }
+    { id: '1', text: '', answers: [{ id: '1', text: '' }], answerType: 'single' }
   ]);
   const [answers, setAnswers] = useState<Answer[]>([
     { id: '1', text: '' },
@@ -68,7 +69,7 @@ const CreateSurvey: React.FC = () => {
   
     const addQuestion = () => {
       const newId = (Math.max(...questions.map(q => parseInt(q.id))) + 1).toString();
-      setQuestions([...questions, { id: newId, text: '', answers: [{ id: '1', text: '' }] }]);
+      setQuestions([...questions, { id: newId, text: '', answers: [{ id: '1', text: '' }], answerType: 'single' }]);
     };
 
     const removeQuestion = (questionId: string) => {
@@ -107,6 +108,10 @@ const CreateSurvey: React.FC = () => {
         }
         return q;
       }));
+    };
+
+    const changeAnswerType = (questionId: string, type: 'single' | 'multiple') => {
+      setQuestions(questions.map(q => q.id === questionId ? { ...q, answerType: type } : q));
     };
 
 
@@ -161,7 +166,8 @@ const CreateSurvey: React.FC = () => {
       .map(q => ({
         question: q.text.trim(),
         options: q.answers.filter(a => a.text.trim() !== '')
-                          .map(a => ({ answer: a.text.trim() }))
+                          .map(a => ({ answer: a.text.trim() })),
+                          answerType: q.answerType
       }));
 
     if (validQuestions.length === 0) {
@@ -195,7 +201,7 @@ const CreateSurvey: React.FC = () => {
       end: endDate,
       surveyType,
       recipients,
-      questions: validQuestions
+      questions: validQuestions,
     };
 
     //console.log(JSON.stringify(surveyRequest))
@@ -307,11 +313,13 @@ const CreateSurvey: React.FC = () => {
                   id={q.id}
                   text={q.text}
                   answers={q.answers}
+                  answerType={q.answerType}
                   onChangeQuestion={changeQuestionText}
                   onAddAnswer={addAnswer}
                   onRemoveAnswer={removeAnswer}
                   onChangeAnswer={changeAnswerText}
                   onRemoveQuestion={removeQuestion}
+                  onChangeAnswerType={changeAnswerType}
                 />
               ))}
 

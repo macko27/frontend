@@ -51,6 +51,7 @@ type ShowSurvey = {
     id: string;
     question: string;
     options: { id: string; answer: string }[];
+    answerType: string;
   }[];
 };
 
@@ -74,6 +75,9 @@ const ManageSurveys: React.FC = () => {
   const [detailSurvey, setDetailSurvey] = useState<ShowSurvey | null>(null);
   const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
   const [surveyToDelete, setSurveyToDelete] = useState<string | null>(null);
+  const [openVoteDialog, setOpenVoteDialog] = useState(false);
+  const [voteSurvey, setVoteSurvey] = useState<ShowSurvey | null>(null);
+  const [selectedOptions, setSelectedOptions] = useState<{ [questionId: string]: string[] }>({});
 
 
 
@@ -112,41 +116,6 @@ const ManageSurveys: React.FC = () => {
     } finally {
       setOpenDeleteConfirm(false);
       setSurveyToDelete(null);
-    }
-  };
-
-
-
-  const deleteSurvey = async () => {
-    if (!detailSurvey?.id) return;
-
-    try {
-      // Zavolanie DELETE endpointu
-      const res = await api.delete(`/Survey/${detailSurvey.id}`);
-
-      if (res.status !== 200) {
-        openSnackbar(res.data?.message || "Chyba pri vymazávaní ankety", "error");
-        return;
-      }
-
-      // Zavrie detail a refreshne tabuľku
-      setOpenDetail(false);
-      setDetailSurvey(null);
-
-      if (creator?.employeeId) {
-        loadSurveys(creator.employeeId, tab);
-      }
-
-      // Snackbar na úspech
-      if (openSnackbar) openSnackbar("Anketa bola vymazaná.", "success");
-      else {
-        setLocalSnackMsg("Anketa bola vymazaná.");
-        setLocalSnackOpen(true);
-      }
-
-    } catch (err) {
-      console.error(err);
-      openSnackbar("Chyba pri vymazávaní ankety", "error");
     }
   };
 
@@ -199,10 +168,16 @@ const ManageSurveys: React.FC = () => {
   }, [creator, tab]);
 
 
-  const handleVote = (id: string) => {
-    // no backend yet — show snackbar and pretend navigation to voting page
-    setSelectedId(id);
-    setOpenConfirm(true);
+  const handleVote = async (surveyId: string) => {
+    try {
+      const res = await api.get(`/Survey/GetDetail/${surveyId}`);
+      setVoteSurvey(res.data);
+      setSelectedOptions({});
+      setOpenVoteDialog(true);
+    } catch (err) {
+      console.error(err);
+      openSnackbar("Nepodarilo sa načítať anketu", "error");
+    }
   };
 
   const confirmVote = () => {
@@ -490,6 +465,86 @@ const ManageSurveys: React.FC = () => {
               </Button>
             </DialogActions>
           </Dialog>
+
+
+          <Dialog
+            open={openVoteDialog}
+            onClose={() => setOpenVoteDialog(false)}
+            maxWidth="md"
+            fullWidth
+          >
+            <DialogTitle sx={{ fontWeight: 'bold' }}>
+              {voteSurvey?.name}
+              <IconButton
+                onClick={() => setOpenVoteDialog(false)}
+                sx={{ position: 'absolute', right: 16, top: 16 }}
+              >
+                ✕
+              </IconButton>
+            </DialogTitle>
+
+            <DialogContent sx={{ pt: 2 }}>
+              <Stack spacing={2}>
+                {voteSurvey?.questions?.map((q, index) => (
+                  <Box key={q.id}>
+                    <Typography fontWeight="bold">Otázka {index + 1}</Typography>
+                    <Typography>{q.question}</Typography>
+
+                    <Box sx={{ display: 'flex', flexDirection: 'column', mt: 1 }}>
+                      {q.options.map((o) => {
+                        const isSelected = selectedOptions[q.id]?.includes(o.id) ?? false;
+                        return (
+                          <Button
+                            key={o.id}
+                            variant={isSelected ? 'contained' : 'outlined'}
+                            sx={{ mt: 0.5, textTransform: 'none' }}
+                            onClick={() => {
+                              const current = selectedOptions[q.id] || [];
+                              if (voteSurvey.questions[index].answerType === 'single') {
+                                setSelectedOptions({ ...selectedOptions, [q.id]: [o.id] });
+                              } else {
+                                // multiple choice toggle
+                                const updated = current.includes(o.id)
+                                  ? current.filter(id => id !== o.id)
+                                  : [...current, o.id];
+                                setSelectedOptions({ ...selectedOptions, [q.id]: updated });
+                              }
+                            }}
+                          >
+                            {o.answer}
+                          </Button>
+                        );
+                      })}
+                    </Box>
+                  </Box>
+                ))}
+              </Stack>
+            </DialogContent>
+
+            <DialogActions sx={{ p: 3 }}>
+              <Button variant="outlined" onClick={() => setOpenVoteDialog(false)}>
+                Zrušiť
+              </Button>
+              <Button
+                variant="contained"
+                onClick={async () => {
+                  if (!voteSurvey) return;
+
+                  try {
+                    await api.post(`/Survey/SubmitVote/${voteSurvey.id}`, { answers: selectedOptions });
+                    openSnackbar("Váš hlas bol odoslaný", "success");
+                    setOpenVoteDialog(false);
+                  } catch (err) {
+                    console.error(err);
+                    openSnackbar("Chyba pri odosielaní hlasu", "error");
+                  }
+                }}
+              >
+                Odoslať hlas
+              </Button>
+            </DialogActions>
+          </Dialog>
+
 
         </Box>
 

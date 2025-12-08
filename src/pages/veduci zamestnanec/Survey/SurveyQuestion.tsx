@@ -9,26 +9,44 @@ export type QuestionProps = {
   id: string;
   text: string;
   answers: Answer[];
+  answerType: 'single' | 'multiple';
   onChangeQuestion: (id: string, text: string) => void;
   onAddAnswer: (questionId: string) => void;
   onRemoveAnswer: (questionId: string, answerId: string) => void;
   onChangeAnswer: (questionId: string, answerId: string, text: string) => void;
   onRemoveQuestion: (questionId: string) => void;
+  onChangeAnswerType: (questionId: string, type: 'single' | 'multiple') => void;
 };
 
 const SurveyQuestion: React.FC<QuestionProps> = ({
   id,
   text,
   answers,
+  answerType,
   onChangeQuestion,
   onAddAnswer,
   onRemoveAnswer,
   onChangeAnswer,
-  onRemoveQuestion
+  onRemoveQuestion,
+  onChangeAnswerType
 }) => {
 
   return (
     <div style={{ marginBottom: '24px', border: '1px solid #ddd', padding: '12px', borderRadius: '4px' }}>
+
+    {/* Hlavička otázky: label + select */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+        <span style={{ fontSize: '14px', fontWeight: 500 }}>Otázka</span>
+        <select
+          value={answerType}
+          onChange={(e) => onChangeAnswerType(id, e.target.value as 'single' | 'multiple')}
+          style={{ padding: '4px 8px', fontSize: '14px', border: '1px solid #ccc' }}
+        >
+          <option value="single">Iba jedna odpoveď</option>
+          <option value="multiple">Viac odpovedí</option>
+        </select>
+      </div>
+
       {/* Otázka */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
         <textarea
