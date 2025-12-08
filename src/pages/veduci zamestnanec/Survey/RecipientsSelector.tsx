@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { TextField, Chip, Box } from "@mui/material";
 import api from "../../../app/api";
 import { Recipient } from "../../../types/Survey/Recipient";
+import { useAuth } from "../../../hooks/AuthProvider";
 
 interface Props {
   selected: Recipient[];
@@ -11,6 +12,9 @@ interface Props {
 const RecipientsSelector: React.FC<Props> = ({ selected, setSelected }) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Recipient[]>([]);
+  const profile = useAuth();
+  const role = profile.userProfile?.role;
+  const isVeducko = role === "Vedúci zamestnanec";
 
   useEffect(() => {
     if (query.length < 2) {
@@ -43,9 +47,34 @@ const RecipientsSelector: React.FC<Props> = ({ selected, setSelected }) => {
     setSelected(selected.filter(s => !(s.id === rec.id && s.type === rec.type)));
   };
 
+
+  const selectMyDepartment = async () => {
+    try {
+      const res = await api.get(`/Survey/GetMyDepartment/${profile.userProfile?.id}`);
+      const dep = {
+        id: res.data.id,
+        name: res.data.departmentName,
+        type: res.data.type
+      };
+
+      const alreadySelected = selected.some(
+        s => s.type === "department" && s.id === dep.id
+      );
+
+      // Ak ešte nie je vybrané → pridáme
+      if (!alreadySelected) {
+        setSelected([...selected, dep]);
+      }
+
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+
   return (
     <Box>
-      <label style={{ fontSize: 14, fontWeight: 500 }}>Zvoľte príjemcov *</label>
+      <label style={{ fontSize: 14, fontWeight: 500 }}>Zvoľte príjemcov <span style={{ color: 'red' }}>*</span></label>
 
       <TextField
         fullWidth
@@ -104,6 +133,31 @@ const RecipientsSelector: React.FC<Props> = ({ selected, setSelected }) => {
           />
         ))}
       </Box>
+
+      
+      {/* Tlačidlo Moje oddelenie – viditeľné len pre vedúceho */}
+      {isVeducko && (
+        <Box
+          onClick={selectMyDepartment}
+          sx={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 1,
+            px: 2,
+            ml: 0,
+            mt: 2,
+            py: 1,
+            border: "1px solid #d0d7df",
+            borderRadius: "12px",
+            cursor: "pointer",
+            "&:hover": { backgroundColor: "#f5f7fa" }
+          }}
+        >
+          <span style={{ fontSize: 18 }}>👥</span>
+          <span style={{ fontSize: 14 }}>Moje oddelenie</span>
+        </Box>
+      )}
+
     </Box>
   );
 };

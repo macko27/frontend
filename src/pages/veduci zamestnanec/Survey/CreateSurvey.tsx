@@ -80,6 +80,8 @@ const CreateSurvey: React.FC = () => {
     };
 
     const addAnswer = (questionId: string) => {
+      if (questions.length >= 10) return;
+
       setQuestions(questions.map(q => {
         if (q.id === questionId && q.answers.length < 6) {
           const newId = (Math.max(...q.answers.map(a => parseInt(a.id))) + 1).toString();
@@ -168,10 +170,20 @@ const CreateSurvey: React.FC = () => {
     }
 
     for (let i = 0; i < validQuestions.length; i++) {
-      if (validQuestions[i].options.length === 0) {
-        openSnackbar(`Otázka "${validQuestions[i].question}" musí mať aspoň jednu odpoveď`, "error");
+      const optionsCount = validQuestions[i].options.length;
+      if (optionsCount < 2) {
+        openSnackbar(`Otázka "${validQuestions[i].question}" musí mať aspoň 2 odpovede`, "error");
         return;
       }
+      if (optionsCount > 6) {
+        openSnackbar(`Otázka "${validQuestions[i].question}" môže mať maximálne 6 odpovedí`, "error");
+        return;
+      }
+    }
+
+    if (validQuestions.length > 10) {
+      openSnackbar("Anketa môže obsahovať maximálne 10 otázok", "error");
+      return;
     }
 
     const surveyRequest = {
@@ -303,29 +315,29 @@ const CreateSurvey: React.FC = () => {
                 />
               ))}
 
-              <div style={{ textAlign: 'center', marginTop: '16px', marginBottom: '16px' }}>
-                <button
+
+              <div style={{ textAlign: 'center', marginTop: '10px', marginBottom: '22px' }}>
+                <Button
                   onClick={addQuestion}
-                  style={{
-                    padding: '10px 20px',
-                    backgroundColor: '#1976d2',
-                    color: 'white',
-                    border: 'none',
+                  variant="contained"
+                  color="info" // využíva MUI tému
+                  sx={{
+                    padding: '5px 15px',
                     borderRadius: '8px',
-                    cursor: 'pointer',
                     fontSize: '14px',
                     fontWeight: 500,
-                    transition: 'background-color 0.2s, transform 0.1s',
-                    boxShadow: '0 2px 6px rgba(0,0,0,0.15)'
+                    boxShadow: 2,
+                    textTransform: 'none', // zruší veľké písmená
+                    transition: 'transform 0.1s',
+                    '&:active': {
+                      transform: 'scale(0.95)',
+                    },
                   }}
-                  onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#115293')}
-                  onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#1976d2')}
-                  onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.95)')}
-                  onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
                 >
                   + Pridať otázku
-                </button>
+                </Button>
               </div>
+
 
             </div>
 
@@ -337,7 +349,7 @@ const CreateSurvey: React.FC = () => {
               {/* Dátum začatia ankety */}
               <div style={{ flex: 1 }}>
                 <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '8px', fontWeight: 500 }}>
-                  Dátum začatia ankety
+                  Dátum začatia ankety <span style={{ color: 'red' }}>*</span>
                 </label>
                 <input
                   type="date"
@@ -357,7 +369,7 @@ const CreateSurvey: React.FC = () => {
               {/* Dátum ukončenia ankety */}
               <div style={{ flex: 1 }}>
                 <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '8px', fontWeight: 500 }}>
-                  Dátum ukončenia ankety
+                  Dátum ukončenia ankety <span style={{ color: 'red' }}>*</span>
                 </label>
                 <input
                   type="date"
@@ -406,7 +418,7 @@ const CreateSurvey: React.FC = () => {
                     0,
                     Math.ceil(
                       (new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)
-                    )
+                    ) + 1
                   )} dni
                 </span>
               </div>
@@ -417,42 +429,42 @@ const CreateSurvey: React.FC = () => {
               </div>
             </div>
 
-
-
             
             {/* Tlačidlá */}
-            <div style={{ display: 'flex', gap: '16px', justifyContent: 'flex-end', marginTop: '32px' }}>
-            <button
+            <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ marginTop: '32px' }}>
+              <Button
                 onClick={handleCancel}
-                style={{
-                padding: '8px 24px',
-                backgroundColor: 'white',
-                color: '#1976d2',
-                border: '1px solid #1976d2',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: 500
+                variant="outlined"
+                color="info"
+                sx={{
+                  padding: '5px 20px',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  textTransform: 'none', // zruší veľké písmená
                 }}
-            >
+              >
                 Zrušiť
-            </button>
-            <button
+              </Button>
+
+              <Button
                 onClick={handleSubmit}
-                style={{
-                padding: '8px 24px',
-                backgroundColor: '#1976d2',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: 500
+                variant="contained"
+                color="info"
+                sx={{
+                  padding: '8px 24px',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  textTransform: 'none',
+                  '&:active': {
+                    transform: 'scale(0.95)',
+                  },
                 }}
-            >
+              >
                 Uložiť
-            </button>
-            </div>
+              </Button>
+            </Stack>
         </div>
         </div>
     </Layout>
