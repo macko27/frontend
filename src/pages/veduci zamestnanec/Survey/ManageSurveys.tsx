@@ -78,6 +78,9 @@ const ManageSurveys: React.FC = () => {
   const [openVoteDialog, setOpenVoteDialog] = useState(false);
   const [voteSurvey, setVoteSurvey] = useState<ShowSurvey | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<{ [questionId: string]: string[] }>({});
+  const [openVoteConfirm, setOpenVoteConfirm] = useState(false);
+  const [voteDialogReadOnly, setVoteDialogReadOnly] = useState(false);
+
 
 
 
@@ -170,15 +173,36 @@ const ManageSurveys: React.FC = () => {
 
   const handleVote = async (surveyId: string) => {
     try {
-      const res = await api.get(`/Survey/GetDetail/${surveyId}`);
-      setVoteSurvey(res.data);
-      setSelectedOptions({});
+      // Načítanie detailov ankety
+      const resDetail = await api.get(`/Survey/GetDetail/${surveyId}`);
+      const surveyData: ShowSurvey = resDetail.data;
+
+      setVoteSurvey(surveyData);
+
+      // Skontrolujeme, či už používateľ hlasoval
+      try {
+        const resVotes = await api.post(`/Survey/GetVotes/${surveyId}`);
+        const userVotes: { [questionId: string]: string[] } = resVotes.data;
+
+        setSelectedOptions(userVotes);
+
+        // Ak už hlasoval, zakážeme úpravy
+        setVoteDialogReadOnly(true);
+
+      } catch (err) {
+        // Ak ešte nehlasoval, povolíme hlasovanie
+        setSelectedOptions({});
+        setVoteDialogReadOnly(false);
+      }
+
       setOpenVoteDialog(true);
+
     } catch (err) {
       console.error(err);
       openSnackbar("Nepodarilo sa načítať anketu", "error");
     }
   };
+
 
   const confirmVote = () => {
     setOpenConfirm(false);
@@ -344,22 +368,6 @@ const ManageSurveys: React.FC = () => {
           )}
 
 
-
-          <Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
-            <DialogTitle>Hlasovať</DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                Chcete odoslať svoj hlas pre túto anketu?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setOpenConfirm(false)}>Zrušiť</Button>
-              <Button variant="contained" onClick={confirmVote}>
-                Hlasovať
-              </Button>
-            </DialogActions>
-          </Dialog>
-
           <Snackbar
             open={localSnackOpen}
             autoHideDuration={3000}
@@ -483,12 +491,32 @@ const ManageSurveys: React.FC = () => {
               </IconButton>
             </DialogTitle>
 
+            {/* --- Popis a typ ankety pod nadpis --- */}
+            <Box sx={{ px: 3, mb: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography fontWeight="light" sx={{ color: '#888' }}>Popis ankety</Typography>
+                <Typography>{voteSurvey?.info ?? "Bez popisu"}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography fontWeight="light" sx={{ color: '#888' }}>Typ ankety</Typography>
+                <Typography>{voteSurvey?.type}</Typography>
+              </Box>
+            </Box>
+
             <DialogContent sx={{ pt: 2 }}>
               <Stack spacing={2}>
                 {voteSurvey?.questions?.map((q, index) => (
                   <Box key={q.id}>
-                    <Typography fontWeight="bold">Otázka {index + 1}</Typography>
-                    <Typography>{q.question}</Typography>
+
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography fontWeight="bold">Otázka {index + 1}</Typography>
+                      <Typography>{q.question}</Typography>
+                    </Box>
+
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography fontWeight="light" sx={{ color: '#888' }}>Typ odpovede</Typography>
+                      <Typography>{q.answerType}</Typography>
+                    </Box>
 
                     <Box sx={{ display: 'flex', flexDirection: 'column', mt: 1 }}>
                       {q.options.map((o) => {
@@ -496,9 +524,25 @@ const ManageSurveys: React.FC = () => {
                         return (
                           <Button
                             key={o.id}
+                            disabled={voteDialogReadOnly}
                             variant={isSelected ? 'contained' : 'outlined'}
-                            sx={{ mt: 0.5, textTransform: 'none' }}
+                            sx={{
+                              mt: 0.5,
+                              textTransform: 'none',
+                              justifyContent: 'flex-start',           // text nalavo
+                              paddingLeft: 2,                          // odsadenie textu
+                              color: 'black', 
+                              borderStyle: 'solid',
+                              borderColor: isSelected ? '#FFA500' : '#ccc',
+                              borderWidth: isSelected ? 2 : 0,
+                              backgroundColor: isSelected ? 'rgba(255, 165, 0, 0.15)' : 'transparent',
+                              '&:hover': {
+                                backgroundColor: isSelected ? 'rgba(255, 165, 0, 0.25)' : 'rgba(0,0,0,0.04)',
+                                borderColor: isSelected ? '#FFA500' : '#888',
+                              },
+                            }}
                             onClick={() => {
+                              if (voteDialogReadOnly) return;
                               const current = selectedOptions[q.id] || [];
                               if (voteSurvey.questions[index].answerType === 'single') {
                                 setSelectedOptions({ ...selectedOptions, [q.id]: [o.id] });
@@ -516,35 +560,103 @@ const ManageSurveys: React.FC = () => {
                         );
                       })}
                     </Box>
+
                   </Box>
+
                 ))}
               </Stack>
             </DialogContent>
 
+            <Box sx={{ px: 3, my: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography fontWeight="light" sx={{ color: '#888' }}>Dátum začiatku ankety</Typography>
+                <Typography>{formatDateTime(voteSurvey?.start)}</Typography>
+              </Box>
+
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography fontWeight="light" sx={{ color: '#888' }}>Dátum ukončenia ankety</Typography>
+                <Typography>{formatDateTime(voteSurvey?.end)}</Typography>
+              </Box>
+            </Box>
+
             <DialogActions sx={{ p: 3 }}>
-              <Button variant="outlined" onClick={() => setOpenVoteDialog(false)}>
+              <Button
+                color="info"
+                variant="contained"
+                disabled={voteDialogReadOnly}
+                onClick={() => {
+                  if (!voteSurvey) return;
+
+                  // VALIDÁCIA – každá otázka musí mať aspoň 1 odpoveď
+                  const allAnswered = voteSurvey.questions.every(q => 
+                    selectedOptions[q.id] && selectedOptions[q.id].length > 0
+                  );
+
+                  if (!allAnswered) {
+                    openSnackbar("Musíte odpovedať na všetky otázky.", "error");
+                    return;
+                  }
+
+                  // Otvoriť potvrdzovacie okno
+                  setOpenVoteConfirm(true);
+                }}
+              >
+                Uložiť
+              </Button>
+
+              <Button
+                onClick={() => setOpenVoteDialog(false)}
+                sx={{
+                  backgroundColor: '#888',  // tmavšie/sivé pozadie
+                  color: '#fff',            // biely text
+                  border: 'none',           // žiaden okraj
+                  '&:hover': {
+                    backgroundColor: '#777', // tmavší odtieň pri hover
+                  },
+                }}
+              >
                 Zrušiť
               </Button>
+            </DialogActions>
+          </Dialog>
+
+
+          <Dialog
+            open={openVoteConfirm}
+            onClose={() => setOpenVoteConfirm(false)}
+          >
+            <DialogTitle>Odoslať hlas?</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Ste si istý, že chcete odoslať svoj hlas? Po odoslaní už nebude možné hlas upraviť.
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOpenVoteConfirm(false)}>Zrušiť</Button>
               <Button
                 variant="contained"
                 onClick={async () => {
                   if (!voteSurvey) return;
 
                   try {
-                    await api.post(`/Survey/SubmitVote/${voteSurvey.id}`, { answers: selectedOptions });
-                    openSnackbar("Váš hlas bol odoslaný", "success");
+                    await api.post(`/Survey/SubmitVote/${voteSurvey.id}`, {
+                      answers: selectedOptions
+                    });
+
+                    openSnackbar("Váš hlas bol úspešne odoslaný", "success");
+                    setOpenVoteConfirm(false);
                     setOpenVoteDialog(false);
+
                   } catch (err) {
                     console.error(err);
                     openSnackbar("Chyba pri odosielaní hlasu", "error");
                   }
                 }}
               >
-                Odoslať hlas
+                Odoslať
               </Button>
             </DialogActions>
           </Dialog>
-
 
         </Box>
 
