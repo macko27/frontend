@@ -421,7 +421,7 @@ const ManageSurveys: React.FC = () => {
 
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                   <Typography fontWeight="bold">Typ ankety</Typography>
-                  <Typography>{detailSurvey?.type}</Typography>
+                  <Typography>{detailSurvey?.type === "anonymous" ? "anonymná" : "neanonymná"}</Typography>
                 </Box>
 
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
@@ -499,7 +499,7 @@ const ManageSurveys: React.FC = () => {
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                 <Typography fontWeight="light" sx={{ color: '#888' }}>Typ ankety</Typography>
-                <Typography>{voteSurvey?.type}</Typography>
+                <Typography>{voteSurvey?.type === "anonymous" ? "anonymná" : "neanonymná"}</Typography>
               </Box>
             </Box>
 
@@ -515,7 +515,7 @@ const ManageSurveys: React.FC = () => {
 
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography fontWeight="light" sx={{ color: '#888' }}>Typ odpovede</Typography>
-                      <Typography>{q.answerType}</Typography>
+                      <Typography>{q.answerType === "multiple" ? "multi-select" : "single-select"}</Typography>
                     </Box>
 
                     <Box sx={{ display: 'flex', flexDirection: 'column', mt: 1 }}>
