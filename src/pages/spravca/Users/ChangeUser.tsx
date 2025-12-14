@@ -8,34 +8,66 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from "../../../app/api";
 import RoleResponse from "../../../types/responses/RoleResponse";
-import useLoading from "../../../hooks/LoadingData";
 
 const schema = z
-    .object({
-        email: z.string().email("Neplatný formát emailu!").min(1, "Email je povinný!"),
-        password: z
-            .string()
-            .min(13, { message: "Heslo musí mať minimálne 13 znakov!" })
-            .regex(/[A-Z]/, { message: "Heslo musí obsahovať aspoň jedno veľké písmeno (A-Z)!" })
-            .regex(/[a-z]/, { message: "Heslo musí obsahovať aspoň jedno malé písmeno (a-z)!" })
-            .regex(/[0-9]/, { message: "Heslo musí obsahovať aspoň jednu číslicu (0-9)!" })
-            .regex(/[!@#$%^&*]/, { message: "Heslo musí obsahovať aspoň jeden špeciálny znak (napr. !@#$%^&*)!" }),
-        confirmPassword: z.string().min(1, "Potvrdenie hesla je povinné!"),
-        role: z.string().min(1, "Rola je povinná!"),
-        name: z.string().min(1, "Meno je povinné!"),
-        surname: z.string().min(1, "Priezvisko je povinné!"),
-        titleBefore: z.string().optional(),
-        titleAfter: z.string().optional(),
-    })
-    .superRefine(({ confirmPassword, password }, ctx) => {
-        if (confirmPassword !== password) {
-            ctx.addIssue({
-                code: "custom",
-                message: "Heslá sa musia zhodovať!",
-                path: ["confirmPassword"],
-            });
-        }
-    });
+  .object({
+    email: z
+      .string()
+      .email("Neplatný formát emailu!")
+      .min(1, "Email je povinný!"),
+
+    password: z
+      .string()
+      .optional()
+      .refine(
+        (val) => !val || val.length >= 13,
+        { message: "Heslo musí mať minimálne 13 znakov!" }
+      )
+      .refine(
+        (val) => !val || /[A-Z]/.test(val),
+        { message: "Heslo musí obsahovať aspoň jedno veľké písmeno (A-Z)!" }
+      )
+      .refine(
+        (val) => !val || /[a-z]/.test(val),
+        { message: "Heslo musí obsahovať aspoň jedno malé písmeno (a-z)!" }
+      )
+      .refine(
+        (val) => !val || /[0-9]/.test(val),
+        { message: "Heslo musí obsahovať aspoň jednu číslicu (0-9)!" }
+      )
+      .refine(
+        (val) => !val || /[!@#$%^&*]/.test(val),
+        { message: "Heslo musí obsahovať aspoň jeden špeciálny znak (napr. !@#$%^&*)!" }
+      ),
+
+    confirmPassword: z.string().optional(),
+
+    role: z.string().min(1, "Rola je povinná!"),
+    name: z.string().min(1, "Meno je povinné!"),
+    surname: z.string().min(1, "Priezvisko je povinné!"),
+
+    titleBefore: z.string().optional(),
+    titleAfter: z.string().optional(),
+  })
+  .superRefine(({ password, confirmPassword }, ctx) => {
+    if (password) {
+      if (!confirmPassword) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Potvrdenie hesla je povinné!",
+          path: ["confirmPassword"],
+        });
+      } else if (password !== confirmPassword) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Heslá sa musia zhodovať!",
+          path: ["confirmPassword"],
+        });
+      }
+    }
+  });
+
+
 type FormData = z.infer<typeof schema>;
 
 const ChangeUser: React.FC = () => {
@@ -49,8 +81,6 @@ const ChangeUser: React.FC = () => {
     const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>({
         resolver: zodResolver(schema),
     });
-
-    const [loaded,setLoaded] = useState(false);
 
     useEffect(() => {
         // Fetch roles for the role dropdown
@@ -84,7 +114,6 @@ const ChangeUser: React.FC = () => {
                     setValue("titleBefore", userData.titleBefore);
                     setValue("titleAfter", userData.titleAfter);
                     setUserData(userData);
-                    setLoaded(true);
                 })
                 .catch((err) => {
                     console.error("Failed to fetch user data:", err);
@@ -120,7 +149,6 @@ const ChangeUser: React.FC = () => {
     };
 
 
-    const loadingIndicator = useLoading(!loaded);
 
     return (
         <Layout>
@@ -128,7 +156,8 @@ const ChangeUser: React.FC = () => {
                 <Typography variant="h4" fontWeight="bold" gutterBottom>
                     Editácia používateľa
                 </Typography>
-                { loadingIndicator ?  loadingIndicator : (
+
+
                 <Stack direction="column" gap={3} sx={{ width: "100%" }} component="form" onSubmit={handleSubmit(onSubmit)}>
                     {error && (
                         <Alert severity="error" variant="filled">
@@ -137,14 +166,13 @@ const ChangeUser: React.FC = () => {
                     )}
                     <TextField label="Používateľské meno (e-mail)" required fullWidth slotProps={{ inputLabel: { shrink: true } }}
                          {...register("email")} error={!!errors.email} helperText={errors.email?.message ?? ""} />
-                    <TextField label="Heslo" type="password" required fullWidth {...register("password")} error={!!errors.password} helperText={errors.password?.message ?? ""} />
+                    <TextField label="Heslo" type="password" fullWidth {...register("password")} error={!!errors.password} helperText={errors.password?.message ?? ""} />
                     <Typography variant="body2" color={passwordStrength === "Silná" ? "green" : passwordStrength === "Stredná" ? "orange" : "red"}>
                         {`Sila hesla je: ${passwordStrength}`}
                     </Typography>
                     <TextField
                         label="Potvrdenie hesla"
                         type="password"
-                        required
                         fullWidth
                         {...register("confirmPassword")}
                         error={!!errors.confirmPassword}
@@ -166,17 +194,19 @@ const ChangeUser: React.FC = () => {
                         {...register("titleBefore")} value={watch("titleBefore")}/>
                     <TextField label="Tituly za menom" fullWidth slotProps={{ inputLabel: { shrink: true } }}
                         {...register("titleAfter")} value={watch("titleAfter")}/>
+
+                    <Stack direction="row" gap={3} sx={{margin:"10px 0 0 0"}}>
+                    <Button type="submit" variant="contained" color="primary">
+                        Uložiť
+                    </Button>
+                    <Button type="button" variant="contained" color="secondary" onClick={() => nav(-1)}>
+                        Zrušiť
+                    </Button>
+                </Stack>
                     
                 </Stack>
-                )}
-                <Stack direction="row" gap={3} sx={{margin:"10px 0 0 0"}}>
-                        <Button type="submit" variant="contained" color="primary" disabled={!loaded}>
-                            Uložiť
-                        </Button>
-                        <Button type="button" variant="contained" color="secondary" onClick={() => nav(-1)}>
-                            Zrušiť
-                        </Button>
-                    </Stack>
+                
+    
             </Box>
         </Layout>
     );

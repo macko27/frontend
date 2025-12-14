@@ -25,11 +25,9 @@ import dayjs, { Dayjs } from "dayjs";
 import { Department } from "../../../types/Department";
 import JobPosition from "../../../types/JobPosition";
 import ContractType from "../../../types/ContractType";
-import LoadingButton from '@mui/lab/LoadingButton';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import UserProfile from "../../../types/UserProfile";
 import { EmployeeCard } from "../../../types/EmployeeCard";
-import useLoadingModal from "../../../hooks/LoadingDataModal";
 import Snackbar, { SnackbarOrigin } from '@mui/material/Snackbar';
 import Level from "../../../types/Level";
 import {CircularProgress} from "@mui/material";
@@ -60,7 +58,6 @@ const EmployeeCardDialog: React.FC<EmployeeCardDialogProps> = ({userId, user, op
     const [contractTypeOptions, setConstractTypeOptions] = useState<{ id: string; label: string }[]>([]);
     const [selectedConstractType, setSelectedConstractType] = useState<{ id: string; label: string } | null>(null);
 
-    const [loading, setLoading] = useState(true);
     const [birth, setBirth] = useState<Dayjs | null>();
     const [startWorkDate, setStartWorkDate] = useState<Dayjs | null>(null);
     const [level, setLevel] = useState<String | null>();
@@ -134,11 +131,9 @@ const EmployeeCardDialog: React.FC<EmployeeCardDialogProps> = ({userId, user, op
 
     // Fetch options for select fields
     useEffect(() => {
-        setLoading(true);
         const fetchData = async () => {
             if (!open) return;
             setEmployee(null);
-            setLoading(true);
     
             try {
                 // Fetching all the data simultaneously using Promise.all
@@ -266,9 +261,7 @@ const EmployeeCardDialog: React.FC<EmployeeCardDialogProps> = ({userId, user, op
                 setSelectedLevel(foundLevel || null);
             } catch (err) {
                 console.error("Error fetching employee data:", err);
-            } finally {
-                setLoading(false);
-            }
+            } 
         };
     
         fetchEmployeeData();
@@ -291,7 +284,6 @@ const EmployeeCardDialog: React.FC<EmployeeCardDialogProps> = ({userId, user, op
             }).catch((err) => {
                 openSnackbar("Nastala chyba pri aktualizácii karty", "error");
             }).finally(() => {
-                setLoading(false);
         });
     };
 
@@ -326,27 +318,19 @@ const EmployeeCardDialog: React.FC<EmployeeCardDialogProps> = ({userId, user, op
 
     return (
         <>
-        <Dialog open={open && loading} onClose={handleDialogClose} maxWidth="xl" fullWidth>
-    <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height={200}
-        width="100%"
-    >
-        <CircularProgress size={60} />
-    </Box>
-</Dialog>
-        <Snackbar
-            anchorOrigin={{
-                vertical: 'top', 
-                horizontal: 'center', 
-              }}
-            open={loading}
-            message="Loading..."
-            autoHideDuration={null}
-        />
-        <Dialog open={open && !loading} onClose={handleDialogClose} maxWidth="xl" fullWidth>
+        <Dialog open={open} onClose={handleDialogClose} maxWidth="xl" fullWidth>
+            <Box
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+                height={200}
+                width="100%"
+            >
+                <CircularProgress size={60} />
+            </Box>
+        </Dialog>
+        
+        <Dialog open={open} onClose={handleDialogClose} maxWidth="xl" fullWidth>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <DialogTitle>Zamestnanecká karta</DialogTitle>
                 <DialogContent>
@@ -514,15 +498,14 @@ const EmployeeCardDialog: React.FC<EmployeeCardDialogProps> = ({userId, user, op
                     </Grid>
                 </DialogContent>
                 <DialogActions>
-                    <LoadingButton
+                    <Button
                         type="submit"
                         variant="contained"
                         color="primary"
-                        loading={loading}
-                        loadingPosition="start"
                     >
                         Uložiť
-                    </LoadingButton>
+                    </Button>
+
                     <Button variant="outlined" color="secondary" onClick={handleDialogClose}>
                         Zrušiť
                     </Button>

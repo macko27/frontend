@@ -21,7 +21,6 @@ import EmployeeCardDialog from "./EmployeCardDialog";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { dataGridStyles } from "../../../styles/gridStyle";
 import { useSnackbar } from "../../../hooks/SnackBarContext";
-import useLoading from "../../../hooks/LoadingData";
 
 const ManageUsers: React.FC = () => {
     const [userRows, setUserRows] = useState<UserProfile[] | null>(null);

@@ -448,7 +448,7 @@ const ManageSurveys: React.FC = () => {
             </DialogContent>
 
             <DialogActions sx={{ p: 3 }}>
-              <Button variant="contained" color="error" onClick={() => handleDeleteClick(detailSurvey?.id!)}>
+              <Button variant="contained" color="info" onClick={() => handleDeleteClick(detailSurvey?.id!)}>
                 Vymazať
               </Button>
 
