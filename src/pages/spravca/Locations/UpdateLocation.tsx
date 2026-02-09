@@ -163,9 +163,8 @@ const UpdateLocation: React.FC = () => {
                         isOptionEqualToValue={(option, value) => option.id === value.id} 
                         renderInput={(params) => <TextField {...params} label="Príslušnosť lokality k organizáciam" error={!!errors.organizations} helperText={errors.organizations?.message ?? ""} />}
                     />
-                </Stack>
-                )}
-                <Stack direction="row" gap={3} sx={{margin: "10px 0 0 0"}}>
+
+                    <Stack direction="row" gap={3} sx={{margin: "10px 0 0 0"}}>
                         <Button type="submit" variant="contained" color="primary" disabled={!loaded}>
                             Uložiť
                         </Button>
@@ -173,6 +172,9 @@ const UpdateLocation: React.FC = () => {
                             Zrušiť
                         </Button>
                     </Stack>
+
+                </Stack>
+                )}
             </Box>
         </Layout>
     );

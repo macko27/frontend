@@ -115,10 +115,8 @@ const UpdateOrganization: React.FC = () => {
                             readOnly: true,
                         }}
                     />
-                </Stack>
-                )}
-                
-                <Stack direction="row" sx={{margin: "10px 0 0 0" }} gap={3}>
+
+                    <Stack direction="row" sx={{margin: "10px 0 0 0" }} gap={3}>
                         <LoadingButton
                             type="submit"
                             variant="contained"
@@ -133,6 +131,11 @@ const UpdateOrganization: React.FC = () => {
                             Zrušiť
                         </Button>
                     </Stack>
+
+                </Stack>
+                )}
+                
+                
             </Box>
         </Layout>
     );

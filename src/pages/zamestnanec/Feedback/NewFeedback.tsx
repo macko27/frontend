@@ -114,6 +114,7 @@ const NewFeedback: React.FC = () => {
             })
             .catch((err) => console.error("Error fetching employee cards:", err));
     }, []);
+
     const handleAddEmployee = (employee: EmployeeCard) => {
         setEmployeeIds((prev) => [...prev, employee.employeeId]);
         setSelectedEmployees((prev) => [...prev, employee]);
@@ -140,12 +141,17 @@ const NewFeedback: React.FC = () => {
     };
 
     const handleAddQuestion = () => {
-        if (question) {
-            setQuestions([...questions, question]);
-            setQuestion("");
-            setShowInput(false);
-        }
+        console.log(questions)
+
+        if (question.trim() === "") return; // ignorovať prázdne otázky
+
+        setQuestions(prevQuestions => [...prevQuestions, question.trim()]);
+        setQuestion("");
+        setShowInput(false);
+
+        console.log(questions)
     };
+
 
     const handleDeleteQuestion = (index: Number) => {
         const newQuestions = questions.filter((_, i) => i !== index);
@@ -153,6 +159,7 @@ const NewFeedback: React.FC = () => {
     };
 
     const handleSubmit = () => {
+        
         if (questions.length > 0) {
             // Prepare the data to send
             const feedbackData = {
@@ -192,11 +199,13 @@ const NewFeedback: React.FC = () => {
             <Typography variant="h4" fontWeight="bold" gutterBottom>
                 Vytvoriť požiadavku spätnej väzby
             </Typography>
+
             <Stack direction="row" spacing={2} sx={{ marginBottom: 2 }}>
                 <Button onClick={() => setOpenEmployeesModal(true)} variant="contained" color="primary">
                     Pridať zamestnanca
                 </Button>
             </Stack>
+            
             {/* Render DataGrid only if selectedEmployees is not empty */}
             {selectedEmployees.length > 0 && (
                 <Box sx={{ height: 400, width: "100%", marginTop: 2 }}>
@@ -247,7 +256,7 @@ const NewFeedback: React.FC = () => {
             <Stack direction="row" justifyContent="right" width="100%">
                 <Button
                     onClick={handleSubmit}
-                    disabled={questions.length === 0 || selectedEmployees.length === 0}
+                    disabled={selectedEmployees.length === 0}
                     color="primary"
                     variant="contained"
                 >

@@ -6,7 +6,7 @@ const Settings: React.FC = () => {
     return (
         <Layout>
             <Box sx={{ padding: 3, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                asd
+                Nie je implementované!
             </Box>
         </Layout>
     );

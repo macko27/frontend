@@ -202,10 +202,8 @@ const EditWorkPosition: React.FC = () => {
                             />
                         )}
                     />
-                </Stack>
-                )}
 
-                <Stack direction={"row"} sx={{marginTop: 5 }} gap={3}>
+                    <Stack direction={"row"} sx={{marginTop: 5 }} gap={3}>
                         <Button type="submit" variant="contained" color="primary" disabled={!loaded}>
                             Uložiť
                         </Button>
@@ -213,6 +211,9 @@ const EditWorkPosition: React.FC = () => {
                             Zrušiť
                         </Button>
                     </Stack>
+                </Stack>
+                )}
+
             </Box>
         </Layout>
     );

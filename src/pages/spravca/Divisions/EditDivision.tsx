@@ -327,9 +327,8 @@ const EditDivision: React.FC = () => {
                             }}
                         />
                     </LocalizationProvider>
-                </Stack>
-            )}
-            <Stack direction="row" sx={{ margin: "10px 0 0 0" }} gap={3}>
+
+                    <Stack direction="row" sx={{ margin: "10px 0 0 0" }} gap={3}>
                         <Button type="submit" variant="contained" color="primary" disabled={!loaded}>
                             Uložiť oddelenie
                         </Button>
@@ -342,6 +341,9 @@ const EditDivision: React.FC = () => {
                             Zrušiť
                         </Button>
                     </Stack>
+
+                </Stack>
+            )}
             </Box>
         </Layout>
     );

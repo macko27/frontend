@@ -79,9 +79,9 @@ const EmployeeGoals: React.FC = () => {
                 }
             }
             
-            setValue("finishedDate", selectedGoal.finishedDate || "");
-            setValue("fullfilmentRate", selectedGoal.fullfilmentRate);
-            setFinishedDate(dayjs(selectedGoal.finishedDate));    
+            setFinishedDate(selectedGoal.finishedDate ? dayjs(selectedGoal.finishedDate) : null);
+            setValue("finishedDate", selectedGoal.finishedDate || null);
+            setValue("fullfilmentRate", selectedGoal.fullfilmentRate ?? null);
         
     }, [selectedGoal, goalStatuses, setValue]);
 
