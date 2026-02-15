@@ -55,9 +55,14 @@ const CreateCourse: React.FC = () => {
       console.log("Selected files:", files);
     }
   };
+
   const handleSave = (selected: string[]) => {
     const selectedEmps = employeeOptions.filter(emp => selected.includes(emp.employeeId));
     setSelectedEmployees(selectedEmps);  // Presunieme vybraných zamestnancov do state
+  };
+
+  const handleFileRemove = (fileName: string) => {
+    setFiles((prevFiles) => prevFiles.filter((file) => file.name !== fileName));
   };
 
   const handleDocUpload = async (file: File): Promise<string> => {
@@ -184,12 +189,32 @@ const CreateCourse: React.FC = () => {
 
             {/* File List */}
             {files.map((file) => (
-              <Typography key={file.name}>
-                <Link href="#" download>
-                  {file.name}
-                </Link>
-              </Typography>
-            ))}
+            <Box
+              key={file.name}
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 1,
+                border: "1px solid #ddd",
+                borderRadius: "6px",
+                padding: "6px 10px",
+              }}
+            >
+              <Typography>{file.name}</Typography>
+
+              <Button
+                variant="outlined"
+                color="error"
+                size="small"
+                onClick={() => handleFileRemove(file.name)}
+              >
+                Odstrániť
+              </Button>
+            </Box>
+          ))}
+
+
             {files.length !== 0 && (
              <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DatePicker
