@@ -44,11 +44,11 @@ const CreateSurvey: React.FC = () => {
   });
   const [endDate, setEndDate] = useState<string>(() => {
     const today = new Date();
-    return today.toISOString().split('T')[0];
+    return today.toISOString().slice(0,16);
   });
   const [startDate, setStartDate] = useState<string>(() => {
     const today = new Date();
-    return today.toISOString().split('T')[0];
+    return today.toISOString().slice(0,16);
   });
   const [creator, setCreator] = useState<EmployeeCard | null>(null);
   const { openSnackbar } = useSnackbar();
@@ -221,7 +221,7 @@ const CreateSurvey: React.FC = () => {
   };
 
   return (
-    <Layout>
+    <Layout fullWidth>
         <div style={{ padding: '24px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
         {/* Notification */}
         {notification.show && (
@@ -353,14 +353,21 @@ const CreateSurvey: React.FC = () => {
 
 
             {/* Dátumy ankety vedľa seba */}
-            <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 2, // medzera medzi dátumami
+                mb: 3,  // margin-bottom
+                flexDirection: { xs: 'column', sm: 'row' }, // xs = mobil → pod sebou, sm+ → vedľa seba
+              }}
+            >
               {/* Dátum začatia ankety */}
-              <div style={{ flex: 1 }}>
+              <Box sx={{ flex: 1 }}>
                 <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '8px', fontWeight: 500 }}>
                   Dátum začatia ankety <span style={{ color: 'red' }}>*</span>
                 </label>
                 <input
-                  type="date"
+                  type="datetime-local"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                   style={{
@@ -369,18 +376,18 @@ const CreateSurvey: React.FC = () => {
                     fontSize: '14px',
                     border: '1px solid #ccc',
                     borderRadius: '4px',
-                    boxSizing: 'border-box'
+                    boxSizing: 'border-box',
                   }}
                 />
-              </div>
+              </Box>
 
               {/* Dátum ukončenia ankety */}
-              <div style={{ flex: 1 }}>
+              <Box sx={{ flex: 1 }}>
                 <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '8px', fontWeight: 500 }}>
                   Dátum ukončenia ankety <span style={{ color: 'red' }}>*</span>
                 </label>
                 <input
-                  type="date"
+                  type="datetime-local"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                   style={{
@@ -389,11 +396,12 @@ const CreateSurvey: React.FC = () => {
                     fontSize: '14px',
                     border: '1px solid #ccc',
                     borderRadius: '4px',
-                    boxSizing: 'border-box'
+                    boxSizing: 'border-box',
                   }}
                 />
-              </div>
-            </div>
+              </Box>
+            </Box>
+
 
 
             {/* Zhrnutie ankety */}

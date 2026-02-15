@@ -25,6 +25,10 @@ import { useSnackbar } from '../../../hooks/SnackBarContext';
 import { useAuth } from "../../../hooks/AuthProvider";
 import { EmployeeCard } from "../../../types/EmployeeCard";
 import api from "../../../app/api";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
+import Collapse from "@mui/material/Collapse";
+
 
 // Local mock type for survey (since backend isn't ready yet)
 type Survey = {
@@ -80,6 +84,10 @@ const ManageSurveys: React.FC = () => {
   const [selectedOptions, setSelectedOptions] = useState<{ [questionId: string]: string[] }>({});
   const [openVoteConfirm, setOpenVoteConfirm] = useState(false);
   const [voteDialogReadOnly, setVoteDialogReadOnly] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [showInfo, setShowInfo] = useState(false);
+
 
 
 
@@ -90,7 +98,9 @@ const ManageSurveys: React.FC = () => {
     return date.toLocaleString('sk-SK', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric'
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     });
   };
 
@@ -232,31 +242,29 @@ const ManageSurveys: React.FC = () => {
       field: 'name',
       headerName: 'Názov ankety',
       headerClassName: 'header',
-      width: 350,
-      flex: 1,
-      resizable: false,
+      minWidth: 200,
+      flex: 2
     },
     {
       field: 'question',
       headerName: 'Otázka',
       headerClassName: 'header',
-      width: 600,
-      flex: 2,
-      resizable: false,
+      minWidth: 400,
+      flex: 3
     },
     {
       field: 'status',
       headerName: 'Stav ankety',
       headerClassName: 'header',
-      width: 150,
-      resizable: false,
+      minWidth: 120,
+      flex: 1
     },
     {
       field: 'actions',
       headerName: 'Akcia',
       headerClassName: 'header',
-      width: 160,
-      resizable: false,
+      minWidth: 160,
+      flex: 1,
       sortable: false,
       editable: false,
       disableColumnMenu: true,
@@ -313,7 +321,7 @@ const ManageSurveys: React.FC = () => {
                 Vytvoriť anketu
             </Button>
 
-        <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
+        <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }} variant='scrollable'>
           <Tab label="Zoznam ankiet" />
           <Tab label="Moje ankety" />
           <Tab label="Výsledky ankety" />
@@ -381,6 +389,7 @@ const ManageSurveys: React.FC = () => {
             onClose={() => setOpenDetail(false)}
             maxWidth="md"
             fullWidth
+            fullScreen={isMobile}
           >
             <DialogTitle sx={{ fontWeight: 'bold' }}>
               {detailSurvey?.name}
@@ -480,6 +489,7 @@ const ManageSurveys: React.FC = () => {
             onClose={() => setOpenVoteDialog(false)}
             maxWidth="md"
             fullWidth
+            fullScreen={isMobile}
           >
             <DialogTitle sx={{ fontWeight: 'bold' }}>
               {voteSurvey?.name}
@@ -493,15 +503,48 @@ const ManageSurveys: React.FC = () => {
 
             {/* --- Popis a typ ankety pod nadpis --- */}
             <Box sx={{ px: 3, mb: 2 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                <Typography fontWeight="light" sx={{ color: '#888' }}>Popis ankety</Typography>
-                <Typography>{voteSurvey?.info ?? "Bez popisu"}</Typography>
+              {/* POPIS ANKETY */}
+              {isMobile ? (
+                // ✅ MOBILE: collapse
+                <Box sx={{ mb: 1 }}>
+                  <Button
+                    size="small"
+                    onClick={() => setShowInfo(!showInfo)}
+                    sx={{ textTransform: "none", padding: 0 }}
+                  >
+                    {showInfo ? "Skryť popis" : "Zobraziť popis ankety"}
+                  </Button>
+
+                  <Collapse in={showInfo}>
+                    <Typography sx={{ mt: 1, color: "#444" }}>
+                      {voteSurvey?.info ?? "Bez popisu"}
+                    </Typography>
+                  </Collapse>
+                </Box>
+              ) : (
+                // ✅ DESKTOP: vždy viditeľné
+                <Box sx={{ mb: 1 }}>
+                  <Typography fontWeight="light" sx={{ color: "#888" }}>
+                    Popis ankety
+                  </Typography>
+
+                  <Typography sx={{ mt: 0.5 }}>
+                    {voteSurvey?.info ?? "Bez popisu"}
+                  </Typography>
+                </Box>
+              )}
+
+              {/* TYP ANKETY */}
+              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                <Typography fontWeight="light" sx={{ color: "#888" }}>
+                  Typ ankety
+                </Typography>
+                <Typography>
+                  {voteSurvey?.type === "anonymous" ? "anonymná" : "neanonymná"}
+                </Typography>
               </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                <Typography fontWeight="light" sx={{ color: '#888' }}>Typ ankety</Typography>
-                <Typography>{voteSurvey?.type === "anonymous" ? "anonymná" : "neanonymná"}</Typography>
-              </Box>
-            </Box>
+          </Box>
+
 
             <DialogContent sx={{ pt: 2 }}>
               <Stack spacing={2}>

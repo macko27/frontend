@@ -32,9 +32,9 @@ const SurveyQuestion: React.FC<QuestionProps> = ({
 }) => {
 
   return (
-    <div style={{ marginBottom: '24px', border: '1px solid #ddd', padding: '12px', borderRadius: '4px' }}>
+    <div style={{ display: 'flex', marginBottom: '24px', border: '1px solid #ddd', padding: '12px', borderRadius: '4px', width: '100%', flexDirection: 'column' }}>
 
-    {/* Hlavička otázky: label + select */}
+      {/* Hlavička otázky: label + select */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
         <span style={{ fontSize: '14px', fontWeight: 500 }}>Otázka</span>
         <select
@@ -53,7 +53,7 @@ const SurveyQuestion: React.FC<QuestionProps> = ({
           placeholder="Zadajte otázku"
           value={text}
           onChange={(e) => onChangeQuestion(id, e.target.value)}
-          rows={2}
+          rows={6}
           style={{
             flex: 1,
             padding: '8px 12px',
@@ -84,7 +84,7 @@ const SurveyQuestion: React.FC<QuestionProps> = ({
       {/* Odpovede */}
       {answers.map((a, index) => (
         <div key={a.id} style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
-          <span style={{ minWidth: '90px', fontSize: '14px' }}>Odpoveď č. {index + 1}</span>
+          <span style={{ minWidth: '100px', fontSize: '14px' }}>Odpoveď č. {index + 1}</span>
           <input
             type="text"
             value={a.text}

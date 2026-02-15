@@ -41,9 +41,11 @@ const drawerWidth = 240;
 
 interface LayoutProps {
     children?: ReactNode;
+    fullWidth?: boolean;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+
+const Layout: React.FC<LayoutProps> = ({ children, fullWidth = false }) => {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
     const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
@@ -385,7 +387,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <Box
                 component="main"
                 sx={{
-                    maxWidth: "80%",
+                    maxWidth: fullWidth ? "100%" : "80%",
                     flexGrow: 1,
                     p: 3,
                 }}
