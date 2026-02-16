@@ -110,7 +110,6 @@ const NewFeedback: React.FC = () => {
         api.get("/EmployeeCard/GetAllEmployees")
             .then((res) => {
                 setEmployeeData(res.data);
-                console.log("employeeCards", res.data);
             })
             .catch((err) => console.error("Error fetching employee cards:", err));
     }, []);
@@ -141,15 +140,12 @@ const NewFeedback: React.FC = () => {
     };
 
     const handleAddQuestion = () => {
-        console.log(questions)
 
         if (question.trim() === "") return; // ignorovať prázdne otázky
 
         setQuestions(prevQuestions => [...prevQuestions, question.trim()]);
         setQuestion("");
         setShowInput(false);
-
-        console.log(questions)
     };
 
 
@@ -220,17 +216,22 @@ const NewFeedback: React.FC = () => {
                 </Box>
             )}
             {showInput ? (
-                <TextField
-                    label={"Otázka"}
-                    value={question}
-                    onChange={(e) => setQuestion(e.target.value)}
-                    fullWidth={true}
-                    onKeyPress={(e) => {
-                        if (e.key === "Enter") {
-                            handleAddQuestion();
-                        }
-                    }}
-                />
+                <>
+                    <Typography variant="body2" sx={{ marginBottom: 1 }}>
+                        Pre potvrdenie otázky stlačte Enter
+                    </Typography>
+                    <TextField
+                        label={"Otázka"}
+                        value={question}
+                        onChange={(e) => setQuestion(e.target.value)}
+                        fullWidth={true}
+                        onKeyPress={(e) => {
+                            if (e.key === "Enter") {
+                                handleAddQuestion();
+                            }
+                        }}
+                    />
+                </>
             ) : (
                 <Stack direction="row" spacing={2} sx={{ marginBottom: 2 }}>
                     <Button onClick={() => setShowInput(true)} variant="contained" color="primary">
@@ -238,6 +239,8 @@ const NewFeedback: React.FC = () => {
                     </Button>
                 </Stack>
             )}
+
+
             <List>
                 {questions.map((q, index) => (
                     <ListItem key={index}>
@@ -256,7 +259,7 @@ const NewFeedback: React.FC = () => {
             <Stack direction="row" justifyContent="right" width="100%">
                 <Button
                     onClick={handleSubmit}
-                    disabled={selectedEmployees.length === 0}
+                    disabled={selectedEmployees.length === 0 || questions.length === 0 ? true : false}
                     color="primary"
                     variant="contained"
                 >
