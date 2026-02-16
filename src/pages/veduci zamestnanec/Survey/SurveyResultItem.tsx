@@ -17,11 +17,12 @@ const SurveyResultItem: React.FC<Props> = ({
 }) => {
 
     const theme = useTheme();
-    
+
   return (
     <Box
       sx={{
         display: "flex",
+        flexDirection: { xs: "column", sm: "row" },
         alignItems: "center",
         justifyContent: "space-between",
         border: "1px solid #ddd",
@@ -29,30 +30,38 @@ const SurveyResultItem: React.FC<Props> = ({
         borderRadius: 2,
         padding: 2,
         mb: 2,
+        paddingY: 1.5,
         backgroundColor: "#fff",
         boxShadow: "0px 2px 6px rgba(0,0,0,0.05)",
       }}
     >
       {/* Názov ankety */}
       <Box sx={{ flex: 2 }}>
-        <Typography fontWeight="bold">{name}</Typography>
+        <Typography 
+            fontWeight="bold" 
+            fontSize="0.87rem"
+        > {name}</Typography>
       </Box>
 
       {/* Otázka */}
       <Box sx={{ flex: 3 }}>
-        <Typography>{question}</Typography>
+        <Typography 
+            fontSize="0.87rem"
+            > {question.length > 100 ? `${question.slice(0, 100)}…` : question}
+        </Typography>
       </Box>
 
       {/* Stav */}
       <Box sx={{ flex: 1 }}>
-        <Typography>{status}</Typography>
+        <Typography fontSize="0.87rem">{status}</Typography>
       </Box>
 
       {/* Akcia */}
-      <Box sx={{ flex: 1, textAlign: "right" }}>
+      <Box sx={{ flex: 1, textAlign: "center" }}>
         <Button
           variant="contained"
           color="primary"
+          size="small"
           onClick={onEvaluate}
         >
           Evaluácia

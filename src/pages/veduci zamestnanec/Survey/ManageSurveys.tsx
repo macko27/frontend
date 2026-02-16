@@ -302,7 +302,7 @@ const ManageSurveys: React.FC = () => {
   ];
 
   return (
-    <Layout>
+    <Layout fullWidth={isMobile}>
       <Box sx={{ padding: 3, flexDirection: 'column', alignItems: 'flex-start' }}>
         <Stack direction="row" spacing={2} alignItems="left" mb={2}>
           <Typography variant="h4" fontWeight="bold">
@@ -363,19 +363,49 @@ const ManageSurveys: React.FC = () => {
             <Box>
               {surveys
                 .filter((s) => s.status === "Uzavretá")
-                .map((survey) => (
-                  <SurveyResultItem
-                    key={survey.id}
-                    name={survey.name}
-                    question={survey.question}
-                    status={survey.status}
-                    onEvaluate={() => {
-                      nav(`/surveyResults/${survey.id}`);
-                    }}
-                  />
+                .map((survey, index) => (
+                  <Box key={survey.id}>
+                    {/* Záhlavie iba nad prvým */}
+                    {index === 0 && !isMobile && (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          px: 2,
+                          py: 1,
+                          bgcolor: "#f0f0f0",
+                          fontWeight: "bold",
+                          borderRadius: 1,
+                          mb: 1,
+                        }}
+                      >
+                        <Typography sx={{ flex: 2, fontSize: 14, color: "GrayText" }}>
+                          Názov
+                        </Typography>
+                        <Typography sx={{ flex: 3, fontSize: 14, color: "GrayText" }}>
+                          Otázka
+                        </Typography>
+                        <Typography sx={{ flex: 1, fontSize: 14, color: "GrayText" }}>
+                          Stav ankety
+                        </Typography>
+                        <Typography sx={{ flex: 1, fontSize: 14, color: "GrayText", textAlign: 'center' }}>
+                          Akcia
+                        </Typography>
+                      </Box>
+                    )}
+
+                    {/* Jeden výsledok */}
+                    <SurveyResultItem
+                      name={survey.name}
+                      question={survey.question}
+                      status={survey.status}
+                      onEvaluate={() => nav(`/surveyResults/${survey.id}`)}
+                    />
+                  </Box>
                 ))}
             </Box>
           )}
+
+
 
 
 
