@@ -28,6 +28,7 @@ import api from "../../../app/api";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import Collapse from "@mui/material/Collapse";
+import SurveyResultItem from "./SurveyResultItem";
 
 
 // Local mock type for survey (since backend isn't ready yet)
@@ -89,9 +90,6 @@ const ManageSurveys: React.FC = () => {
   const [showInfo, setShowInfo] = useState(false);
 
 
-
-
-
   const formatDateTime = (dateStr?: string) => {
     if (!dateStr) return "-";
     const date = new Date(dateStr);
@@ -146,7 +144,7 @@ const ManageSurveys: React.FC = () => {
         url = `/Survey/GetMySurveys/${employeeId}`;
       } else if (selectedTab === 2) {
         // výsledky – tiež GetByEmployee, ale neskôr ich prefiltrujeme
-        url = `/Survey/GetByEmployee/${employeeId}`;
+        url = `/Survey/GetMyEndedSurveys/${employeeId}`;
       }
 
       const res = await api.get(url);
@@ -362,18 +360,23 @@ const ManageSurveys: React.FC = () => {
 
           {/* TAB 2 – Výsledky ankety */}
           {tab === 2 && (
-            <DataGrid
-              columns={columns}
-              loading={!loaded}
-              rows={surveys.filter(s => s.status === 'Uzavretá')}
-              sx={dataGridStyles}
-              initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
-              pageSizeOptions={[5, 10, 25]}
-              pagination
-              getRowId={(row) => row.id}
-              autoHeight
-            />
+            <Box>
+              {surveys
+                .filter((s) => s.status === "Uzavretá")
+                .map((survey) => (
+                  <SurveyResultItem
+                    key={survey.id}
+                    name={survey.name}
+                    question={survey.question}
+                    status={survey.status}
+                    onEvaluate={() => {
+                      nav(`/surveyResults/${survey.id}`);
+                    }}
+                  />
+                ))}
+            </Box>
           )}
+
 
 
           <Snackbar
