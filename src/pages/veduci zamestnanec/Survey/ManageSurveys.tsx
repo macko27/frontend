@@ -28,7 +28,8 @@ import api from "../../../app/api";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import Collapse from "@mui/material/Collapse";
-import SurveyResultItem from "./SurveyResultItem";
+import SurveyResultItem from "./Result/SurveyResultItem";
+import SurveyResultDialog from "./Result/SurveyResultDialog";
 
 
 // Local mock type for survey (since backend isn't ready yet)
@@ -88,6 +89,9 @@ const ManageSurveys: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [showInfo, setShowInfo] = useState(false);
+  const [openResultsDialog, setOpenResultsDialog] = useState(false);
+  const [resultsSurvey, setResultsSurvey] = useState<any | null>(null);
+
 
 
   const formatDateTime = (dateStr?: string) => {
@@ -231,6 +235,17 @@ const ManageSurveys: React.FC = () => {
       setOpenDetail(true);
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleShowVysledky = async (survey: Survey) => {
+    try {
+      const res = await api.get(`/Survey/GetResult/${survey.id}`);
+      setResultsSurvey(res.data);
+      setOpenResultsDialog(true);
+    } catch (error) {
+      console.error(error);
+      openSnackbar("Nepodarilo sa načítať výsledky ankety", "error");
     }
   };
 
@@ -398,7 +413,7 @@ const ManageSurveys: React.FC = () => {
                       name={survey.name}
                       question={survey.question}
                       status={survey.status}
-                      onEvaluate={() => nav(`/surveyResults/${survey.id}`)}
+                      onEvaluate={() => handleShowVysledky(survey)}
                     />
                   </Box>
                 ))}
@@ -733,6 +748,13 @@ const ManageSurveys: React.FC = () => {
               </Button>
             </DialogActions>
           </Dialog>
+
+          <SurveyResultDialog
+            open={openResultsDialog}
+            onClose={() => setOpenResultsDialog(false)}
+            survey={resultsSurvey}
+          />
+
 
         </Box>
 
