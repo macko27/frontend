@@ -39,7 +39,7 @@ const SurveyFilterPopover: React.FC<SurveyFilterPopoverProps> = ({
         <Button
             variant="contained"           // používa vlastné pozadie
             onClick={handleOpen}
-            color="info"
+            color="primary"
             sx={{
                 color: '#fff',
                 textTransform: 'none',
