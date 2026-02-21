@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/0e72dd34-15d3-4ba0-84fe-71642b9e228b/resourceGroups/talent-hub-frontend/providers/Microsoft.Web/sites/talent-hub-frontend",
+    "appService.deploySubpath": "."
+}

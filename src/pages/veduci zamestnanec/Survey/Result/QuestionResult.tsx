@@ -19,7 +19,7 @@ interface QuestionResultProps {
 }
 
 const COLORS = ["#66bb6a", "#ffe082", "#ef5350", "#42a5f5"];
-
+{/* komponent pre zobrazenie vsetkych mien ktorí hlasovali v neanonymnej ankete*/}
 const QuestionResult: React.FC<QuestionResultProps> = ({ question, index }) => {
   const [selectedOption, setSelectedOption] = useState<{
     option: any;

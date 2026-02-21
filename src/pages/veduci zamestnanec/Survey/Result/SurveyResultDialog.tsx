@@ -49,6 +49,9 @@ type Props = {
   survey: SurveyResult | null;
 };
 
+{/* Dialog pre zobrazenie vysledkov ankety*/}
+{/* SurveyResultAnonymGraphs - komponent pre zobrazenie anonymnych vysledkov*/}
+{/* SurveyResultNeanonymGraphs - komponent pre zobrazenie neanonymnych vysledkov*/}
 const SurveyResultDialog: React.FC<Props> = ({ open, onClose, survey }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));

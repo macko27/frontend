@@ -16,6 +16,9 @@ import {
   Tabs,
   Snackbar,
   Alert,
+  FormControlLabel, 
+  Checkbox,
+  Popover
 } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
@@ -29,13 +32,14 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import Collapse from "@mui/material/Collapse";
 import SurveyResultDialog from "./Result/SurveyResultDialog";
+import SurveyFilterPopover from './SurveyFilterPopover';
 
 
 type Survey = {
   id: string;
   name: string;
   question: string;
-  status: 'Aktívna' | 'Uzavretá';
+  status: 'Aktívna' | 'Uzavretá' | 'Zrušená' | 'Neaktívna';
   ownerId?: string;
 };
 
@@ -90,7 +94,10 @@ const ManageSurveys: React.FC = () => {
   const [openResultsDialog, setOpenResultsDialog] = useState(false);
   const [resultsSurvey, setResultsSurvey] = useState<any | null>(null);
 
-
+  const [filterActive, setFilterActive] = useState(true);
+  const [filterClosed, setFilterClosed] = useState(true);
+  const [filterCancelled, setFilterCancelled] = useState(true);
+  const [filterInactive, setFilterInactive] = useState(true);
 
   const formatDateTime = (dateStr?: string) => {
     if (!dateStr) return "-";
@@ -248,6 +255,17 @@ const ManageSurveys: React.FC = () => {
   };
 
 
+  const getFilteredSurveys = (surveysList: Survey[], active: boolean, closed: boolean, cancelled: boolean, inactive: boolean) => {
+    return surveysList.filter((s) => {
+      if (!active && s.status === "Aktívna") return false;
+      if (!closed && s.status === "Uzavretá") return false;
+      if (!cancelled && s.status === "Zrušená") return false;
+      if (!inactive && s.status === "Neaktívna") return false;
+      return true;
+    });
+  };
+
+
   const columns: GridColDef[] = [
     {
       field: 'name',
@@ -337,19 +355,36 @@ const ManageSurveys: React.FC = () => {
         </Stack>
 
         <Button
-                variant="contained"
-                color="primary"
-                sx={{ marginLeft: 'auto' }}
-                onClick={() => nav('/createSurvey')}
-            >
-                Vytvoriť anketu
-            </Button>
+            variant="contained"
+            color="primary"
+            sx={{ marginLeft: 'auto' }}
+            onClick={() => nav('/createSurvey')}
+        >
+            Vytvoriť anketu
+        </Button>
 
-        <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }} variant='scrollable'>
-          <Tab label="Zoznam ankiet" />
-          <Tab label="Moje ankety" />
-          <Tab label="Výsledky ankiet" />
-        </Tabs>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+          <Tabs
+            value={tab}
+            onChange={(_, v) => setTab(v)}
+            variant="scrollable"
+          >
+            <Tab label="Zoznam ankiet" />
+            <Tab label="Moje ankety" />
+            <Tab label="Výsledky ankiet" />
+          </Tabs>
+
+          <SurveyFilterPopover
+            filterActive={filterActive}
+            filterClosed={filterClosed}
+            filterCancelled={filterCancelled}
+            filterInactive={filterInactive}
+            setFilterActive={setFilterActive}
+            setFilterClosed={setFilterClosed}
+            setFilterCancelled={setFilterCancelled}
+            setFilterInactive={setFilterInactive}
+          />
+        </Box>
 
         <Box sx={{ width: '100%' }}>
           
@@ -359,7 +394,7 @@ const ManageSurveys: React.FC = () => {
             <DataGrid
               columns={columns}
               loading={!loaded}
-              rows={surveys}
+              rows={getFilteredSurveys(surveys, filterActive, filterClosed, filterCancelled, filterInactive)}
               sx={dataGridStyles}
               initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
               pageSizeOptions={[5, 10, 25]}
@@ -374,7 +409,7 @@ const ManageSurveys: React.FC = () => {
             <DataGrid
               columns={columns}
               loading={!loaded}
-              rows={surveys}
+              rows={getFilteredSurveys(surveys, filterActive, filterClosed, filterCancelled, filterInactive)}
               sx={dataGridStyles}
               initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
               pageSizeOptions={[5, 10, 25]}
@@ -389,7 +424,9 @@ const ManageSurveys: React.FC = () => {
             <DataGrid
               columns={columns}
               loading={!loaded}
-              rows={surveys.filter((s) => s.status === "Uzavretá")}
+              rows={getFilteredSurveys(surveys, filterActive, filterClosed, filterCancelled, filterInactive).filter(
+                (s) => s.status === "Uzavretá"
+              )}
               sx={dataGridStyles}
               initialState={{
                 pagination: { paginationModel: { pageSize: 10 } }
