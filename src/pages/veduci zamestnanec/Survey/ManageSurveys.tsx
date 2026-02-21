@@ -348,7 +348,7 @@ const ManageSurveys: React.FC = () => {
         <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }} variant='scrollable'>
           <Tab label="Zoznam ankiet" />
           <Tab label="Moje ankety" />
-          <Tab label="Výsledky ankety" />
+          <Tab label="Výsledky ankiet" />
         </Tabs>
 
         <Box sx={{ width: '100%' }}>

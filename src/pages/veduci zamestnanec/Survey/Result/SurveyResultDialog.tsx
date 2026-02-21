@@ -17,16 +17,6 @@ import SurveyResultAnonymGraphs from "./SurveyResultAnonymGraphs";
 import SurveyResultNeanonymGraphs from "./SurveyResultNeanonymGraphs";
 
 
-
-
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-} from "recharts";
-
-
 type SurveyResult = {
   id: string;
   name: string;
@@ -100,8 +90,7 @@ const SurveyResultDialog: React.FC<Props> = ({ open, onClose, survey }) => {
       {/* Popis + typ ankety */}
       <Box sx={{ px: 3, mb: 2 }}>
         {/* Popis ankety */}
-        {isMobile ? (
-          <Box sx={{ mb: 1 }}>
+        <Box sx={{ mb: 1 }}>
             <Button
               size="small"
               onClick={() => setShowInfo(!showInfo)}
@@ -116,17 +105,6 @@ const SurveyResultDialog: React.FC<Props> = ({ open, onClose, survey }) => {
               </Typography>
             </Collapse>
           </Box>
-        ) : (
-          <Box sx={{ mb: 1 }}>
-            <Typography fontWeight="light" sx={{ color: "#888" }}>
-              Popis ankety
-            </Typography>
-
-            <Typography sx={{ mt: 0.5 }}>
-              {survey?.info ?? "Bez popisu"}
-            </Typography>
-          </Box>
-        )}
 
         {/* Typ ankety */}
         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>

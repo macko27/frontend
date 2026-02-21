@@ -1,4 +1,4 @@
-import { Box, Typography, DialogContent } from "@mui/material";
+import { Box, Typography, DialogContent, Divider } from "@mui/material";
 import {
   ResponsiveContainer,
   PieChart,
@@ -9,7 +9,7 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  Rectangle
+  LabelList
 } from "recharts";
 
 const COLORS = ["#66bb6a", "#ffe082", "#ef5350", "#42a5f5"];
@@ -31,24 +31,35 @@ const SurveyResultAnonymGraphs: React.FC<SurveyResultProps> = ({ survey }) => {
         const chartData = options.map((o: any) => ({ name: o.answer, value: o.votes }));
 
         return (
-          <Box key={q.id} sx={{ mb: 5 }}>
-            <Typography fontWeight="bold" sx={{ mb: 2 }}>
-              Otázka {index + 1}: {q.question}
-            </Typography>
+          
+          <Box key={q.id} 
+            sx={{ 
+              mb: 5, 
+              display: "flex", 
+              justifyContent: "center", 
+              alignItems: "center", 
+              flexDirection: "column",
+            }}>
+
+            <Box sx={{ width: "100%", mb: 2 }}>
+              <Typography fontWeight="bold" sx={{ textAlign: "left" }}>
+                Otázka {index + 1}: {q.question}
+              </Typography>
+            </Box>
 
             <Box
               sx={{
                 display: "flex",
                 gap: 3,
-                alignItems: "flex-start",
                 flexDirection: { xs: "column", md: "row" },
+                justifyContent: "center",
+                alignItems: "center",
               }}
             >
 
-
               {/* GRAF PODĽA TYPU OTÁZKY */}
               <Box sx={{ width: 220, height: 220 }}>
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height={220}>
                   {isSingle ? (
                     <PieChart>
                       <Pie
@@ -83,6 +94,12 @@ const SurveyResultAnonymGraphs: React.FC<SurveyResultProps> = ({ survey }) => {
                             fill={COLORS[i % COLORS.length]}
                           />
                         ))}
+                        <LabelList
+                            dataKey="value"
+                            position="right"
+                            formatter={(val) => `${val}`} // alebo `${val}%` ak chceš percentá
+                            style={{ fill: "black", fontWeight: "bold" }}
+                        />
                       </Bar>
                     </BarChart>
                   )}
@@ -90,7 +107,7 @@ const SurveyResultAnonymGraphs: React.FC<SurveyResultProps> = ({ survey }) => {
               </Box>
 
               {/* Legenda */}
-              <Box sx={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", marginTop: 5, marginLeft: 5  }}>
+              <Box sx={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", marginTop: 5, marginLeft: 5 }}>
                 {options.map((o: any, i: number) => {
                   const percent =
                     totalVotes === 0 ? 0 : Math.round((o.votes / totalVotes) * 100);
@@ -123,7 +140,22 @@ const SurveyResultAnonymGraphs: React.FC<SurveyResultProps> = ({ survey }) => {
                   );
                 })}
               </Box>
+
             </Box>
+            
+              {/* Divider medzi otázkami (okrem poslednej) */}
+              {index < survey.questions.length - 1 && (
+                <Divider 
+                  sx={{ 
+                    width: "calc(100% + 32px)", // predpokladám padding 16px na každej strane
+                    marginLeft: "-16px",        // vyrovnáme padding
+                    marginRight: "-16px",
+                    mt: 3,
+                    mb: 3,
+                    borderColor: "grey.400"    // tmavšia farba ak chceš
+                  }} 
+                />
+              )}
           </Box>
         );
       })}
