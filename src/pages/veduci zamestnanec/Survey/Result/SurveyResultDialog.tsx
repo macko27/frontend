@@ -45,6 +45,10 @@ type SurveyResult = {
       answer: string;
       answerType: string;
       votes: number; // 👈 backend musí poslať počet hlasov
+      voters: {
+        userId: string;
+        fullName: string;
+      }
     }[];
   }[];
 };

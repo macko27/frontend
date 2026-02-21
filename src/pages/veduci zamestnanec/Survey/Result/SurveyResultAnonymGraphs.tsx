@@ -3,7 +3,7 @@ import {
   ResponsiveContainer,
   PieChart,
   Pie,
-  Sector,
+  Cell,
   BarChart,
   Bar,
   XAxis,
@@ -46,51 +46,51 @@ const SurveyResultAnonymGraphs: React.FC<SurveyResultProps> = ({ survey }) => {
             >
 
 
-            {/* GRAF PODĽA TYPU OTÁZKY */}
-            <Box sx={{ width: 220, height: 220 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                {isSingle ? (
-                  <PieChart>
-                    <Pie
+              {/* GRAF PODĽA TYPU OTÁZKY */}
+              <Box sx={{ width: 220, height: 220 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  {isSingle ? (
+                    <PieChart>
+                      <Pie
+                        data={chartData}
+                        dataKey="value"
+                        innerRadius={70}
+                        outerRadius={100}
+                        paddingAngle={2}
+                      >
+                        {chartData.map((entry: any, i: number) => (
+                          <Cell
+                            key={i}
+                            fill={COLORS[i % COLORS.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  ) : (
+                    <BarChart
                       data={chartData}
-                      dataKey="value"
-                      innerRadius={70}
-                      outerRadius={100}
-                      paddingAngle={2}
+                      layout="vertical"
+                      margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
                     >
-                      {chartData.map((entry: any, i: number) => (
-                        <Sector
-                          key={i}
-                          fill={COLORS[i % COLORS.length]}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                ) : (
-                  <BarChart
-                    data={chartData}
-                    layout="vertical"
-                    margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
-                  >
-                    <XAxis type="number" />
-                    <YAxis type="category" dataKey="name" />
-                    <Tooltip />
-                    <Bar dataKey="value">
-                      {chartData.map((entry: any, i: number) => (
-                        <Rectangle
-                          key={i}
-                          fill={COLORS[i % COLORS.length]}
-                        />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                )}
-              </ResponsiveContainer>
-            </Box>
+                      <XAxis type="number" hide/>
+                      <YAxis type="category" dataKey="name" hide/>
+                      <Tooltip />
+                      <Bar dataKey="value">
+                        {chartData.map((entry: any, i: number) => (
+                          <Cell
+                            key={i}
+                            fill={COLORS[i % COLORS.length]}
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  )}
+                </ResponsiveContainer>
+              </Box>
 
               {/* Legenda */}
-              <Box sx={{ flex: 1 }}>
+              <Box sx={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", marginTop: 5, marginLeft: 5  }}>
                 {options.map((o: any, i: number) => {
                   const percent =
                     totalVotes === 0 ? 0 : Math.round((o.votes / totalVotes) * 100);
@@ -99,23 +99,26 @@ const SurveyResultAnonymGraphs: React.FC<SurveyResultProps> = ({ survey }) => {
                       key={o.id}
                       sx={{
                         display: "flex",
-                        justifyContent: "space-between",
+                        flexDirection: "row",
                         alignItems: "center",
                         mb: 1.2,
                       }}
                     >
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Box sx={{ display: "flex", alignItems: "center", minWidth: 100 }}>
                         <Box
                           sx={{
                             width: 10,
                             height: 10,
                             borderRadius: "50%",
                             bgcolor: COLORS[i % COLORS.length],
+                            marginRight: 1
                           }}
                         />
-                        <Typography>{o.answer}</Typography>
+                        <Typography>Odpoveď č.{i}</Typography>
                       </Box>
-                      <Typography fontWeight="bold">{percent} %</Typography>
+                      <Box sx={{ ml: 4 }}>
+                        <Typography fontWeight="bold">{percent} %</Typography>
+                      </Box>
                     </Box>
                   );
                 })}

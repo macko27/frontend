@@ -28,17 +28,15 @@ import api from "../../../app/api";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import Collapse from "@mui/material/Collapse";
-import SurveyResultItem from "./Result/SurveyResultItem";
 import SurveyResultDialog from "./Result/SurveyResultDialog";
 
 
-// Local mock type for survey (since backend isn't ready yet)
 type Survey = {
   id: string;
   name: string;
   question: string;
   status: 'Aktívna' | 'Uzavretá';
-  ownerId?: string; // for "Moje ankety" filtering
+  ownerId?: string;
 };
 
 
@@ -308,7 +306,20 @@ const ManageSurveys: React.FC = () => {
               </Button>
             </Box>
           );
+        } else if (tab === 2) {
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', height: '100%' }}>
+              <Button
+                variant="contained"
+                size="small"
+                onClick={() => handleShowVysledky(params.row)}
+              >
+                Evaluácia
+              </Button>
+            </Box>
+          );
         }
+
         return null;
       }
 
@@ -375,49 +386,19 @@ const ManageSurveys: React.FC = () => {
 
           {/* TAB 2 – Výsledky ankety */}
           {tab === 2 && (
-            <Box>
-              {surveys
-                .filter((s) => s.status === "Uzavretá")
-                .map((survey, index) => (
-                  <Box key={survey.id}>
-                    {/* Záhlavie iba nad prvým */}
-                    {index === 0 && !isMobile && (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          px: 2,
-                          py: 1,
-                          bgcolor: "#f0f0f0",
-                          fontWeight: "bold",
-                          borderRadius: 1,
-                          mb: 1,
-                        }}
-                      >
-                        <Typography sx={{ flex: 2, fontSize: 14, color: "GrayText" }}>
-                          Názov
-                        </Typography>
-                        <Typography sx={{ flex: 3, fontSize: 14, color: "GrayText" }}>
-                          Otázka
-                        </Typography>
-                        <Typography sx={{ flex: 1, fontSize: 14, color: "GrayText" }}>
-                          Stav ankety
-                        </Typography>
-                        <Typography sx={{ flex: 1, fontSize: 14, color: "GrayText", textAlign: 'center' }}>
-                          Akcia
-                        </Typography>
-                      </Box>
-                    )}
-
-                    {/* Jeden výsledok */}
-                    <SurveyResultItem
-                      name={survey.name}
-                      question={survey.question}
-                      status={survey.status}
-                      onEvaluate={() => handleShowVysledky(survey)}
-                    />
-                  </Box>
-                ))}
-            </Box>
+            <DataGrid
+              columns={columns}
+              loading={!loaded}
+              rows={surveys.filter((s) => s.status === "Uzavretá")}
+              sx={dataGridStyles}
+              initialState={{
+                pagination: { paginationModel: { pageSize: 10 } }
+              }}
+              pageSizeOptions={[5, 10, 25]}
+              pagination
+              getRowId={(row) => row.id}
+              autoHeight
+            />
           )}
 
 
