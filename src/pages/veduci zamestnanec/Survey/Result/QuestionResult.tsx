@@ -83,7 +83,7 @@ const QuestionResult: React.FC<QuestionResultProps> = ({ question, index }) => {
                   <Tooltip />
                 </PieChart>
               ) : (
-                <BarChart data={chartData} layout="vertical">
+                <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 40, left: 20, bottom: 5 }}>
                   <XAxis type="number" hide />
                   <YAxis type="category" dataKey="name" hide />
                   <Tooltip />

@@ -6,22 +6,18 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 type SurveyFilterPopoverProps = {
   filterActive: boolean;
   filterClosed: boolean;
-  filterCancelled: boolean;
   filterInactive: boolean;
   setFilterActive: (value: boolean) => void;
   setFilterClosed: (value: boolean) => void;
-  setFilterCancelled: (value: boolean) => void;
   setFilterInactive: (value: boolean) => void;
 };
 
 const SurveyFilterPopover: React.FC<SurveyFilterPopoverProps> = ({
   filterActive,
   filterClosed,
-  filterCancelled,
   filterInactive,
   setFilterActive,
   setFilterClosed,
-  setFilterCancelled,
   setFilterInactive
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -86,26 +82,15 @@ const SurveyFilterPopover: React.FC<SurveyFilterPopoverProps> = ({
             />
 
             <FormControlLabel
-                control={
-                    <Checkbox
-                        color="info"
-                        checked={filterCancelled}
-                        onChange={(e) => setFilterCancelled(e.target.checked)}
-                    />
-                }
-                label="Zrušené ankety"
+            control={
+                <Checkbox
+                color="info"
+                checked={filterInactive}
+                onChange={(e) => setFilterInactive(e.target.checked)}
                 />
-
-                <FormControlLabel
-                control={
-                    <Checkbox
-                    color="info"
-                    checked={filterInactive}
-                    onChange={(e) => setFilterInactive(e.target.checked)}
-                    />
-                }
-                label="Neaktívne ankety"
-                />
+            }
+            label="Neaktívne ankety"
+            />
 
             <Button
                 variant="contained"

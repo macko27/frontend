@@ -39,7 +39,7 @@ type Survey = {
   id: string;
   name: string;
   question: string;
-  status: 'Aktívna' | 'Uzavretá' | 'Zrušená' | 'Neaktívna';
+  status: 'Aktívna' | 'Uzavretá' | 'Neaktívna';
   ownerId?: string;
 };
 
@@ -96,7 +96,6 @@ const ManageSurveys: React.FC = () => {
 
   const [filterActive, setFilterActive] = useState(true);
   const [filterClosed, setFilterClosed] = useState(true);
-  const [filterCancelled, setFilterCancelled] = useState(true);
   const [filterInactive, setFilterInactive] = useState(true);
 
   const formatDateTime = (dateStr?: string) => {
@@ -255,11 +254,10 @@ const ManageSurveys: React.FC = () => {
   };
 
 
-  const getFilteredSurveys = (surveysList: Survey[], active: boolean, closed: boolean, cancelled: boolean, inactive: boolean) => {
+  const getFilteredSurveys = (surveysList: Survey[], active: boolean, closed: boolean, inactive: boolean) => {
     return surveysList.filter((s) => {
       if (!active && s.status === "Aktívna") return false;
       if (!closed && s.status === "Uzavretá") return false;
-      if (!cancelled && s.status === "Zrušená") return false;
       if (!inactive && s.status === "Neaktívna") return false;
       return true;
     });
@@ -377,11 +375,9 @@ const ManageSurveys: React.FC = () => {
           <SurveyFilterPopover
             filterActive={filterActive}
             filterClosed={filterClosed}
-            filterCancelled={filterCancelled}
             filterInactive={filterInactive}
             setFilterActive={setFilterActive}
             setFilterClosed={setFilterClosed}
-            setFilterCancelled={setFilterCancelled}
             setFilterInactive={setFilterInactive}
           />
         </Box>
@@ -394,7 +390,7 @@ const ManageSurveys: React.FC = () => {
             <DataGrid
               columns={columns}
               loading={!loaded}
-              rows={getFilteredSurveys(surveys, filterActive, filterClosed, filterCancelled, filterInactive)}
+              rows={getFilteredSurveys(surveys, filterActive, filterClosed, filterInactive)}
               sx={dataGridStyles}
               initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
               pageSizeOptions={[5, 10, 25]}
@@ -409,7 +405,7 @@ const ManageSurveys: React.FC = () => {
             <DataGrid
               columns={columns}
               loading={!loaded}
-              rows={getFilteredSurveys(surveys, filterActive, filterClosed, filterCancelled, filterInactive)}
+              rows={getFilteredSurveys(surveys, filterActive, filterClosed, filterInactive)}
               sx={dataGridStyles}
               initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
               pageSizeOptions={[5, 10, 25]}
@@ -424,7 +420,7 @@ const ManageSurveys: React.FC = () => {
             <DataGrid
               columns={columns}
               loading={!loaded}
-              rows={getFilteredSurveys(surveys, filterActive, filterClosed, filterCancelled, filterInactive).filter(
+              rows={getFilteredSurveys(surveys, filterActive, filterClosed, filterInactive).filter(
                 (s) => s.status === "Uzavretá"
               )}
               sx={dataGridStyles}
