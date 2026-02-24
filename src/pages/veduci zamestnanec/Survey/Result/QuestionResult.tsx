@@ -115,7 +115,12 @@ const QuestionResult: React.FC<QuestionResultProps> = ({ question, index }) => {
               return (
                 <Box
                   key={o.id}
-                  sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 3 }}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    width: "100%",
+                    gap: 2,
+                  }}
                 >
                   <Box
                     sx={{
@@ -123,23 +128,38 @@ const QuestionResult: React.FC<QuestionResultProps> = ({ question, index }) => {
                       height: 10,
                       borderRadius: "50%",
                       bgcolor: COLORS[i % COLORS.length],
+                      flexShrink: 0,
                     }}
                   />
 
-                  <Typography>Odpoveď č.{i + 1}</Typography>
+                  <Typography sx={{ width: 120 }}>
+                    Odpoveď č.{i + 1}
+                  </Typography>
 
-                  <Typography fontWeight="bold">{percent} %</Typography>
+                  <Box sx={{ width: 50, textAlign: "right" }}>
+                    {isSingle && (
+                      <Typography fontWeight="bold">
+                        {percent} %
+                      </Typography>
+                    )}
+                  </Box>
 
-                  <Button
-                    variant="contained"
-                    color="info"
-                    size="small"
-                    onClick={() => setSelectedOption({ option: o, index: i })}
-                    sx={{ textTransform: "none" }}
-                  >
-                    Zobraziť hlasujúcich
-                  </Button>
+                  <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "flex-end" }}>
+                    <Button
+                      variant="contained"
+                      color="info"
+                      size="small"
+                      onClick={() => {
+                        setSelectedOption({ option: o, index: i });
+                        setPageIndex(0); // reset stránkovania
+                      }}
+                      sx={{ textTransform: "none" }}
+                    >
+                      Zobraziť hlasujúcich
+                    </Button>
+                  </Box>
                 </Box>
+
               );
             })}
           </Box>

@@ -131,11 +131,16 @@ const SurveyResultAnonymGraphs: React.FC<SurveyResultProps> = ({ survey }) => {
                             marginRight: 1
                           }}
                         />
-                        <Typography>Odpoveď č.{i}</Typography>
+                        <Typography>Odpoveď č.{i+1}</Typography>
                       </Box>
-                      <Box sx={{ ml: 4 }}>
-                        <Typography fontWeight="bold">{percent} %</Typography>
-                      </Box>
+
+                      {isSingle && ( 
+                        <Box sx={{ ml: 4 }}>
+                          <Typography fontWeight="bold">{percent} %</Typography>
+                        </Box>
+                      )}
+
+                      
                     </Box>
                   );
                 })}
