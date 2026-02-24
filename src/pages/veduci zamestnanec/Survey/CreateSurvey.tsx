@@ -13,6 +13,10 @@ import { QuestionProps } from "../../../types/Survey/QuestionProps";
 import SurveyQuestion from "./SurveyQuestion";
 import SurveyTypeSelector from "./SurveyTypeSelector";
 import { useAuth } from "../../../hooks/AuthProvider";
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
 
 type Question = {
   id: string;
@@ -363,42 +367,42 @@ const CreateSurvey: React.FC = () => {
             >
               {/* Dátum začatia ankety */}
               <Box sx={{ flex: 1 }}>
-                <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '8px', fontWeight: 500 }}>
-                  Dátum začatia ankety <span style={{ color: 'red' }}>*</span>
-                </label>
-                <input
-                  type="datetime-local"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    fontSize: '14px',
-                    border: '1px solid #ccc',
-                    borderRadius: '4px',
-                    boxSizing: 'border-box',
-                  }}
-                />
+
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DateTimePicker
+                    label="Dátum začatia ankety"
+                    value={dayjs(startDate)}
+                    onChange={(newValue) => {
+                      if (newValue) {
+                        setStartDate(newValue.format('YYYY-MM-DDTHH:mm'));
+                      }
+                    }}
+                    slotProps={{
+                      textField: { fullWidth: true }
+                    }}
+                  />
+                </LocalizationProvider>
+
               </Box>
 
               {/* Dátum ukončenia ankety */}
               <Box sx={{ flex: 1 }}>
-                <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '8px', fontWeight: 500 }}>
-                  Dátum ukončenia ankety <span style={{ color: 'red' }}>*</span>
-                </label>
-                <input
-                  type="datetime-local"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    fontSize: '14px',
-                    border: '1px solid #ccc',
-                    borderRadius: '4px',
-                    boxSizing: 'border-box',
-                  }}
-                />
+
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DateTimePicker
+                    label="Dátum ukončenia ankety"
+                    value={dayjs(endDate)}
+                    onChange={(newValue) => {
+                      if (newValue) {
+                        setEndDate(newValue.format('YYYY-MM-DDTHH:mm'));
+                      }
+                    }}
+                    slotProps={{
+                      textField: { fullWidth: true }
+                    }}
+                  />
+                </LocalizationProvider>
+
               </Box>
             </Box>
 
