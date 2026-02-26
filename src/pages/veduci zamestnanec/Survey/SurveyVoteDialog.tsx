@@ -12,6 +12,9 @@ import {
 } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(utc);
 
 type Props = {
   open: boolean;
@@ -27,14 +30,9 @@ const SurveyVoteDialog: React.FC<Props> = ({ open, onClose, survey }) => {
 
   const formatDateTime = (dateStr?: string) => {
     if (!dateStr) return "-";
-    const date = new Date(dateStr);
-    return date.toLocaleString("sk-SK", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+
+    // dayjs interpretuje dátum ako UTC a potom ho konvertuje do lokálneho času používateľa
+    return dayjs.utc(dateStr).local().format('DD.MM.YYYY HH:mm');
   };
 
   return (

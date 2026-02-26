@@ -46,14 +46,8 @@ const CreateSurvey: React.FC = () => {
     message: '',
     type: 'success'
   });
-  const [endDate, setEndDate] = useState<string>(() => {
-    const today = new Date();
-    return today.toISOString().slice(0,16);
-  });
-  const [startDate, setStartDate] = useState<string>(() => {
-    const today = new Date();
-    return today.toISOString().slice(0,16);
-  });
+  const [startDate, setStartDate] = useState<dayjs.Dayjs | null>(dayjs());
+  const [endDate, setEndDate] = useState<dayjs.Dayjs | null>(dayjs());
   const [creator, setCreator] = useState<EmployeeCard | null>(null);
   const { openSnackbar } = useSnackbar();
   const nav = useNavigate();
@@ -140,22 +134,17 @@ const CreateSurvey: React.FC = () => {
       return;
     }
 
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const today = new Date();
-    today.setHours(0,0,0,0); 
-
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    if (!startDate?.isValid() || !endDate?.isValid()) {
       openSnackbar("Neplatný formát dátumov", "error");
       return;
     }
 
-    if (start < today) {
-      openSnackbar("Dátum začiatku ankety nemôže byť pred dnešným dňom", "error");
+    if (startDate.isBefore(dayjs(), 'minute')) {
+      openSnackbar("Dátum začiatku ankety nemôže byť v minulosti", "error");
       return;
     }
 
-    if (end < start) {
+    if (endDate.isBefore(startDate)) {
       openSnackbar("Dátum ukončenia musí byť po dátume začiatku", "error");
       return;
     }
@@ -201,8 +190,8 @@ const CreateSurvey: React.FC = () => {
       info: surveyInfo.trim(),
       status: 0,
       createdById: creator.employeeId,
-      start: startDate,
-      end: endDate,
+      start: startDate?.toDate().toISOString(),
+      end: endDate?.toDate().toISOString(),
       surveyType,
       recipients,
       questions: validQuestions,
@@ -372,11 +361,7 @@ const CreateSurvey: React.FC = () => {
                   <DateTimePicker
                     label="Dátum začatia ankety"
                     value={dayjs(startDate)}
-                    onChange={(newValue) => {
-                      if (newValue) {
-                        setStartDate(newValue.format('YYYY-MM-DDTHH:mm'));
-                      }
-                    }}
+                    onChange={(newValue) => setStartDate(newValue)}
                     slotProps={{
                       textField: { fullWidth: true }
                     }}
@@ -392,11 +377,7 @@ const CreateSurvey: React.FC = () => {
                   <DateTimePicker
                     label="Dátum ukončenia ankety"
                     value={dayjs(endDate)}
-                    onChange={(newValue) => {
-                      if (newValue) {
-                        setEndDate(newValue.format('YYYY-MM-DDTHH:mm'));
-                      }
-                    }}
+                    onChange={(newValue) => setEndDate(newValue)}
                     slotProps={{
                       textField: { fullWidth: true }
                     }}
@@ -434,12 +415,10 @@ const CreateSurvey: React.FC = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <span>Trvanie ankety:</span>
                 <span>
-                  {Math.max(
-                    0,
-                    Math.ceil(
-                      (new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)
-                    ) + 1
-                  )} dni
+                  {startDate && endDate
+                    ? Math.max(0, endDate.startOf('day').diff(startDate.startOf('day'), 'day') + 1)
+                    : 0
+                  } dni
                 </span>
               </div>
 

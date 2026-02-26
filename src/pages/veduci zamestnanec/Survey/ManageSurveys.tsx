@@ -33,6 +33,9 @@ import { useTheme } from "@mui/material/styles";
 import Collapse from "@mui/material/Collapse";
 import SurveyResultDialog from "./Result/SurveyResultDialog";
 import SurveyFilterPopover from './SurveyFilterPopover';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(utc);
 
 
 type Survey = {
@@ -100,14 +103,9 @@ const ManageSurveys: React.FC = () => {
 
   const formatDateTime = (dateStr?: string) => {
     if (!dateStr) return "-";
-    const date = new Date(dateStr);
-    return date.toLocaleString('sk-SK', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+
+    // dayjs interpretuje dátum ako UTC a potom ho konvertuje do lokálneho času používateľa
+    return dayjs.utc(dateStr).local().format('DD.MM.YYYY HH:mm');
   };
 
   const handleDeleteClick = (id: string) => {
