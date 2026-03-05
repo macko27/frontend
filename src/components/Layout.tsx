@@ -36,6 +36,7 @@ import api from "../app/api";
 import NotificationResponse from "../types/responses/NotificationResponse";
 import { useNotifications } from "../hooks/NotificationContext";
 import { SignalRContext } from "../hooks/signalRConnection";
+import { useTheme } from "@mui/material/styles";
 
 const drawerWidth = 240;
 
@@ -57,6 +58,7 @@ const Layout: React.FC<LayoutProps> = ({ children, fullWidth = false }) => {
     const nav = useNavigate();
     const { notifications, addNotification, setNotifications } = useNotifications();
     const { connection } = useContext(SignalRContext);
+    const theme = useTheme()
 
     const toggleDrawer = () => {
         if (!isClosing) {
@@ -314,25 +316,25 @@ const Layout: React.FC<LayoutProps> = ({ children, fullWidth = false }) => {
                                 </ListItemText>
 
                                 <MenuItem onClick={() => nav("/profile")}>
-                                    <ListItemIcon>
+                                    <ListItemIcon sx={{ color: "black" }}>
                                         <PersonIcon fontSize="small" />
                                     </ListItemIcon>
                                     <ListItemText>Profil</ListItemText>
                                 </MenuItem>
                                 <MenuItem onClick={() => nav("/settings")}>
-                                    <ListItemIcon>
+                                    <ListItemIcon sx={{ color: "black" }}>
                                         <SettingsIcon fontSize="small" />
                                     </ListItemIcon>
                                     <ListItemText>Nastavenia</ListItemText>
                                 </MenuItem>
                                 <MenuItem onClick={() => nav("/passwordChange")}>
-                                    <ListItemIcon>
+                                    <ListItemIcon sx={{ color: "black" }}>
                                         <HttpsIcon fontSize="small" />
                                     </ListItemIcon>
                                     <ListItemText>Zmena hesla</ListItemText>
                                 </MenuItem>
                                 <MenuItem onClick={handleLogout}>
-                                    <ListItemIcon>
+                                    <ListItemIcon sx={{ color: "black" }}>
                                         <LogoutIcon fontSize="small" />
                                     </ListItemIcon>
                                     <ListItemText>Odhlásiť</ListItemText>
@@ -351,7 +353,8 @@ const Layout: React.FC<LayoutProps> = ({ children, fullWidth = false }) => {
                 ModalProps={{ keepMounted: true }}
                 PaperProps={{
                     sx: {
-                        backgroundColor: "#FFD6B8",
+                        backgroundColor: theme.palette.drawerBg,
+                        //backgroundColor: "#FFD6B8",
                     },
                 }}
                 sx={{
@@ -375,7 +378,7 @@ const Layout: React.FC<LayoutProps> = ({ children, fullWidth = false }) => {
                                             : handleOpenModal(item.component, item.label)
                                     }
                                 >
-                                    <ListItemButton>
+                                    <ListItemButton sx={{ color: "black" }}>
                                         <ListItemText primary={item.label} />
                                     </ListItemButton>
                                 </ListItem>

@@ -12,6 +12,7 @@ import UnarchiveIcon from '@mui/icons-material/Unarchive';
 import moment from "moment";
 import useLoading from "../../../hooks/LoadingData";
 import { useSnackbar } from "../../../hooks/SnackBarContext";
+import { useTheme } from "@mui/material/styles";
 
 
 const ManageLocations: React.FC = () => {
@@ -24,6 +25,7 @@ const ManageLocations: React.FC = () => {
     const [refresh, setRefresh] = useState(false);
     const [loaded, setLoaded] = useState(false);
     const { openSnackbar } = useSnackbar();
+    const theme = useTheme()
 
     useEffect(() => {
         api.get("/Location/Locations")
@@ -227,7 +229,7 @@ const ManageLocations: React.FC = () => {
                         getRowClassName={(params) => 
                             params.row.archived ? 'archived-row' : ''
                         }
-                        sx={dataGridStyles}
+                        sx={dataGridStyles(theme)}
                         initialState={{
                             pagination: {
                                 paginationModel: {

@@ -1,21 +1,19 @@
-import React, { useState } from "react";
+import React from "react";
+import { Box, TextField, Button, MenuItem, Select, InputLabel, FormControl, Typography } from "@mui/material";
+import { Answer } from '../../../types/Survey/Answer';
 
-type Answer = {
-  id: string;
-  text: string;
-};
 
-export type QuestionProps = {
-  id: string;
-  text: string;
-  answers: Answer[];
-  answerType: 'single' | 'multiple';
-  onChangeQuestion: (id: string, text: string) => void;
-  onAddAnswer: (questionId: string) => void;
-  onRemoveAnswer: (questionId: string, answerId: string) => void;
-  onChangeAnswer: (questionId: string, answerId: string, text: string) => void;
-  onRemoveQuestion: (questionId: string) => void;
-  onChangeAnswerType: (questionId: string, type: 'single' | 'multiple') => void;
+export type QuestionProps = { 
+  id: string; 
+  text: string; 
+  answers: Answer[]; 
+  answerType: 'single' | 'multiple'; 
+  onChangeQuestion: (id: string, text: string) => void; 
+  onAddAnswer: (questionId: string) => void; 
+  onRemoveAnswer: (questionId: string, answerId: string) => void; 
+  onChangeAnswer: (questionId: string, answerId: string, text: string) => void; 
+  onRemoveQuestion: (questionId: string) => void; 
+  onChangeAnswerType: (questionId: string, type: 'single' | 'multiple') => void; 
 };
 
 const SurveyQuestion: React.FC<QuestionProps> = ({
@@ -32,108 +30,92 @@ const SurveyQuestion: React.FC<QuestionProps> = ({
 }) => {
 
   return (
-    <div style={{ display: 'flex', marginBottom: '24px', border: '1px solid #ddd', padding: '12px', borderRadius: '4px', width: '100%', flexDirection: 'column' }}>
-
+    <Box 
+      sx={{
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: 2, 
+        mb: 3, 
+        p: 2, 
+        border: '1px solid', 
+        borderColor: 'divider', 
+        borderRadius: 2,
+        bgcolor: 'background.paper'
+      }}
+    >
       {/* Hlavička otázky: label + select */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-        <span style={{ fontSize: '14px', fontWeight: 500 }}>Otázka</span>
-        <select
-          value={answerType}
-          onChange={(e) => onChangeAnswerType(id, e.target.value as 'single' | 'multiple')}
-          style={{ padding: '4px 8px', fontSize: '14px', border: '1px solid #ccc' }}
-        >
-          <option value="single">Iba jedna odpoveď</option>
-          <option value="multiple">Viac odpovedí</option>
-        </select>
-      </div>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="subtitle2">Otázka</Typography>
+        <FormControl size="small" sx={{ minWidth: 180 }}>
+          <InputLabel id={`answer-type-label-${id}`}>Typ odpovede</InputLabel>
+          <Select
+            labelId={`answer-type-label-${id}`}
+            value={answerType}
+            label="Typ odpovede"
+            onChange={(e) => onChangeAnswerType(id, e.target.value as 'single' | 'multiple')}
+          >
+            <MenuItem value="single">Iba jedna odpoveď</MenuItem>
+            <MenuItem value="multiple">Viac odpovedí</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
 
       {/* Otázka */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-        <textarea
-          placeholder="Zadajte otázku"
+      <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+        <TextField
+          label="Zadajte otázku"
           value={text}
           onChange={(e) => onChangeQuestion(id, e.target.value)}
-          rows={6}
-          style={{
-            flex: 1,
-            padding: '8px 12px',
-            fontSize: '14px',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-            boxSizing: 'border-box',
-            fontFamily: 'inherit',
-            resize: 'vertical'
-          }}
+          multiline
+          minRows={3}
+          fullWidth
+          variant="outlined"
         />
-        <button
+        <Button
           onClick={() => onRemoveQuestion(id)}
-          style={{
-            padding: '8px 12px',
-            backgroundColor: '#f44336',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '14px'
-          }}
+          variant="contained"
+          color="error"
+          sx={{ height: 'fit-content' }}
         >
           🗑️
-        </button>
-      </div>
+        </Button>
+      </Box>
 
       {/* Odpovede */}
-      {answers.map((a, index) => (
-        <div key={a.id} style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
-          <span style={{ minWidth: '100px', fontSize: '14px' }}>Odpoveď č. {index + 1}</span>
-          <input
-            type="text"
+      {answers.map((a: Answer, index: number) => (
+        <Box key={a.id} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <Typography sx={{ minWidth: 100 }}>Odpoveď č. {index + 1}</Typography>
+          <TextField
             value={a.text}
             onChange={(e) => onChangeAnswer(id, a.id, e.target.value)}
-            style={{
-              flex: 1,
-              padding: '8px 12px',
-              fontSize: '14px',
-              border: '1px solid #ccc',
-              borderRadius: '4px',
-              boxSizing: 'border-box'
-            }}
+            fullWidth
+            variant="outlined"
+            size="small"
           />
-          <button
+          <Button
             onClick={() => onRemoveAnswer(id, a.id)}
             disabled={answers.length <= 1}
-            style={{
-              padding: '8px 12px',
-              backgroundColor: answers.length <= 1 ? '#ccc' : '#f44336',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: answers.length <= 1 ? 'not-allowed' : 'pointer',
-              fontSize: '14px'
-            }}
+            variant="contained"
+            color="error"
+            sx={{ height: 'fit-content' }}
           >
             🗑️
-          </button>
-        </div>
+          </Button>
+        </Box>
       ))}
 
       {/* Pridať odpoveď */}
       {answers.length < 6 && (
-        <button
+        <Button
           onClick={() => onAddAnswer(id)}
-          style={{
-            marginTop: '4px',
-            padding: '6px 12px',
-            backgroundColor: 'transparent',
-            color: '#1976d2',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '14px'
-          }}
+          variant="text"
+          color="primary"
+          sx={{ alignSelf: 'flex-start', textTransform: 'none' }}
         >
           + Pridať odpoveď
-        </button>
+        </Button>
       )}
-    </div>
+    </Box>
   );
 };
 

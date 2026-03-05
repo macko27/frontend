@@ -21,6 +21,8 @@ import EmployeeCardDialog from "./EmployeCardDialog";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { dataGridStyles } from "../../../styles/gridStyle";
 import { useSnackbar } from "../../../hooks/SnackBarContext";
+import { useTheme } from "@mui/material/styles";
+
 
 const ManageUsers: React.FC = () => {
     const [userRows, setUserRows] = useState<UserProfile[] | null>(null);
@@ -31,6 +33,7 @@ const ManageUsers: React.FC = () => {
     const [refresh, setRefresh] = useState(false);
     const nav = useNavigate();
     const { openSnackbar } = useSnackbar();
+    const theme = useTheme()
 
     useEffect(() => {
         api.get<UserProfile[]>("/User/Users")
@@ -197,7 +200,7 @@ const ManageUsers: React.FC = () => {
                         onRowDoubleClick={(params) => handleEdit(params)}
                         isRowSelectable={(params) => params.id === "name"} // Allow only the first column to be selectable
                         getRowClassName={(params) => (params.row.deactivated ? "archived-row" : "")}
-                        sx={dataGridStyles}
+                        sx={dataGridStyles(theme)}
                         initialState={{
                             pagination: {
                                 paginationModel: {

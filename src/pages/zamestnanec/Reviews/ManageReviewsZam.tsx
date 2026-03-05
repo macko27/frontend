@@ -9,6 +9,7 @@ import { Review } from "../../../types/Review";
 import { useAuth } from "../../../hooks/AuthProvider";
 import { dataGridStyles } from "../../../styles/gridStyle";
 import { useSnackbar } from "../../../hooks/SnackBarContext";
+import { useTheme } from "@mui/material/styles";
 
 const ManageReviewsZam: React.FC = () => {
     const [reviewRows, setReviewRows] = useState<Review[]>([]);
@@ -19,6 +20,7 @@ const ManageReviewsZam: React.FC = () => {
     const { userProfile, setUserProfile, setRefresh, refresh } = useAuth();
     const [loading,setLoading] = useState(true);
     const {openSnackbar} = useSnackbar();
+    const theme = useTheme()
 
     const nav = useNavigate();
 
@@ -147,7 +149,7 @@ const ManageReviewsZam: React.FC = () => {
                         getRowClassName={(params) => {
                             return params.row.completedAt === null ? "notReaded-row" : "";
                         }} 
-                        sx={dataGridStyles}
+                        sx={dataGridStyles(theme)}
                     />
                 </Box>
             </Box>

@@ -389,7 +389,7 @@ const ManageSurveys: React.FC = () => {
               columns={columns}
               loading={!loaded}
               rows={getFilteredSurveys(surveys, filterActive, filterClosed, filterInactive)}
-              sx={dataGridStyles}
+              sx={dataGridStyles(theme)}
               initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
               pageSizeOptions={[5, 10, 25]}
               pagination
@@ -404,7 +404,7 @@ const ManageSurveys: React.FC = () => {
               columns={columns}
               loading={!loaded}
               rows={getFilteredSurveys(surveys, filterActive, filterClosed, filterInactive)}
-              sx={dataGridStyles}
+              sx={dataGridStyles(theme)}
               initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
               pageSizeOptions={[5, 10, 25]}
               pagination
@@ -421,7 +421,7 @@ const ManageSurveys: React.FC = () => {
               rows={getFilteredSurveys(surveys, filterActive, filterClosed, filterInactive).filter(
                 (s) => s.status === "Uzavretá"
               )}
-              sx={dataGridStyles}
+              sx={dataGridStyles(theme)}
               initialState={{
                 pagination: { paginationModel: { pageSize: 10 } }
               }}
@@ -576,7 +576,7 @@ const ManageSurveys: React.FC = () => {
                   </Button>
 
                   <Collapse in={showInfo}>
-                    <Typography sx={{ mt: 1, color: "#444" }}>
+                    <Typography sx={{ mt: 1, color: theme.palette.text.primary }}>
                       {voteSurvey?.info ?? "Bez popisu"}
                     </Typography>
                   </Collapse>

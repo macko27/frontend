@@ -10,6 +10,8 @@ import ArchiveIcon from '@mui/icons-material/Archive';
 import UnarchiveIcon from '@mui/icons-material/Unarchive';
 import { dataGridStyles } from "../../../styles/gridStyle"; 
 import useLoading from "../../../hooks/LoadingData";
+import { useTheme } from "@mui/material/styles";
+
 
 const ManageJobPositions: React.FC = () => {
     const [jobRows, setJobRows] = useState<JobPosition[] | null>(null);
@@ -18,6 +20,7 @@ const ManageJobPositions: React.FC = () => {
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [text, setText] = useState<string>("");
     const nav = useNavigate();
+    const theme = useTheme()
     
     useEffect(() => {
         api.get("/JobPosition/GetAll") // Adjust endpoint to fetch job positions
@@ -213,7 +216,7 @@ const ManageJobPositions: React.FC = () => {
                         getRowClassName={(params) =>
                             params.row.archived ? 'archived-row' : ''
                         }
-                        sx={dataGridStyles}
+                        sx={dataGridStyles(theme)}
                         initialState={{
                             pagination: {
                                 paginationModel: {

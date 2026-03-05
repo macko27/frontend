@@ -54,7 +54,12 @@ import MyAdaptation from "../pages/zamestnanec/MyAdaptation";
 import ManageSurveys from "../pages/veduci zamestnanec/Survey/ManageSurveys";
 import CreateSurvey from "../pages/veduci zamestnanec/Survey/CreateSurvey";
 
-const App: React.FC = () => {
+type AppProps = {
+    toggleTheme: () => void;
+    mode: "light" | "dark";
+};
+
+const App: React.FC<AppProps> = ({ toggleTheme, mode }) => {
     const auth = useAuth();
 
     return (
@@ -72,7 +77,7 @@ const App: React.FC = () => {
                             <Route element={<RequiresAuth />}>
                                 <Route path="/home" element={<HomePage />} />
                                 <Route path="/profile" element={<Profile />} />
-                                <Route path="/settings" element={<Settings />} />
+                                <Route path="/settings" element={<Settings toggleTheme={toggleTheme} mode={mode} />} />
                                 <Route path="/passwordChange" element={<PasswordChange />} />
                                 <Route path="/notifications" element={<NotificationsPage />} />
                                 {/* Role protected routes */}

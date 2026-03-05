@@ -11,7 +11,7 @@ import { Review } from "../../../types/Review";
 import { EmployeeCard } from "../../../types/EmployeeCard";
 import { dataGridStyles } from "../../../styles/gridStyle";
 import { useSnackbar } from "../../../hooks/SnackBarContext";
-
+import { useTheme } from "@mui/material/styles";
 
 const ManageReviews: React.FC = () => {
     const [reviewRows, setReviewRows] = useState<Review[]>([]);
@@ -24,6 +24,7 @@ const ManageReviews: React.FC = () => {
     const [openEmployeesModal, setOpenEmployeesModal] = useState(false); 
     const [loaded,setLoaded] = useState(false);
     const { openSnackbar } = useSnackbar();
+    const theme = useTheme()
 
     const nav = useNavigate();
 
@@ -219,7 +220,7 @@ const ManageReviews: React.FC = () => {
                         getRowClassName={(params) => {
                             return params.row.completedAt === null ? "notReaded-row" : "";
                         }}                        
-                        sx={dataGridStyles}
+                        sx={dataGridStyles(theme)}
                     />
                 </Box>
 

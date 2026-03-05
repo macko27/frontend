@@ -11,6 +11,8 @@ import {
   Tooltip,
   LabelList
 } from "recharts";
+import { useTheme } from "@mui/material/styles";
+
 
 const COLORS = ["#66bb6a", "#ffe082", "#ef5350", "#42a5f5"];
 
@@ -19,6 +21,8 @@ interface SurveyResultProps {
 }
 
 const SurveyResultAnonymGraphs: React.FC<SurveyResultProps> = ({ survey }) => {
+  const theme = useTheme();
+  
   return (
     <DialogContent sx={{ pt: 2 }}>
       {survey?.questions?.map((q: any, index: number) => {
@@ -98,7 +102,7 @@ const SurveyResultAnonymGraphs: React.FC<SurveyResultProps> = ({ survey }) => {
                             dataKey="value"
                             position="right"
                             formatter={(val) => `${val}`} // alebo `${val}%` ak chceš percentá
-                            style={{ fill: "black", fontWeight: "bold" }}
+                            style={{ fill: theme.palette.text.primary, fontWeight: "bold" }}
                         />
                       </Bar>
                     </BarChart>

@@ -12,6 +12,7 @@ import {
   Tooltip,
   LabelList
 } from "recharts";
+import { useTheme } from "@mui/material/styles";
 
 interface QuestionResultProps {
   question: any;
@@ -21,6 +22,8 @@ interface QuestionResultProps {
 const COLORS = ["#66bb6a", "#ffe082", "#ef5350", "#42a5f5"];
 {/* komponent pre zobrazenie vsetkych mien ktorí hlasovali v neanonymnej ankete*/}
 const QuestionResult: React.FC<QuestionResultProps> = ({ question, index }) => {
+  const theme = useTheme();
+
   const [selectedOption, setSelectedOption] = useState<{
     option: any;
     index: number;
@@ -95,7 +98,7 @@ const QuestionResult: React.FC<QuestionResultProps> = ({ question, index }) => {
                         dataKey="value"
                         position="right"
                         formatter={(val) => `${val}`} // alebo `${val}%` ak chceš percentá
-                        style={{ fill: "black", fontWeight: "bold" }}
+                        style={{ fill: theme.palette.text.primary, fontWeight: "bold" }}
                     />
                   </Bar>
 

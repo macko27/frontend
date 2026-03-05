@@ -256,19 +256,13 @@ const CreateSurvey: React.FC = () => {
             <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '8px', fontWeight: 500 }}>
                 Názov ankety <span style={{ color: 'red' }}>*</span>
             </label>
-            <input
-                type="text"
+            <TextField
                 placeholder="Anketa na zistenie spokojnosti"
                 value={surveyName}
                 onChange={(e) => setSurveyName(e.target.value)}
-                style={{
-                width: '100%',
-                padding: '8px 12px',
-                fontSize: '14px',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                boxSizing: 'border-box'
-                }}
+                fullWidth
+                required
+                variant="outlined"
             />
             </div>
 
@@ -277,19 +271,14 @@ const CreateSurvey: React.FC = () => {
             <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '8px', fontWeight: 500 }}>
                 Popis ankety <span style={{ color: 'red' }}>*</span>
             </label>
-            <input
-                type="text"
+            <TextField
+                label="Popis ankety"
                 placeholder="textový input (dôvod ankety)"
                 value={surveyInfo}
                 onChange={(e) => setSurveyInfo(e.target.value)}
-                style={{
-                width: '100%',
-                padding: '8px 12px',
-                fontSize: '14px',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                boxSizing: 'border-box'
-                }}
+                fullWidth
+                required
+                variant="outlined"
             />
             </div>
 
@@ -389,44 +378,28 @@ const CreateSurvey: React.FC = () => {
 
 
 
-            {/* Zhrnutie ankety */}
-            <div
-              style={{
-                border: '1px solid #ddd',
-                borderRadius: '8px',
-                padding: '16px',
-                marginBottom: '24px',
-                backgroundColor: '#f9f9f9',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-              }}
-            >
-              <h3 style={{ margin: '0 0 12px 0' }}>Zhrnutie ankety</h3>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span>Celkový počet príjemcov:</span>
-                <span>{recipients.length}</span>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span>Počet otázok:</span>
-                <span>{questions.length}</span>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span>Trvanie ankety:</span>
-                <span>
-                  {startDate && endDate
-                    ? Math.max(0, endDate.startOf('day').diff(startDate.startOf('day'), 'day') + 1)
-                    : 0
-                  } dni
-                </span>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Typ ankety:</span>
-                <span>{surveyType === 'anonymous' ? 'Anonymná' : 'Neanonymná'}</span>
-              </div>
-            </div>
+             {/* Zhrnutie ankety */}
+              <Box sx={{ border: '1px solid #ddd', borderRadius: 2, p: 2, mb: 3, bgcolor: 'background.paper', boxShadow: 1 }}>
+                <Typography variant="h6" sx={{ mb: 1 }}>Zhrnutie ankety</Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                  <Typography>Celkový počet príjemcov:</Typography>
+                  <Typography>{recipients.length}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                  <Typography>Počet otázok:</Typography>
+                  <Typography>{questions.length}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                  <Typography>Trvanie ankety:</Typography>
+                  <Typography>
+                    {startDate && endDate ? Math.max(0, endDate.startOf('day').diff(startDate.startOf('day'), 'day') + 1) : 0} dni
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography>Typ ankety:</Typography>
+                  <Typography>{surveyType === 'anonymous' ? 'Anonymná' : 'Neanonymná'}</Typography>
+                </Box>
+              </Box>
 
             
             {/* Tlačidlá */}

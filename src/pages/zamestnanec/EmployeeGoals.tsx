@@ -16,6 +16,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../hooks/AuthProvider";
 import GoalEditDialog from "../../components/GoalEditDialog";
 import { dataGridStyles } from "../../styles/gridStyle";
+import { useTheme } from "@mui/material/styles";
 
 const schema = z.object({
     status: z.string().min(1, "Stav cieľa je povinný!"),
@@ -43,6 +44,7 @@ const EmployeeGoals: React.FC = () => {
     const [loadedStatuses, setLoadedStatuses] = useState(false);
     const [loadedGoals, setLoadedGoals] = useState(false);
     const [filtered, setFiltered] = useState(false);
+    const theme = useTheme()
 
     const statusMap: Record<string, string> = {
         "not-started": "Nezačatý",
@@ -316,7 +318,7 @@ const EmployeeGoals: React.FC = () => {
                         rows={filteredGoals}
                         onRowClick={handleRowClick}
                         pageSizeOptions={[5, 10, 25]}
-                        sx={dataGridStyles}
+                        sx={dataGridStyles(theme)}
                         pagination
                     />
                 </Box>

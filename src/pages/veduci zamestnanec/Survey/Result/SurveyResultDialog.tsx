@@ -100,7 +100,7 @@ const SurveyResultDialog: React.FC<Props> = ({ open, onClose, survey }) => {
             </Button>
 
             <Collapse in={showInfo}>
-              <Typography sx={{ mt: 1, color: "#444" }}>
+              <Typography sx={{ mt: 1, color: theme.palette.text.primary }}>
                 {survey?.info ?? "Bez popisu"}
               </Typography>
             </Collapse>

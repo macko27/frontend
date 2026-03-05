@@ -11,6 +11,7 @@ import EmployeeCardDialog from "../../spravca/Users/EmployeCardDialog";
 import Goal from "../../../types/Goal";
 import { EmployeeCard } from "../../../types/EmployeeCard";
 import { dataGridStyles } from "../../../styles/gridStyle";
+import { useTheme } from "@mui/material/styles";
 
 const ManageGoals: React.FC = () => {
     const [goalRows, setGoalRows] = useState<Goal[]>([]);
@@ -26,6 +27,7 @@ const ManageGoals: React.FC = () => {
     const [loaded,setLoaded] = useState(false);
 
     const nav = useNavigate();
+    const theme = useTheme()
 
     useEffect(() => {
         api.get("/Goal/Goals")
@@ -232,7 +234,7 @@ const ManageGoals: React.FC = () => {
                         onRowClick={handleRowClick}
                         pageSizeOptions={[5, 10, 25]}
                         pagination
-                        sx={dataGridStyles}
+                        sx={dataGridStyles(theme)}
                     />
                 </Box>
 

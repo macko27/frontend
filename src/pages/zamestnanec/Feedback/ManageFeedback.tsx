@@ -25,6 +25,7 @@ import { useAuth } from "../../../hooks/AuthProvider";
 import { dataGridStyles } from "../../../styles/gridStyle";
 import useLoading from "../../../hooks/LoadingData";
 import { useSnackbar } from "../../../hooks/SnackBarContext";
+import { useTheme } from "@mui/material/styles";
 
 const ManageFeedback: React.FC = () => {
     const location = useLocation();
@@ -39,6 +40,7 @@ const ManageFeedback: React.FC = () => {
     const [isSender, setIsSender] = useState<boolean>(false);
     const [loading, setLoading] = useState(true);
     const {openSnackbar} = useSnackbar();
+    const theme = useTheme()
 
     useEffect(() => {
         GetRequiredFeedback();
@@ -281,7 +283,7 @@ const ManageFeedback: React.FC = () => {
                     rows={feedbackList}
                     columns={columns}
                     getRowClassName={(params) => (params.row.isRead ? "" : "notReaded-row")}
-                    sx={dataGridStyles}
+                    sx={dataGridStyles(theme)}
                     onRowClick={(params) => handleOpenDialog(params.row)}
                     pagination
                     initialState={{

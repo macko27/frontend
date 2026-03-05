@@ -13,6 +13,7 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import { dataGridStyles } from "../../../styles/gridStyle"; 
 import { useSnackbar } from '../../../hooks/SnackBarContext'; 
 import useLoading from "../../../hooks/LoadingData";
+import { useTheme } from "@mui/material/styles";
 
 const ManageOrganizations: React.FC = () => {
     const [organizationRows, setOrganizationRows] = useState<Organization[]>([]);
@@ -25,6 +26,7 @@ const ManageOrganizations: React.FC = () => {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const { openSnackbar } = useSnackbar();
     const [loaded, setLoaded] = useState(false);
+    const theme = useTheme()
 
     useEffect(() => {
         api.get("/Organization/Organizations")
@@ -188,7 +190,7 @@ const ManageOrganizations: React.FC = () => {
                     getRowClassName={(params) => 
                         params.row.archived ? 'archived-row' : ''
                     }
-                    sx={dataGridStyles}
+                    sx={dataGridStyles(theme)}
                     initialState={{
                         pagination: {
                             paginationModel: {

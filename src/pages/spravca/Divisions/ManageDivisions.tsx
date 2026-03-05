@@ -12,6 +12,7 @@ import DeleteDialog from "../../../components/DeleteDialog";
 import { dataGridStyles } from "../../../styles/gridStyle"; 
 import useLoading from "../../../hooks/LoadingData";
 import { useSnackbar } from "../../../hooks/SnackBarContext";
+import { useTheme } from "@mui/material/styles";
 
 const ManageDivisions: React.FC = () => {
     const [departmentRows, setDepartmentRows] = useState<Department[]>([]);
@@ -23,6 +24,7 @@ const ManageDivisions: React.FC = () => {
     const [selectedDepartmentId, setSelectedDepartmentId] = useState<string | null>(null);
     const [refresh, setRefresh] = useState(false);
     const { openSnackbar } = useSnackbar();
+    const theme = useTheme()
 
     useEffect(() => {
         api.get("/Department/Departments")
@@ -204,7 +206,7 @@ const ManageDivisions: React.FC = () => {
                         getRowClassName={(params) => 
                             params.row.archived ? 'archived-row' : ''
                         }
-                        sx={dataGridStyles}
+                        sx={dataGridStyles(theme)}
                         initialState={{
                             pagination: {
                                 paginationModel: {

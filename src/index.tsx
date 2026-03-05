@@ -1,23 +1,43 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { AuthProvider } from "./hooks/AuthProvider";
-import { ThemeProvider } from "@emotion/react";
-import { themeOptions } from "./theme/theme";
-import { createTheme } from "@mui/material";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
 import App from "./app/App";
+import { themeOptions } from "./theme/theme";
+
+const AppWithTheme: React.FC = () => {
+  const [mode, setMode] = React.useState<"light" | "dark">(() => {
+    const saved = localStorage.getItem("theme");
+    return saved === "light" || saved === "dark" ? saved : "dark";
+  });
+
+  React.useEffect(() => {
+    localStorage.setItem("theme", mode);
+  }, [mode]);
+
+  const toggleTheme = () => {
+    setMode((prev) => (prev === "light" ? "dark" : "light"));
+  };
+
+  const theme = React.useMemo(() => createTheme(themeOptions(mode)), [mode]);
+
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <AuthProvider>
+        <App toggleTheme={toggleTheme} mode={mode}/>
+      </AuthProvider>
+    </ThemeProvider>
+  );
+};
 
 const root = ReactDOM.createRoot(
-    document.getElementById("root") as HTMLElement
+  document.getElementById("root") as HTMLElement
 );
 
-const theme = createTheme(themeOptions);
-
 root.render(
-    <ThemeProvider theme={theme}>
-      <React.StrictMode>
-        <AuthProvider>
-            <App />
-        </AuthProvider>
-      </React.StrictMode>
-    </ThemeProvider>
+  <React.StrictMode>
+    <AppWithTheme />
+  </React.StrictMode>
 );

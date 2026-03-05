@@ -5,7 +5,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import { dataGridStyles } from "../../../styles/gridStyle";
 import Adaptations from "../../../types/Adaptations";
-
+import { useTheme } from "@mui/material/styles";
 
 import UserProfile from "../../../types/UserProfile";
 import api from "../../../app/api";
@@ -23,6 +23,7 @@ const ManageAdaptations: React.FC = () => {
     const [loaded,setLoaded] = useState(false);
 
     const nav = useNavigate();
+    const theme = useTheme()
 
     useEffect(() => {
         api.get("/Adaptation/GetAdaptations")
@@ -109,7 +110,7 @@ const ManageAdaptations: React.FC = () => {
                         getRowId={(row) => row.id}
                         pageSizeOptions={[5, 10, 25]}
                         pagination
-                        sx={dataGridStyles}
+                        sx={dataGridStyles(theme)}
                     />
                 </Box>
 

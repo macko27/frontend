@@ -3,6 +3,7 @@ import { TextField, Chip, Box } from "@mui/material";
 import api from "../../../app/api";
 import { Recipient } from "../../../types/Survey/Recipient";
 import { useAuth } from "../../../hooks/AuthProvider";
+import { DarkModeOutlined } from "@mui/icons-material";
 
 interface Props {
   selected: Recipient[];
@@ -107,7 +108,8 @@ const RecipientsSelector: React.FC<Props> = ({ selected, setSelected }) => {
                 sx={{
                     p: 1,
                     cursor: "pointer",
-                    "&:hover": { backgroundColor: "#f5f5f5" }
+                    "&:hover": { backgroundColor: "#f5f5f5" },
+                    color: "black"
                 }}
                 >
                   {r.name}
@@ -128,7 +130,14 @@ const RecipientsSelector: React.FC<Props> = ({ selected, setSelected }) => {
             onDelete={() => removeRecipient(rec)}
             sx={{
               backgroundColor: "#ffe5d0",
-              borderRadius: "16px"
+              color: "black",
+              borderRadius: "16px",
+              "& .MuiChip-deleteIcon": { color: "black" },
+              "&:hover": { // farba pozadia pri hover
+                color: "black",              // text čierny aj pri hover
+                "& .MuiChip-deleteIcon": { color: "#d84315" } // icon čierny aj pri hover
+              }
+              
             }}
           />
         ))}

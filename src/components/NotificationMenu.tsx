@@ -179,7 +179,6 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ notificationList })
             padding: "8px",
             position: "sticky",
             bottom: 0,
-            backgroundColor: "white",
           }}
         >
           <MenuItem onClick={() => nav('/notifications')}

@@ -18,6 +18,7 @@ import EmployeeCardDialog from "../../spravca/Users/EmployeCardDialog";
 import { Department } from "../../../types/Department";
 import { useAuth } from "../../../hooks/AuthProvider";
 import { dataGridStyles } from "../../../styles/gridStyle";
+import { useTheme } from "@mui/material/styles";
 
 const schema = z.object({
     employeeDeadline: z.string(),
@@ -45,6 +46,7 @@ const NewReview: React.FC = () => {
     const [openCardDialog, setOpenCardDialog] = useState(false);
     const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [selectedTab, setSelectedTab] = useState<"employees" | "departments">("employees");
+    const theme = useTheme()
 
     const { openSnackbar } = useSnackbar();
     const {
@@ -294,7 +296,7 @@ const NewReview: React.FC = () => {
                     <Box sx={{ height: 400, width: "100%" }}>
                             {selectedTab === "employees" ? (
                                 <DataGrid
-                                sx={dataGridStyles}
+                                sx={dataGridStyles(theme)}
                                     columns={columnsEmployee}
                                     rows={employeeData}
                                     pageSizeOptions={[5, 10, 25]}
@@ -308,7 +310,7 @@ const NewReview: React.FC = () => {
                                 />
                             ) : (
                                 <DataGrid
-                                sx={dataGridStyles}
+                                sx={dataGridStyles(theme)}
                                     columns={columnsDepartment}
                                     rows={departmentsData}
                                     pageSizeOptions={[5, 10, 25]}
