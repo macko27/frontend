@@ -24,7 +24,7 @@ const Settings: React.FC<SettingsProps> = ({ toggleTheme, mode }) => {
         </Typography>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Typography>Dark mode</Typography>
+          <Typography>Tmavý režim</Typography>
 
           <Switch
             checked={mode === "dark"}

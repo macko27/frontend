@@ -53,6 +53,7 @@ import UpdateAdaptation from "../pages/veduci zamestnanec/Adaptation/UpdateAdapt
 import MyAdaptation from "../pages/zamestnanec/MyAdaptation";
 import ManageSurveys from "../pages/veduci zamestnanec/Survey/ManageSurveys";
 import CreateSurvey from "../pages/veduci zamestnanec/Survey/CreateSurvey";
+import ManageRecognitions from "../pages/common/Recognition/ManageRecognitions";
 
 type AppProps = {
     toggleTheme: () => void;
@@ -80,6 +81,7 @@ const App: React.FC<AppProps> = ({ toggleTheme, mode }) => {
                                 <Route path="/settings" element={<Settings toggleTheme={toggleTheme} mode={mode} />} />
                                 <Route path="/passwordChange" element={<PasswordChange />} />
                                 <Route path="/notifications" element={<NotificationsPage />} />
+                                <Route path="/recognitions" element={<ManageRecognitions />} />
                                 {/* Role protected routes */}
                                 {/* Spravca */}
                                 <Route element={<ProtectedRoute allowedRoles={[Roles.Spravca]} />}>

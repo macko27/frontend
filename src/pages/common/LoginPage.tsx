@@ -108,17 +108,53 @@ const LoginPage: React.FC = () => {
             <TextField 
                 label="E-mailová adresa" 
                 placeholder="email@email.com" 
-                sx={{ width: "400px" }} 
-                value={email} 
+                value={email ?? ""} 
                 onChange={HandleEmailChange} 
                 error={!!emailError} // Show error if emailError is set
-                helperText={emailError} 
+                helperText={emailError}
+                sx={{
+                    width: "400px",
+                    "& .MuiOutlinedInput-root": {
+                    backgroundColor: theme => theme.palette.mode === "dark" ? "#333" : "#fff", // pozadie
+                    "& input:-webkit-autofill": {
+                        WebkitBoxShadow: theme =>
+                        theme.palette.mode === "dark"
+                            ? "0 0 0 1000px #333 inset"
+                            : "0 0 0 1000px #fff inset",
+                        WebkitTextFillColor: theme => theme.palette.text.primary,
+                    },
+                    "& fieldset": {
+                        borderColor: theme => theme.palette.mode === "dark" ? "#555" : "#ccc",
+                    },
+                    "&.Mui-focused fieldset": {
+                        borderColor: theme => theme.palette.mode === "dark" ? "#888" : "#1976d2",
+                    },
+                    },
+                }}
             />
             <TextField 
                 label="Heslo" 
                 type="password" 
-                sx={{ width: "400px" }} 
-                value={password} 
+                sx={{
+                    width: "400px",
+                    "& .MuiOutlinedInput-root": {
+                    backgroundColor: theme => theme.palette.mode === "dark" ? "#333" : "#fff", // pozadie
+                    "& input:-webkit-autofill": {
+                        WebkitBoxShadow: theme =>
+                        theme.palette.mode === "dark"
+                            ? "0 0 0 1000px #333 inset"
+                            : "0 0 0 1000px #fff inset",
+                        WebkitTextFillColor: theme => theme.palette.text.primary,
+                    },
+                    "& fieldset": {
+                        borderColor: theme => theme.palette.mode === "dark" ? "#555" : "#ccc",
+                    },
+                    "&.Mui-focused fieldset": {
+                        borderColor: theme => theme.palette.mode === "dark" ? "#888" : "#1976d2",
+                    },
+                    },
+                }}
+                value={password ?? ""} 
                 onChange={HandlePasswordChange} 
                 error={!!passwordError}
                 helperText={passwordError}

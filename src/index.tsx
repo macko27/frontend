@@ -9,7 +9,7 @@ import { themeOptions } from "./theme/theme";
 const AppWithTheme: React.FC = () => {
   const [mode, setMode] = React.useState<"light" | "dark">(() => {
     const saved = localStorage.getItem("theme");
-    return saved === "light" || saved === "dark" ? saved : "dark";
+    return saved === "light" || saved === "dark" ? saved : "light";
   });
 
   React.useEffect(() => {

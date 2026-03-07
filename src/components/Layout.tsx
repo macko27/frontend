@@ -84,7 +84,8 @@ const Layout: React.FC<LayoutProps> = ({ children, fullWidth = false }) => {
     };
 
     const handleLogout = () => {
-        localStorage.clear();
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
         window.location.href = "/login";
     };
 
@@ -250,6 +251,24 @@ const Layout: React.FC<LayoutProps> = ({ children, fullWidth = false }) => {
             role: Roles.Veduci,
             label: "Ankety",
             path: "/surveys",
+            component: null,
+        },
+        {
+            role: Roles.Zamestnanec,
+            label: "Uznania a odmeny",
+            path: "/recognitions",
+            component: null,
+        },
+        {
+            role: Roles.Veduci,
+            label: "Uznania a odmeny",
+            path: "/recognitions",
+            component: null,
+        },
+        {
+            role: Roles.Spravca,
+            label: "Uznania a odmeny",
+            path: "/recognitions",
             component: null,
         }
     ];
