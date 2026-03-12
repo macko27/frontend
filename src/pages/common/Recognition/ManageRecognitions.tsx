@@ -36,13 +36,18 @@ dayjs.extend(utc);
 
 const ManageRecognitions: React.FC = () => {
   const [recognitions, setRecognitions] = useState<Recognition[]>([]);
+
+  const sortedRecognitions = [...recognitions].sort(
+    (a, b) => new Date(b.DateIn).getTime() - new Date(a.DateIn).getTime()
+  );
+
   const [loaded, setLoaded] = useState(false);
-  const [openDetail, setOpenDetail] = useState(false);
-  const [detailRecognition, setDetailRecognition] = useState<Recognition | null>(null);
   const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [tab, setTab] = useState(0);
   const [creator, setCreator] = useState<EmployeeCard | null>(null);
+  const [openRecognitionDetail, setOpenRecognitionDetail] = useState(false);
+  const [detailRecognition, setDetailRecognition] = useState<Recognition | null>(null);
 
   const nav = useNavigate();
   const { openSnackbar } = useSnackbar();
@@ -62,7 +67,9 @@ const ManageRecognitions: React.FC = () => {
             setRecognitions(res.data);
             setLoaded(true);
         } else {
-
+            const res = await api.get(`/Recognition/GetSent/${employeeId}`); // endpoint pre všetky recognitions
+            setRecognitions(res.data);
+            setLoaded(true);
         }
     } catch (err) {
       console.error('Chyba pri načítaní rozpoznaní:', err);
@@ -83,36 +90,52 @@ const ManageRecognitions: React.FC = () => {
 
   }, [creator, tab]);
 
-  const handleShowDetail = (row: Recognition) => {
-    setDetailRecognition(row);
-    setOpenDetail(true);
-  };
 
-  const handleDeleteClick = (id: string) => {
-    setSelectedId(id);
-    setOpenDeleteConfirm(true);
+  const handleShowRecognitionDetail = (recognition: Recognition) => {
+    console.log("Selected recognition:", recognition);
+    setDetailRecognition(recognition);
+    setOpenRecognitionDetail(true);
   };
-
 
   const columns: GridColDef[] = [
-    { field: 'predmet', headerName: 'Predmet', flex: 2, minWidth: 200 },
-    { field: 'text', headerName: 'Text', flex: 3, minWidth: 300 },
-    { field: 'odmena', headerName: 'Odmena', flex: 1, minWidth: 100 },
+    {
+      field: 'person',
+      headerName: tab === 0 ? 'Odosielateľ' : 'Príjemca',
+      flex: 2,
+      minWidth: 200,
+      headerClassName: 'header',
+      renderCell: (params) => {
+        if (tab === 0) {
+          // Doručené – zobraziť kto poslal uznanie
+          return <span>{params.row.createdByName}</span>;
+        } else {
+          // Odoslané – zobraziť príjemcov
+          return (
+            <span>
+              {params.row.recipients?.[0]?.fullName}
+            </span>
+          );
+        }
+      },
+    },
+    { field: 'predmet', headerName: 'Predmet', flex: 2, minWidth: 200, headerClassName: 'header' },
+    { field: 'text', headerName: 'Text', flex: 3, minWidth: 300, headerClassName: 'header',
+      renderCell: (params) => (
+        <Tooltip title={params.value}>
+          <span>{params.value}</span>
+        </Tooltip>
+      )
+    },
     {
       field: 'actions',
       headerName: 'Akcia',
       flex: 1,
       minWidth: 160,
       sortable: false,
+      headerClassName: 'header',
+      disableColumnMenu: true,
       renderCell: (params) => (
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button size="small" variant="contained" onClick={() => handleShowDetail(params.row)}>
-            Zobraziť
-          </Button>
-          <Button size="small" variant="outlined" color="error" onClick={() => handleDeleteClick(params.row.id)}>
-            Vymazať
-          </Button>
-        </Box>
+        <Button size="small" variant="contained" onClick={() => handleShowRecognitionDetail(params.row)}>Zobraziť</Button>
       )
     }
   ];
@@ -130,7 +153,7 @@ const ManageRecognitions: React.FC = () => {
             variant="contained"
             color="primary"
             sx={{ marginLeft: 'auto' }}
-            onClick={() => nav('/createSurvey')}
+            onClick={() => nav('/createRecognition')}
         >
             Vytvoriť uznanie
         </Button>
@@ -155,7 +178,7 @@ const ManageRecognitions: React.FC = () => {
             <DataGrid
                 columns={columns}
                 loading={!loaded}
-                rows={recognitions}
+                rows={sortedRecognitions}
                 sx={dataGridStyles(theme)}
                 initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
                 pageSizeOptions={[5, 10, 25]}
@@ -170,7 +193,7 @@ const ManageRecognitions: React.FC = () => {
             <DataGrid
                 columns={columns}
                 loading={!loaded}
-                rows={recognitions}
+                rows={sortedRecognitions}
                 sx={dataGridStyles(theme)}
                 initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
                 pageSizeOptions={[5, 10, 25]}
@@ -184,6 +207,56 @@ const ManageRecognitions: React.FC = () => {
 
 
       </Box>
+
+
+      <Dialog
+        open={openRecognitionDetail}
+        onClose={() => setOpenRecognitionDetail(false)}
+        maxWidth="sm"
+        fullWidth
+        fullScreen={isMobile}
+      >
+        <DialogTitle sx={{ fontWeight: 'bold' }}>
+          {detailRecognition?.Predmet}
+          <IconButton
+            onClick={() => setOpenRecognitionDetail(false)}
+            sx={{ position: 'absolute', right: 16, top: 16 }}
+          >
+            ✕
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent sx={{ pt: 2 }}>
+          <Stack spacing={2}>
+            <Box>
+              <Typography fontWeight="bold">Text uznania</Typography>
+              <Typography>{detailRecognition?.Text}</Typography>
+            </Box>
+
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Typography fontWeight="bold">{tab === 0 ? "Odosielateľ" : "Príjemca"}</Typography>
+              <Typography>
+                {tab === 0
+                  ? detailRecognition?.CreatedBy
+                  : detailRecognition?.CreatedBy || "-"}
+              </Typography>
+            </Box>
+
+            {detailRecognition?.DateIn && (
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography fontWeight="bold">Dátum vytvorenia</Typography>
+                <Typography>{formatDateTime(detailRecognition.DateIn)}</Typography>
+              </Box>
+            )}
+          </Stack>
+        </DialogContent>
+
+        <DialogActions sx={{ p: 3 }}>
+          <Button variant="contained" onClick={() => setOpenRecognitionDetail(false)}>
+            Zatvoriť
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Layout>
   );
 };

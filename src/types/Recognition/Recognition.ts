@@ -6,5 +6,6 @@ export type Recognition = {
   Text: string;
   Odmena: string;
   DateIn: string;
+  CreatedBy: string;
   Recipeints: RecognitionRecipient[];
 };

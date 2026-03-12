@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { TextField, Chip, Box } from "@mui/material";
-import api from "../../../app/api";
-import { Recipient } from "../../../types/Survey/Recipient";
-import { useAuth } from "../../../hooks/AuthProvider";
+import api from "../../../../app/api";
+import { RecognitionRecipient } from "../../../../types/Recognition/RecognitionRecipient";
+import { useAuth } from "../../../../hooks/AuthProvider";
 import { DarkModeOutlined } from "@mui/icons-material";
 
 interface Props {
-  selected: Recipient[];
-  setSelected: (recipients: Recipient[]) => void;
+  selected: RecognitionRecipient[];
+  setSelected: (recipients: RecognitionRecipient[]) => void;
 }
 
-const RecipientsSelector: React.FC<Props> = ({ selected, setSelected }) => {
+const RecognitionRecipientsSelector: React.FC<Props> = ({ selected, setSelected }) => {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<Recipient[]>([]);
+  const [results, setResults] = useState<RecognitionRecipient[]>([]);
   const profile = useAuth();
   const role = profile.userProfile?.role;
   const isVeducko = role === "Vedúci zamestnanec";
@@ -25,7 +25,7 @@ const RecipientsSelector: React.FC<Props> = ({ selected, setSelected }) => {
 
     const fetchData = async () => {
       try {
-        const res = await api.get(`/Survey/SearchRecipients?query=${query}`);
+        const res = await api.get(`/Recognition/SearchRecipients?query=${query}`);
         setResults(res.data);
       } catch (err) {
         console.error(err);
@@ -36,41 +36,18 @@ const RecipientsSelector: React.FC<Props> = ({ selected, setSelected }) => {
     return () => clearTimeout(timeout);
   }, [query]);
 
-  const addRecipient = (rec: Recipient) => {
-    if (!selected.some(s => s.id === rec.id && s.type === rec.type)) {
+  const addRecipient = (rec: RecognitionRecipient) => {
+    if (!selected.some(s => s.id === rec.id)) {
       setSelected([...selected, rec]);
     }
     setQuery("");
     setResults([]);
   };
 
-  const removeRecipient = (rec: Recipient) => {
-    setSelected(selected.filter(s => !(s.id === rec.id && s.type === rec.type)));
+  const removeRecipient = (rec: RecognitionRecipient) => {
+    setSelected(selected.filter(s => !(s.id === rec.id)));
   };
 
-
-  const selectMyDepartment = async () => {
-    try {
-      const res = await api.get(`/Survey/GetMyDepartment/${profile.userProfile?.id}`);
-      const dep = {
-        id: res.data.id,
-        name: res.data.departmentName,
-        type: res.data.type
-      };
-
-      const alreadySelected = selected.some(
-        s => s.type === "department" && s.id === dep.id
-      );
-
-      // Ak ešte nie je vybrané → pridáme
-      if (!alreadySelected) {
-        setSelected([...selected, dep]);
-      }
-
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
 
   return (
@@ -79,7 +56,7 @@ const RecipientsSelector: React.FC<Props> = ({ selected, setSelected }) => {
 
       <TextField
         fullWidth
-        placeholder="Hľadať zamestnancov alebo oddelenia..."
+        placeholder="Hľadať zamestnancov..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         sx={{ mt: 1 }}
@@ -103,7 +80,7 @@ const RecipientsSelector: React.FC<Props> = ({ selected, setSelected }) => {
             {results.length > 0 ? (
             results.map(r => (
                 <Box
-                key={`${r.type}-${r.id}`}
+                key={`${r.id}`}
                 onClick={() => addRecipient(r)}
                 sx={{
                     p: 1,
@@ -112,7 +89,7 @@ const RecipientsSelector: React.FC<Props> = ({ selected, setSelected }) => {
                     color: "black"
                 }}
                 >
-                  {r.name}
+                  {r.fullName}
                 </Box>
             ))
             ) : (
@@ -125,8 +102,8 @@ const RecipientsSelector: React.FC<Props> = ({ selected, setSelected }) => {
       <Box sx={{ mt: 2, display: "flex", flexWrap: "wrap", gap: 1 }}>
         {selected.map(rec => (
           <Chip
-            key={`${rec.type}-${rec.id}`}
-            label={`${rec.name}`}
+            key={`${rec.id}`}
+            label={`${rec.fullName}`}
             onDelete={() => removeRecipient(rec)}
             sx={{
               backgroundColor: "#ffe5d0",
@@ -142,33 +119,8 @@ const RecipientsSelector: React.FC<Props> = ({ selected, setSelected }) => {
           />
         ))}
       </Box>
-
-      
-      {/* Tlačidlo Moje oddelenie – viditeľné len pre vedúceho */}
-      {isVeducko && (
-        <Box
-          onClick={selectMyDepartment}
-          sx={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 1,
-            px: 2,
-            ml: 0,
-            mt: 2,
-            py: 1,
-            border: "1px solid #d0d7df",
-            borderRadius: "12px",
-            cursor: "pointer",
-            "&:hover": { backgroundColor: "#f5f7fa" }
-          }}
-        >
-          <span style={{ fontSize: 18 }}>👥</span>
-          <span style={{ fontSize: 14 }}>Moje oddelenie</span>
-        </Box>
-      )}
-
     </Box>
   );
 };
 
-export default RecipientsSelector;
+export default RecognitionRecipientsSelector;

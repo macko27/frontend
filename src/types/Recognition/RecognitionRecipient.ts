@@ -1,4 +1,4 @@
 export type RecognitionRecipient = {
-  Id: string;
-  Name: string;
+  id: string;
+  fullName: string;
 };
