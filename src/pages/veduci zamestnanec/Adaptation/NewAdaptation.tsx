@@ -385,6 +385,15 @@ const NewAdaptation: React.FC = () => {
                                     setEditTaskIndex(null);
                                 }}
                                 onSave={(task) => {
+                                const selectedDate = new Date(task.finishDate);
+                                const today = new Date();
+                                today.setHours(0,0,0,0);
+
+                                if (selectedDate < today) {
+                                    openSnackbar("Termín úlohy nemôže byť v minulosti", "error");
+                                    return;
+                                }
+                                
                                 const updated = [...fieldsTask];
                                 const newTask = {
                                     text: task.description,

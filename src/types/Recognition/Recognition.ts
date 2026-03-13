@@ -1,11 +1,12 @@
 import { RecognitionRecipient } from "../Recognition/RecognitionRecipient";
+import { CreatedBy } from "./CreatedBy";
 
 export type Recognition = {
-  Id: string;
-  Predmet: string;
-  Text: string;
-  Odmena: string;
-  DateIn: string;
-  CreatedBy: string;
-  Recipeints: RecognitionRecipient[];
+  id: string;
+  predmet: string;
+  text: string;
+  odmena: string;
+  dateIn: string;
+  createdBy: CreatedBy;
+  recipients: RecognitionRecipient[];
 };

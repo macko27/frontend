@@ -29,7 +29,7 @@ export const themeOptions = (mode: "light" | "dark"): ThemeOptions => ({
   palette: {
     mode,
     primary: {
-      main: "#ba4400",
+      main: mode === "dark" ? "#FFAB7A" : "#ba4400",
     },
     secondary: {
       main: mode === "light" ? "#dedede" : "#444444",

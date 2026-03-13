@@ -38,7 +38,7 @@ const ManageRecognitions: React.FC = () => {
   const [recognitions, setRecognitions] = useState<Recognition[]>([]);
 
   const sortedRecognitions = [...recognitions].sort(
-    (a, b) => new Date(b.DateIn).getTime() - new Date(a.DateIn).getTime()
+    (a, b) => new Date(b.dateIn).getTime() - new Date(a.dateIn).getTime()
   );
 
   const [loaded, setLoaded] = useState(false);
@@ -107,7 +107,7 @@ const ManageRecognitions: React.FC = () => {
       renderCell: (params) => {
         if (tab === 0) {
           // Doručené – zobraziť kto poslal uznanie
-          return <span>{params.row.createdByName}</span>;
+          return <span>{params.row.createdBy.fullName}</span>;
         } else {
           // Odoslané – zobraziť príjemcov
           return (
@@ -216,40 +216,74 @@ const ManageRecognitions: React.FC = () => {
         fullWidth
         fullScreen={isMobile}
       >
-        <DialogTitle sx={{ fontWeight: 'bold' }}>
-          {detailRecognition?.Predmet}
+        <DialogTitle sx={{ fontWeight: "bold" }}>
+          {detailRecognition?.predmet}
           <IconButton
             onClick={() => setOpenRecognitionDetail(false)}
-            sx={{ position: 'absolute', right: 16, top: 16 }}
+            sx={{ position: "absolute", right: 16, top: 16 }}
           >
             ✕
           </IconButton>
         </DialogTitle>
 
         <DialogContent sx={{ pt: 2 }}>
-          <Stack spacing={2}>
-            <Box>
-              <Typography fontWeight="bold">Text uznania</Typography>
-              <Typography>{detailRecognition?.Text}</Typography>
+          <Stack spacing={3}>
+
+            {/* Príjemca / Odosielateľ */}
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <Typography color="text.secondary">
+                {tab === 0 ? "Odosielateľ" : "Príjemca"}
+              </Typography>
+
+              <Box textAlign="right">
+                {tab === 0 ? (
+                  <Typography>{detailRecognition?.createdBy?.fullName}</Typography>
+                ) : (
+                  detailRecognition?.recipients?.map((r: any) => (
+                    <Typography key={r.id}>{r.fullName}</Typography>
+                  ))
+                )}
+              </Box>
             </Box>
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Typography fontWeight="bold">{tab === 0 ? "Odosielateľ" : "Príjemca"}</Typography>
-              <Typography>
-                {tab === 0
-                  ? detailRecognition?.CreatedBy
-                  : detailRecognition?.CreatedBy || "-"}
+            {/* Text uznania */}
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <Typography color="text.secondary">
+                Text uznania
+              </Typography>
+
+              <Typography sx={{ maxWidth: 350, textAlign: "right" }}>
+                {detailRecognition?.text}
               </Typography>
             </Box>
 
-            {detailRecognition?.DateIn && (
-              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography fontWeight="bold">Dátum vytvorenia</Typography>
-                <Typography>{formatDateTime(detailRecognition.DateIn)}</Typography>
+            {/* Odmena */}
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <Typography color="text.secondary">
+                Odmena
+              </Typography>
+
+              <Typography sx={{ maxWidth: 350, textAlign: "right" }}>
+                {detailRecognition?.odmena}
+              </Typography>
+            </Box>
+
+            {/* Dátum */}
+            {detailRecognition?.dateIn && (
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <Typography color="text.secondary">
+                  Dátum odoslania
+                </Typography>
+
+                <Typography>
+                  {formatDateTime(detailRecognition.dateIn)}
+                </Typography>
               </Box>
             )}
+
           </Stack>
         </DialogContent>
+
 
         <DialogActions sx={{ p: 3 }}>
           <Button variant="contained" onClick={() => setOpenRecognitionDetail(false)}>
