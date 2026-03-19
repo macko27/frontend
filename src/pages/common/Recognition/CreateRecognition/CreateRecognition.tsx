@@ -122,8 +122,6 @@ const CreateRecognition: React.FC = () => {
         </Box>
 
         {/* Odmena */}
-        {/* Odmena – iba pre vedúceho zamestnanca */}
-        {isVeducko && (
         <Box mb={4}>
             <Typography fontWeight={500} mb={1}>
             Odmena (nepovinné)
@@ -170,7 +168,6 @@ const CreateRecognition: React.FC = () => {
             })}
             </Stack>
         </Box>
-        )}
 
         {/* Tlačidlá */}
         <Stack direction="row" spacing={2} justifyContent="flex-end">

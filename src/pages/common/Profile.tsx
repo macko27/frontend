@@ -120,14 +120,14 @@ const ProfilePage: React.FC = () => {
                                     maxWidth: "300px",
                                     borderRadius: "3px",
                                     p: 1,
-                                    backgroundColor: "#8bdad2",
+                                    backgroundColor: "info.main",
                                     textAlign: "left",
                                     display: "flex",
                                     alignItems: "flex-start",
                                     fontFamily: "Arial, sans-serif",
                                 }}
                             >
-                                <InfoIcon sx={{ mr: 1, fontSize: 25, color: "#00796b" }} />
+                                <InfoIcon sx={{ mr: 1, fontSize: 25, color: "info" }} />
                                 <Box>
                                     Max rozmery obrázka: 400 x 400 px
                                     <br />
@@ -261,7 +261,7 @@ const ProfilePage: React.FC = () => {
                     <Button
                         onClick={handleSubmit(handleSaveChanges)}
                         variant="contained"
-                        sx={{ mr: 2, textTransform: "none", backgroundColor: "#1f9788", color: "#fff", "&:hover": { backgroundColor: "#28b3a4" } }}
+                        sx={{ mr: 2, textTransform: "none", backgroundColor: "info.main", color: "#fff", "&:hover": { backgroundColor: "#28b3a4" } }}
                     >
                         Uložiť zmeny
                     </Button>

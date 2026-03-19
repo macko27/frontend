@@ -36,10 +36,10 @@ const SurveyFilterPopover: React.FC<SurveyFilterPopoverProps> = ({
             variant="contained"           // používa vlastné pozadie
             onClick={handleOpen}
             color="primary"
-            sx={{
-                color: '#fff',
-                textTransform: 'none',
-            }}
+            sx={(theme) => ({
+                color: theme.palette.mode === "light" ? "#fff" : "#000",
+                textTransform: "none",
+            })}
             endIcon={<ArrowDropDownIcon />}
             >
             Filtrovanie
@@ -65,6 +65,12 @@ const SurveyFilterPopover: React.FC<SurveyFilterPopoverProps> = ({
                     color="info"
                     checked={filterActive}
                     onChange={(e) => setFilterActive(e.target.checked)}
+                    sx={{
+                        color: "white",
+                        "&.Mui-checked": {
+                        color: "white"
+                        }
+                    }}
                 />
                 }
                 label="Aktívne ankety"
@@ -76,6 +82,12 @@ const SurveyFilterPopover: React.FC<SurveyFilterPopoverProps> = ({
                     color="info"
                     checked={filterClosed}
                     onChange={(e) => setFilterClosed(e.target.checked)}
+                    sx={{
+                        color: "white",
+                        "&.Mui-checked": {
+                        color: "white"
+                        }
+                    }}
                 />
                 }
                 label="Uzavreté ankety"
@@ -87,6 +99,12 @@ const SurveyFilterPopover: React.FC<SurveyFilterPopoverProps> = ({
                 color="info"
                 checked={filterInactive}
                 onChange={(e) => setFilterInactive(e.target.checked)}
+                sx={{
+                    color: "white",
+                    "&.Mui-checked": {
+                    color: "white"
+                    }
+                }}
                 />
             }
             label="Neaktívne ankety"

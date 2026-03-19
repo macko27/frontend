@@ -291,7 +291,19 @@ const NewAdaptation: React.FC = () => {
 
                   
                     {/* Tabs */}
-                    <CustomTabs value={activeTab} onChange={handleTabChange} sx={{ marginBottom: 1 }}>
+                    <CustomTabs value={activeTab} 
+                        onChange={handleTabChange} 
+                        sx={(theme) => ({
+                            marginBottom: 1,
+                            "& .MuiTab-root": {
+                            color: theme.palette.mode === "light" ? "#000" : "#fff",
+                            },
+                            "& .Mui-selected": {
+                            color: theme.palette.mode === "light" ? "#000" : "#fff",
+                            fontWeight: 600,
+                            },
+                        })}
+                    >
                         <CustomTab label="Zoznam úloh" />
                         <CustomTab label="Dokumenty" />
                     </CustomTabs>

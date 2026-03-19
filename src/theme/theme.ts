@@ -35,7 +35,8 @@ export const themeOptions = (mode: "light" | "dark"): ThemeOptions => ({
       main: mode === "light" ? "#dedede" : "#444444",
     },
     info: {
-      main: "#008B8B",
+      //main: "#008B8B",
+      main: "#004747",
     },
     background: {
       default: mode === "light" ? "#f4f6f8" : "#121212",

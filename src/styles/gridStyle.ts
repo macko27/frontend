@@ -22,9 +22,9 @@ export const dataGridStyles = (theme: Theme): SxProps<Theme> => ({
 
   "& .header": {
     fontWeight: "bold",
-    fontSize: 16,
-    backgroundColor: theme.palette.mode === "light" ? "#FFD6B8" : "#5c2b00",
-    color: theme.palette.text.primary,
+    fontSize: 18,
+    backgroundColor: theme.palette.mode === "light" ? "#FFD6B8" : "#FFD6B8",
+    color: theme.palette.mode === "light" ? theme.palette.text.primary : "black",
   },
 
   "& .MuiDataGrid-columnHeaders": {

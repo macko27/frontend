@@ -9,4 +9,5 @@ export type Recognition = {
   dateIn: string;
   createdBy: CreatedBy;
   recipients: RecognitionRecipient[];
+  state:  'Cakajuca' | 'Schvalena' | 'SchvalenaSUpravou' | 'Zamietnuta';
 };

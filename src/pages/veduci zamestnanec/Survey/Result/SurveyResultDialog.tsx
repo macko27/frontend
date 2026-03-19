@@ -108,7 +108,7 @@ const SurveyResultDialog: React.FC<Props> = ({ open, onClose, survey }) => {
 
         {/* Typ ankety */}
         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-            <Typography fontWeight="light" sx={{ color: "#888" }}>
+            <Typography fontWeight="light" sx={{ color: (theme) => theme.palette.text.secondary }}>
             Typ ankety
             </Typography>
 
@@ -119,7 +119,7 @@ const SurveyResultDialog: React.FC<Props> = ({ open, onClose, survey }) => {
 
         {/* Celkový počet príjemcov */}
         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-            <Typography fontWeight="light" sx={{ color: "#888" }}>
+            <Typography fontWeight="light" sx={{ color: (theme) => theme.palette.text.secondary }}>
             Celkový počet príjemcov
             </Typography>
 
@@ -130,7 +130,7 @@ const SurveyResultDialog: React.FC<Props> = ({ open, onClose, survey }) => {
 
         {/* Celkový počet hlasujúcich */}
         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-            <Typography fontWeight="light" sx={{ color: "#888" }}>
+            <Typography fontWeight="light" sx={{ color: (theme) => theme.palette.text.secondary }}>
             Celkový počet hlasujúcich
             </Typography>
 
@@ -156,14 +156,14 @@ const SurveyResultDialog: React.FC<Props> = ({ open, onClose, survey }) => {
       {/* Dátumy */}
       <Box sx={{ px: 3, my: 2 }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-          <Typography fontWeight="light" sx={{ color: "#888" }}>
+          <Typography fontWeight="light" sx={{ color: (theme) => theme.palette.text.secondary }}>
             Dátum začiatku ankety
           </Typography>
           <Typography>{formatDateTime(survey?.start)}</Typography>
         </Box>
 
         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Typography fontWeight="light" sx={{ color: "#888" }}>
+          <Typography fontWeight="light" sx={{ color: (theme) => theme.palette.text.secondary }}>
             Dátum ukončenia ankety
           </Typography>
           <Typography>{formatDateTime(survey?.end)}</Typography>
