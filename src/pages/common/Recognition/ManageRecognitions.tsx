@@ -472,23 +472,47 @@ const ManageRecognitions: React.FC = () => {
             </Box>
 
             {decision === 'modify' && (
-              <Box>
-                <Typography color="text.secondary" mb={1}>
-                  Upraviť odmenu
-                </Typography>
-                <Stack direction="row" spacing={2}>
-                  {[0, 50, 100, 200].map((value) => (
+            <Box>
+              <Typography color="text.secondary" mb={1}>
+                Upraviť odmenu
+              </Typography>
+              <Stack direction="row" spacing={1}>
+                {[0, 50, 100, 200].map((value) => {
+                  const isSelected = modifiedReward === value;
+                  return (
                     <Button
                       key={value}
-                      variant={modifiedReward === value ? 'contained' : 'outlined'}
-                      onClick={() => setModifiedReward(value)}
+                      variant="outlined"
+                      sx={{
+                        flex: 1,
+                        backgroundColor: isSelected
+                          ? theme.palette.primary.main
+                          : theme.palette.mode === 'dark'
+                          ? '#000'
+                          : '#fff',
+                        color: isSelected
+                          ? '#fff'
+                          : theme.palette.mode === 'dark'
+                          ? '#fff'
+                          : '#000',
+                        borderColor: theme.palette.mode === 'dark' ? '#fff' : '#000',
+                        '&:hover': {
+                          backgroundColor: isSelected
+                            ? theme.palette.primary.main
+                            : theme.palette.mode === 'dark'
+                            ? '#111'
+                            : '#f5f5f5',
+                        },
+                      }}
+                      onClick={() => setModifiedReward(isSelected ? null : value)}
                     >
                       {value} €
                     </Button>
-                  ))}
-                </Stack>
-              </Box>
-            )}
+                  );
+                })}
+              </Stack>
+            </Box>
+          )}
 
             {decision === 'reject' && (
               <Box>

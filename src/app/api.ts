@@ -3,10 +3,10 @@ import axios from 'axios'
 const ax = axios.create();
 const api = axios.create();
 
-var apiUrl = "https://localhost:5092/api";
-export const hubUrl = "https://localhost:5092/notificationHub";
-//export const hubUrl = "https://talent-hub-backend-anf9c3d6e9cdbgg2.polandcentral-01.azurewebsites.net/notificationHub";
-//var apiUrl = "https://talent-hub-backend-anf9c3d6e9cdbgg2.polandcentral-01.azurewebsites.net/api";
+//var apiUrl = "https://localhost:5092/api";
+//export const hubUrl = "https://localhost:5092/notificationHub";
+export const hubUrl = "https://talent-hub-backend-anf9c3d6e9cdbgg2.polandcentral-01.azurewebsites.net/notificationHub";
+var apiUrl = "https://talent-hub-backend-anf9c3d6e9cdbgg2.polandcentral-01.azurewebsites.net/api";
 
 api.defaults.baseURL = apiUrl;
 api.defaults.headers.common["Content-Type"] = "application/json";
