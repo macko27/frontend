@@ -125,6 +125,16 @@ const ManageRecognitions: React.FC = () => {
   };
 
 
+  useEffect(() => {
+    if (openPendingDialog) {
+      // reset vstupov pri otvorení modalu
+      setDecision('');
+      setModifiedReward(null);
+      setRejectReason('');
+    }
+  }, [openPendingDialog]);
+
+
   const handleSubmitDecision = async () => {
     try {
       if (!decision) {
@@ -167,6 +177,14 @@ const ManageRecognitions: React.FC = () => {
   };
   
 
+  // Kontrola, či má byť tlačidlo Uložiť zakázané
+  const isSubmitDisabled = (() => {
+    if (!decision) return true;
+    if (decision === 'modify' && (modifiedReward === null || modifiedReward === pendingRecognition?.recipient?.odmena)) return true;
+    if (decision === 'reject' && !rejectReason.trim()) return true;
+    return false;
+  })();
+
   const columns: GridColDef[] = [
     {
       field: 'person',
@@ -205,6 +223,105 @@ const ManageRecognitions: React.FC = () => {
         <Button size="small" variant="contained" onClick={() => handleShowRecognitionDetail(params.row)}>Zobraziť</Button>
       )
     }
+  ];
+
+  // Stĺpce pre tab 2 – Na schválenie
+  const columnsForApproval: GridColDef[] = [
+    {
+      field: 'person',
+      headerName: 'Príjemca',
+      headerClassName: 'header',
+      flex: 2,
+      renderCell: (params) => <span>{params.row.recipient.fullName}</span>,
+    },
+    {
+      field: 'predmet',
+      headerName: 'Predmet',
+      flex: 2,
+      minWidth: 200,
+      headerClassName: 'header',
+    },
+    {
+      field: 'text',
+      headerName: 'Text',
+      flex: 3,
+      minWidth: 300,
+      headerClassName: 'header',
+      renderCell: (params) => (
+        <Tooltip title={params.value}>
+          <span>{params.value}</span>
+        </Tooltip>
+      ),
+    },
+    {
+    field: 'state',
+    headerName: 'Stav',
+    flex: 1.5,
+    minWidth: 150,
+    headerClassName: 'header',
+    renderCell: (params) => {
+      const stateNumber: number = params.row.recipient.state;
+
+      let stateText = '';
+      let color = 'text.primary';
+
+      switch (stateNumber) {
+        case 0:
+          stateText = 'Čakajúca';
+          color = 'warning.main';
+          break;
+        case 1:
+          stateText = 'Schválená';
+          color = 'success.main';
+          break;
+        case 2:
+          stateText = 'Schválená s úpravou';
+          color = 'success.light';
+          break;
+        case 3:
+          stateText = 'Zamietnutá';
+          color = 'error.main';
+          break;
+      }
+
+      return (
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center', 
+            alignItems: 'center',  
+            width: '100%',
+            height: '100%',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          <Typography
+            sx={{
+              textAlign: 'center',
+            }}
+          >
+            {stateText}
+          </Typography>
+        </Box>
+      );
+    },
+  },
+    {
+      field: 'actions',
+      headerName: 'Akcia',
+      flex: 1,
+      minWidth: 160,
+      sortable: false,
+      headerClassName: 'header',
+      disableColumnMenu: true,
+      renderCell: (params) => (
+        <Button size="small" variant="contained" onClick={() => handleShowRecognitionDetail(params.row)}>
+          Zobraziť
+        </Button>
+      ),
+    },
   ];
 
   return (
@@ -273,7 +390,7 @@ const ManageRecognitions: React.FC = () => {
 
             {tab === 2 && isVeducko && (
               <DataGrid
-                columns={columns}
+                columns={columnsForApproval}
                 loading={!loaded}
                 rows={sortedRecognitions}
                 sx={dataGridStyles(theme)}
@@ -477,7 +594,7 @@ const ManageRecognitions: React.FC = () => {
                 Upraviť odmenu
               </Typography>
               <Stack direction="row" spacing={1}>
-                {[0, 50, 100, 200].map((value) => {
+                {[20, 50, 100, 200].map((value) => {
                   const isSelected = modifiedReward === value;
                   return (
                     <Button
@@ -506,7 +623,7 @@ const ManageRecognitions: React.FC = () => {
                       }}
                       onClick={() => setModifiedReward(isSelected ? null : value)}
                     >
-                      {value} €
+                      {value}
                     </Button>
                   );
                 })}
@@ -563,6 +680,7 @@ const ManageRecognitions: React.FC = () => {
                     },
                   }}
                   onClick={handleSubmitDecision}
+                  disabled={isSubmitDisabled}
                 >
                   Uložiť
                 </Button>
