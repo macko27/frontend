@@ -32,6 +32,9 @@ import Snackbar, { SnackbarOrigin } from '@mui/material/Snackbar';
 import Level from "../../../types/Level";
 import {CircularProgress} from "@mui/material";
 import { Height } from "@mui/icons-material";
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+dayjs.extend(customParseFormat);
+
 interface EmployeeCardDialogProps {
     userId: string | null | undefined; 
     user: UserProfile | null;
@@ -223,21 +226,27 @@ const EmployeeCardDialog: React.FC<EmployeeCardDialogProps> = ({userId, user, op
                 setValue('startWorkDate', res.data.startWorkDate || "");
                 
                 const birthdate = res.data.birthdate;
+
                 if (birthdate) {
-                    const dateObj = new Date(birthdate); // Convert to Date object if needed
-                    setBirth(dayjs(dateObj)); // Convert Date to Dayjs
-                    handleDateChange(dayjs(dateObj)); // Also handle with Dayjs
-                } else {
-                    setBirth(null); // Handle null case
-                    handleDateChange(null);
+                    const parsed = dayjs(birthdate, "DD/MM/YYYY HH:mm:ss");
+
+                    if (parsed.isValid()) {
+                        setBirth(parsed);
+                        handleDateChange(parsed);
+                    } else {
+                        console.error("Invalid birthdate format:", birthdate);
+                        setBirth(null);
+                    }
+                    } else {
+                        setBirth(null);
                 }
 
                 const startWorkDate = res.data.startWorkDate;
                 if (startWorkDate) {
                     const startDateObj = new Date(startWorkDate);
-                    setStartWorkDate(dayjs(startDateObj));  // Set start work date as Dayjs
+                    setStartWorkDate(dayjs(startDateObj));
                 } else {
-                    setStartWorkDate(null);  // Handle null case
+                    setStartWorkDate(null);
                 }
                 setWorkTime(res.data.workPercentage);
 
