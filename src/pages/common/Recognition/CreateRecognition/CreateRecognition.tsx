@@ -23,6 +23,7 @@ const CreateRecognition: React.FC = () => {
   const [reward, setReward] = useState("");
   const [recipients, setRecipients] = useState<RecognitionRecipient[]>([]);
   const theme = useTheme();
+  const [files, setFiles] = useState<File[]>([]);
 
   useEffect(() => {
     api.get(`/EmployeeCard/GetEmployeeCardLoggedIn/`)
@@ -51,16 +52,38 @@ const CreateRecognition: React.FC = () => {
       return;
     }
 
-    const recognitionRequest = {
-      predmet: subject.trim(),
-      text: text.trim(),
-      odmena: reward ? Number(reward) : 0,
-      createdById: creator.employeeId,
-      recipients: recipients.map(r => ({ id: r.id }))
-    };
+    if (files.length > 3) {
+      openSnackbar("Maximálne 3 prílohy", "error");
+      return;
+    }
+
+    const formData = new FormData();
+
+    formData.append("predmet", subject.trim());
+    formData.append("text", text.trim());
+    formData.append("odmena", reward ? reward : "0");
+    formData.append("createdById", creator.employeeId);
+
+    // recipients
+    recipients.forEach((r, index) => {
+      formData.append(`recipients[${index}]`, r.id);
+    });
+
+    // files
+    files.forEach((file) => {
+      if (file.size > 10 * 1024 * 1024) {
+        openSnackbar(`Súbor ${file.name} je väčší ako 10MB`, "error");
+        return;
+      }
+      formData.append("files", file);
+    });
 
     try {
-      await api.post("/Recognition/Create", recognitionRequest);
+      await api.post("/Recognition/CreateWithFiles", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      });
 
       openSnackbar("Uznanie bolo úspešne vytvorené", "success");
       nav("/manageRecognitions");
@@ -167,6 +190,90 @@ const CreateRecognition: React.FC = () => {
                 );
             })}
             </Stack>
+        </Box>
+
+        {/* Prilohy */}
+        <Box mb={4}>
+          <Typography fontWeight={500} mb={1}>
+            Prílohy
+          </Typography>
+
+          <Box
+            component="label"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: "2px solid #ccc",
+              borderRadius: 2,
+              height: 50,
+              cursor: "pointer",
+              transition: "0.2s",
+              "&:hover": {
+                borderColor: theme.palette.primary.main,
+                backgroundColor: theme.palette.action.hover,
+              },
+            }}
+          >
+            <input
+              type="file"
+              hidden
+              multiple
+              accept=".pdf,.jpg,.jpeg,.png,.docx"
+              onChange={(e) => {
+                const selectedFiles = Array.from(e.target.files || []);
+
+                const newFiles = [...files, ...selectedFiles];
+
+                if (newFiles.length > 3) {
+                  openSnackbar("Maximálne 3 súbory", "error");
+                  return;
+                }
+
+                setFiles(newFiles);
+
+                e.target.value = "";
+              }}
+            />
+
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Box
+                sx={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: "50%",
+                  backgroundColor: theme.palette.warning.main,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#fff",
+                  fontWeight: "bold",
+                }}
+              >
+                +
+              </Box>
+
+              <Typography>
+                Pridať obrázok alebo video
+              </Typography>
+            </Stack>
+          </Box>
+
+          {/* Zobrazenie vybraných súborov */}
+          {files.map((file, index) => (
+            <Stack key={index} direction="row" spacing={1} alignItems="center">
+              <Typography variant="body2">{file.name}</Typography>
+              <Button
+                size="small"
+                color="error"
+                onClick={() => {
+                  setFiles(files.filter((_, i) => i !== index));
+                }}
+              >
+                ✕
+              </Button>
+            </Stack>
+          ))}
         </Box>
 
         {/* Tlačidlá */}

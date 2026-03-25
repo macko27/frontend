@@ -64,6 +64,10 @@ const ManageRecognitions: React.FC = () => {
   const [rejectReason, setRejectReason] = useState('');
   const [state, setState] = useState<RecognitionState>(RecognitionState.Cakajuca);
 
+  const [attachments, setAttachments] = useState<{ id: string; fileName: string; }[]>([]);
+  const [attachmentsOpen, setAttachmentsOpen] = useState(false);
+  const [attachmentsLoading, setAttachmentsLoading] = useState(false);
+
   const nav = useNavigate();
   const { openSnackbar } = useSnackbar();
   const profile = useAuth();
@@ -100,6 +104,44 @@ const ManageRecognitions: React.FC = () => {
   };
 
 
+  const handleToggleAttachments = async (recognitionId: string) => {
+    if (attachmentsOpen) {
+      setAttachmentsOpen(false);
+      return;
+    }
+    try {
+      setAttachmentsLoading(true);
+      const res = await api.get(`/Recognition/GetAttachments/${recognitionId}`);
+      setAttachments(res.data);
+      setAttachmentsOpen(true);
+    } catch {
+      openSnackbar('Nepodarilo sa načítať prílohy', 'error');
+    } finally {
+      setAttachmentsLoading(false);
+    }
+  };
+
+
+   const handleDownloadAttachment = async (id: string, fileName: string) => {
+    try {
+      const res = await api.get(`/Recognition/DownloadAttachment/${id}`, {
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(res.data);
+      const a = document.createElement('a');
+
+      a.href = url;
+      a.download = fileName;
+      a.click();
+
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      openSnackbar('Chyba pri sťahovaní súboru', 'error');
+    }
+  };
+
   useEffect(() => {
     api.get(`/EmployeeCard/GetEmployeeCardLoggedIn/`)
       .then(res => setCreator(res.data))
@@ -115,6 +157,10 @@ const ManageRecognitions: React.FC = () => {
 
 
   const handleShowRecognitionDetail = (recognition: any) => {
+    // Reset príloh pri každom otvorení
+    setAttachmentsOpen(false);
+    setAttachments([]);
+
     if (tab === 2) {
       setPendingRecognition(recognition as RecognitionToApprove);
       setOpenPendingDialog(true);
@@ -407,7 +453,7 @@ const ManageRecognitions: React.FC = () => {
 
       <Dialog
         open={openRecognitionDetail}
-        onClose={() => setOpenRecognitionDetail(false)}
+        onClose={() => { setOpenRecognitionDetail(false); setAttachmentsOpen(false); setAttachments([]); }}
         maxWidth="sm"
         fullWidth
         fullScreen={isMobile}
@@ -464,6 +510,49 @@ const ManageRecognitions: React.FC = () => {
               </Typography>
             </Box>
 
+            {/* Prílohy */}
+            <Box>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <Typography color="text.secondary">Prílohy</Typography>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={attachmentsLoading}
+                  onClick={() =>
+                    handleToggleAttachments(
+                      tab === 2
+                        ? pendingRecognition!.recognitionId
+                        : detailRecognition!.id
+                    )
+                  }
+                >
+                  {attachmentsLoading ? 'Načítavam...' : attachmentsOpen ? 'Skryť' : 'Zobraziť'}
+                </Button>
+              </Box>
+
+              {attachmentsOpen && (
+                <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  {attachments.length === 0 ? (
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                      Žiadne prílohy
+                    </Typography>
+                  ) : (
+                    attachments.map((file, i) => (
+                      <Button
+                        key={i}
+                        size="small"
+                        variant="text"
+                        sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
+                        onClick={() => handleDownloadAttachment(file.id, file.fileName)}
+                      >
+                        📎 {file.fileName}
+                      </Button>
+                    ))
+                  )}
+                </Box>
+              )}
+            </Box>
+
             {/* Dátum */}
             {detailRecognition?.dateIn && (
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
@@ -492,7 +581,7 @@ const ManageRecognitions: React.FC = () => {
 
       <Dialog
         open={openPendingDialog}
-        onClose={() => setOpenPendingDialog(false)}
+        onClose={() => { setOpenPendingDialog(false); setAttachmentsOpen(false); setAttachments([]); }}
         maxWidth="sm"
         fullWidth
         fullScreen={isMobile}
@@ -535,6 +624,49 @@ const ManageRecognitions: React.FC = () => {
               <Typography sx={{ maxWidth: 350, textAlign: "right" }}>
                 {pendingRecognition?.text}
               </Typography>
+            </Box>
+
+            {/* Prílohy */}
+            <Box>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <Typography color="text.secondary">Prílohy</Typography>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={attachmentsLoading}
+                  onClick={() =>
+                    handleToggleAttachments(
+                      tab === 2
+                        ? pendingRecognition!.recognitionId
+                        : detailRecognition!.id
+                    )
+                  }
+                >
+                  {attachmentsLoading ? 'Načítavam...' : attachmentsOpen ? 'Skryť' : 'Zobraziť'}
+                </Button>
+              </Box>
+
+              {attachmentsOpen && (
+                <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  {attachments.length === 0 ? (
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                      Žiadne prílohy
+                    </Typography>
+                  ) : (
+                    attachments.map((file, i) => (
+                      <Button
+                        key={i}
+                        size="small"
+                        variant="text"
+                        sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
+                        onClick={() => handleDownloadAttachment(file.id, file.fileName)}
+                      >
+                        📎 {file.fileName}
+                      </Button>
+                    ))
+                  )}
+                </Box>
+              )}
             </Box>
 
             {/* Dátum */}
