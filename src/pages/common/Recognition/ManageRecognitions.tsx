@@ -250,12 +250,38 @@ const ManageRecognitions: React.FC = () => {
       }
     },
     { field: 'predmet', headerName: 'Predmet', flex: 2, minWidth: 200, headerClassName: 'header' },
-    { field: 'text', headerName: 'Text', flex: 3, minWidth: 300, headerClassName: 'header',
+    { field: 'odmena', headerName: 'Odmena', flex: 1, minWidth: 50, headerClassName: 'header',
       renderCell: (params) => (
         <Tooltip title={params.value}>
           <span>{params.value}</span>
         </Tooltip>
       )
+    },
+    {
+      field: 'state',
+      headerName: 'Stav',
+      flex: 1.5,
+      minWidth: 150,
+      headerClassName: 'header',
+      renderCell: (params) => {
+        // pre doručené a odoslané berieme stav prvého recipienta
+        const stateNumber: number = params.row.recipients?.[0]?.state ?? params.row.recipient?.state ?? 0;
+
+        let stateText = '';
+        switch (stateNumber) {
+          case 0: stateText = 'Čakajúca'; break;
+          case 1: stateText = 'Schválená'; break;
+          case 2: stateText = 'Schválená s úpravou'; break;
+          case 3: stateText = 'Zamietnutá'; break;
+          default: stateText = '-'; break;
+        }
+
+        return (
+          <Typography sx={{ textAlign: 'center', width: '100%' }}>
+            {stateText}
+          </Typography>
+        );
+      }
     },
     {
       field: 'actions',
@@ -286,18 +312,6 @@ const ManageRecognitions: React.FC = () => {
       flex: 2,
       minWidth: 200,
       headerClassName: 'header',
-    },
-    {
-      field: 'text',
-      headerName: 'Text',
-      flex: 3,
-      minWidth: 300,
-      headerClassName: 'header',
-      renderCell: (params) => (
-        <Tooltip title={params.value}>
-          <span>{params.value}</span>
-        </Tooltip>
-      ),
     },
     {
     field: 'state',

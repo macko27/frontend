@@ -57,6 +57,7 @@ const EmployeeCardDialog: React.FC<EmployeeCardDialogProps> = ({userId, user, op
 
     const [filteredLevelOptions, setFilteredLevelOptions] = useState<{ id: string; label: string; jobId: string }[]>([]);
 
+    const [points, setPoints] = useState<number>(0);
     
     const [contractTypeOptions, setConstractTypeOptions] = useState<{ id: string; label: string }[]>([]);
     const [selectedConstractType, setSelectedConstractType] = useState<{ id: string; label: string } | null>(null);
@@ -224,6 +225,7 @@ const EmployeeCardDialog: React.FC<EmployeeCardDialogProps> = ({userId, user, op
                 setValue('userId', res.data.userId || "");
                 setValue('workTime', res.data.workPercentage || 0);
                 setValue('startWorkDate', res.data.startWorkDate || "");
+                setPoints(res.data.points || 0);
                 
                 const birthdate = res.data.birthdate;
 
@@ -282,7 +284,8 @@ const EmployeeCardDialog: React.FC<EmployeeCardDialogProps> = ({userId, user, op
         const requestData = {
             ...data,
             id: employee?.employeeId,
-            userId: userId, 
+            userId: userId,
+            points: points,
         };
 
         await api.post("/EmployeeCard/Update", requestData) 
@@ -405,6 +408,23 @@ const EmployeeCardDialog: React.FC<EmployeeCardDialogProps> = ({userId, user, op
                                         />
                                     )}
                                 />
+
+                                 <TextField
+                                    fullWidth
+                                    label="Body"
+                                    value={points}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        if (/^-?\d*$/.test(value)) {
+                                            setPoints(parseInt(value || "0"));
+                                        }
+                                    }}
+                                    inputProps={{
+                                        inputMode: "numeric",
+                                        pattern: "-?[0-9]*",
+                                    }}
+                                />
+
                             </Stack>
                         </Grid>
 
@@ -515,9 +535,11 @@ const EmployeeCardDialog: React.FC<EmployeeCardDialogProps> = ({userId, user, op
                         Uložiť
                     </Button>
 
-                    <Button variant="outlined" color="secondary" onClick={handleDialogClose}>
+                    <Button variant="outlined" onClick={handleDialogClose}>
                         Zrušiť
                     </Button>
+
+                 
                 </DialogActions>
             </form>
         </Dialog>
