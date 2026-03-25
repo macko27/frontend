@@ -61,6 +61,11 @@ export const handleNavigate = (
     case NotificationType.NewSuccession:
       navigate("/manageSuccesion");
       break;
+    case NotificationType.RecognitionCreated:
+    case NotificationType.RecognitionApproval:
+      console.log("dostal som sa")
+      navigate("/recognitions");
+      break;
     case NotificationType.General:
     default:
       break;
@@ -160,6 +165,7 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ notificationList })
             >
               Detail
             </Button>
+
             <Button size="small" onClick={() => ignoreNotification(notification.id)}>Ignorovať</Button>
           </Box>
         </Box>

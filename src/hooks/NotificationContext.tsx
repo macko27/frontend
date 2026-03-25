@@ -9,6 +9,11 @@ export enum NotificationType {
   ReviewUnset,
   GoalUnsent,
   NewSuccession,
+  SurveyAssignedNotificationType,
+  SurveyCompletedNotificationType,
+  SurveyExpiredNotificationType,
+  RecognitionCreated,
+  RecognitionApproval
 }
 
 interface NotificationContextType {

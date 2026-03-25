@@ -4,6 +4,7 @@ import api from "../../../../app/api";
 import { RecognitionRecipient } from "../../../../types/Recognition/RecognitionRecipient";
 import { useAuth } from "../../../../hooks/AuthProvider";
 import { DarkModeOutlined } from "@mui/icons-material";
+import { EmployeeCard } from "../../../../types/EmployeeCard";
 
 interface Props {
   selected: RecognitionRecipient[];
@@ -16,6 +17,14 @@ const RecognitionRecipientsSelector: React.FC<Props> = ({ selected, setSelected 
   const profile = useAuth();
   const role = profile.userProfile?.role;
   const isVeducko = role === "Vedúci zamestnanec";
+  const [creator, setCreator] = useState<EmployeeCard | null>(null);
+
+  useEffect(() => {
+    api.get(`/EmployeeCard/GetEmployeeCardLoggedIn/`)
+      .then(res => setCreator(res.data))
+      .catch(err => console.error(err));
+  }, []);
+
 
   useEffect(() => {
     if (query.length < 2) {
@@ -26,7 +35,13 @@ const RecognitionRecipientsSelector: React.FC<Props> = ({ selected, setSelected 
     const fetchData = async () => {
       try {
         const res = await api.get(`/Recognition/SearchRecipients?query=${query}`);
-        setResults(res.data);
+
+        const creatorId = creator?.employeeId;
+        const filtered = creatorId
+          ? res.data.filter((r: RecognitionRecipient) => r.id !== creatorId)
+          : res.data;
+
+        setResults(filtered);
       } catch (err) {
         console.error(err);
       }
