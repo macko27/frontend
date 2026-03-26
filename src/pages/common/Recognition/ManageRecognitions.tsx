@@ -68,6 +68,8 @@ const ManageRecognitions: React.FC = () => {
   const [attachmentsOpen, setAttachmentsOpen] = useState(false);
   const [attachmentsLoading, setAttachmentsLoading] = useState(false);
 
+  const [pointsBalance, setPointsBalance] = useState<number>(0);
+
   const nav = useNavigate();
   const { openSnackbar } = useSnackbar();
   const profile = useAuth();
@@ -179,6 +181,18 @@ const ManageRecognitions: React.FC = () => {
       setRejectReason('');
     }
   }, [openPendingDialog]);
+
+
+  useEffect(() => {
+    if (!creator?.employeeId) return;
+
+    loadRecognitions(creator.employeeId, tab);
+
+    api.get(`/Recognition/GetPointsBalance/${creator.employeeId}`)
+      .then(res => setPointsBalance(res.data))
+      .catch(() => openSnackbar('Nepodarilo sa načítať body', 'error'));
+
+  }, [creator, tab]);
 
 
   const handleSubmitDecision = async () => {
@@ -387,11 +401,41 @@ const ManageRecognitions: React.FC = () => {
   return (
     <Layout fullWidth={isMobile}>
       <Box sx={{ padding: 3, flexDirection: 'column', alignItems: 'flex-start' }}>
-        <Stack direction="row" spacing={2} alignItems="left" mb={2}>
-            <Typography variant="h4" fontWeight="bold">
-                Uznania a odmeny
+
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+  
+          <Typography variant="h4" fontWeight="bold">
+            Uznania a odmeny
+          </Typography>
+
+          <Box
+            sx={{
+              padding: '8px 16px',
+              display: 'flex',
+              flexDirection: 'column', // 👈 toto je kľúčové
+              alignItems: 'center',
+              justifyContent: 'center',
+              minWidth: 120
+            }}
+          >
+            <Typography variant="h5" fontWeight="bold">
+              Moje body
             </Typography>
-        </Stack>
+
+            <Typography
+              variant="h5"
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                fontWeight: 'bold'
+              }}
+            >
+              🪙 {pointsBalance}
+            </Typography>
+          </Box>
+
+        </Box>
 
         <Button
             variant="contained"
