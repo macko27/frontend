@@ -36,10 +36,21 @@ import { RecognitionToApprove } from '../../../types/Recognition/RecognitionToAp
 import { RecognitionState } from '../../../types/Recognition/RecognitionState';
 dayjs.extend(utc);
 
+interface TeamMember {
+  id: string;
+  fullName: string;
+  pointsBalance: number;
+}
+
 const ManageRecognitions: React.FC = () => {
   const [receivedRecognitions, setReceivedRecognitions] = useState<Recognition[]>([]);
   const [sentRecognitions, setSentRecognitions] = useState<Recognition[]>([]);
   const [toApproveRecognitions, setToApproveRecognitions] = useState<RecognitionToApprove[]>([]);
+
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [teamRecognitions, setTeamRecognitions] = useState<Recognition[]>([]);
+  const [openTeamRecognitionsDialog, setOpenTeamRecognitionsDialog] = useState(false);
+  const [selectedTeamMember, setSelectedTeamMember] = useState<TeamMember | null>(null);
 
   const [tab, setTab] = useState(0);
 
@@ -77,6 +88,7 @@ const ManageRecognitions: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const role = profile.userProfile?.role;
   const isVeducko = role === "Vedúci zamestnanec"; 
+  const isVsemocny = role === "Správca systému"; 
 
   const formatDateTime = (dateStr?: string) => {
     if (!dateStr) return '-';
@@ -93,15 +105,19 @@ const ManageRecognitions: React.FC = () => {
         const res = await api.get(`/Recognition/GetSent/${employeeId}`);
         setSentRecognitions(res.data);
       } 
-      else if (selectedTab === 2 && isVeducko) {
+      else if (selectedTab === 2 && (isVeducko || isVsemocny)) {
         const res = await api.get(`/Recognition/GetToBeApproved/${employeeId}`);
         setToApproveRecognitions(res.data);
+      } else if (selectedTab === 3 && isVeducko) {
+        const res = await api.get(`/Recognition/GetTeamMembers/${employeeId}`);
+        setTeamMembers(res.data);
       }
+
 
       setLoaded(true);
     } catch (err) {
       console.error(err);
-      openSnackbar('Nepodarilo sa načítať rozpoznania', 'error');
+      openSnackbar('Nepodarilo sa načítať uznania', 'error');
     }
   };
 
@@ -158,10 +174,22 @@ const ManageRecognitions: React.FC = () => {
   }, [creator, tab]);
 
 
-  const handleShowRecognitionDetail = (recognition: any) => {
+  const handleShowRecognitionDetail = async (recognition: any) => {
     // Reset príloh pri každom otvorení
     setAttachmentsOpen(false);
     setAttachments([]);
+
+    if (tab === 3) {
+      try {
+        const res = await api.get(`/Recognition/GetRecieved/${recognition.id}`);
+        setTeamRecognitions(res.data);
+        setSelectedTeamMember(recognition);
+        setOpenTeamRecognitionsDialog(true);
+      } catch {
+        openSnackbar('Nepodarilo sa načítať uznania člena tímu', 'error');
+      }
+      return;
+    }
 
     if (tab === 2) {
       setPendingRecognition(recognition as RecognitionToApprove);
@@ -171,6 +199,8 @@ const ManageRecognitions: React.FC = () => {
       setOpenRecognitionDetail(true);
     }
   };
+
+  
 
 
   useEffect(() => {
@@ -291,9 +321,17 @@ const ManageRecognitions: React.FC = () => {
         }
 
         return (
-          <Typography sx={{ textAlign: 'center', width: '100%' }}>
-            {stateText}
-          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: '100%',
+              height: '100%',
+            }}
+          >
+            <Typography sx={{ textAlign: 'center' }}>{stateText}</Typography>
+          </Box>
         );
       }
     },
@@ -398,6 +436,39 @@ const ManageRecognitions: React.FC = () => {
     },
   ];
 
+
+  //zalozka Moj tim
+  const columnsMyTeam: GridColDef[] = [
+    {
+      field: 'person',
+      headerName: 'Meno',
+      headerClassName: 'header',
+      flex: 4,
+      renderCell: (params) => {
+        return <span>{params.row.fullName}</span>;
+      }
+    },
+    { field: 'odmena', headerName: 'Odmena', flex: 1, minWidth: 50, headerClassName: 'header',
+      renderCell: (params) => (
+        <Tooltip title={params.row.pointsBalance}>
+          <span>{params.row.pointsBalance}</span>
+        </Tooltip>
+      )
+    },
+    {
+      field: 'actions',
+      headerName: 'Akcia',
+      flex: 1,
+      minWidth: 160,
+      sortable: false,
+      headerClassName: 'header',
+      disableColumnMenu: true,
+      renderCell: (params) => (
+        <Button size="small" variant="contained" onClick={() => handleShowRecognitionDetail(params.row)}>Zobraziť</Button>
+      )
+    }
+  ];
+
   return (
     <Layout fullWidth={isMobile}>
       <Box sx={{ padding: 3, flexDirection: 'column', alignItems: 'flex-start' }}>
@@ -412,7 +483,7 @@ const ManageRecognitions: React.FC = () => {
             sx={{
               padding: '8px 16px',
               display: 'flex',
-              flexDirection: 'column', // 👈 toto je kľúčové
+              flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
               minWidth: 120
@@ -454,7 +525,8 @@ const ManageRecognitions: React.FC = () => {
             >
             <Tab label="Doručené" />
             <Tab label="Odoslané" />
-            {isVeducko &&<Tab label="Na schválenie" />}
+            {(isVeducko || isVsemocny) &&<Tab label="Na schválenie" />}
+            {isVeducko &&<Tab label="Moj tím" />}
             </Tabs>
 
         </Box>
@@ -492,13 +564,26 @@ const ManageRecognitions: React.FC = () => {
               />
             )}
 
-            {tab === 2 && isVeducko && (
+            {/* TAB 2 – Na schválenie */}
+            {tab === 2 && (isVeducko || isVsemocny) && (
               <DataGrid
                 columns={columnsForApproval}
                 loading={!loaded}
                 rows={sortedRecognitions}
                 sx={dataGridStyles(theme)}
                 getRowId={(row) => row.recipientRecordId}
+                autoHeight
+              />
+            )}
+
+            {/* TAB 3 – Moj tím */}
+            {tab === 3 && isVeducko && (
+              <DataGrid
+                columns={columnsMyTeam}
+                loading={!loaded}
+                rows={teamMembers}
+                sx={dataGridStyles(theme)}
+                getRowId={(row) => row.id}
                 autoHeight
               />
             )}
@@ -883,6 +968,83 @@ const ManageRecognitions: React.FC = () => {
         </DialogContent>
 
         
+      </Dialog>
+
+
+
+
+      <Dialog
+        open={openTeamRecognitionsDialog}
+        onClose={() => setOpenTeamRecognitionsDialog(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          {selectedTeamMember?.fullName} – prijaté uznania
+          <IconButton
+            onClick={() => setOpenTeamRecognitionsDialog(false)}
+            sx={{ position: "absolute", right: 16, top: 16 }}
+          >
+            ✕
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent>
+          <DataGrid
+            rows={teamRecognitions}
+            getRowId={(row) => row.id}
+            columns={[
+              {
+                field: 'odosielatel',
+                headerName: 'Odosielateľ',
+                headerClassName: 'header',
+                flex: 2,
+                renderCell: (params) => (
+                  <span>{params.row.createdBy.fullName}</span>
+                )
+              },
+              {
+                field: 'predmet',
+                headerName: 'Predmet',
+                headerClassName: 'header',
+                flex: 2
+              },
+              {
+                field: 'odmena',
+                headerName: 'Body',
+                headerClassName: 'header',
+                flex: 1
+              },
+              {
+                field: 'actions',
+                headerName: 'Akcia',
+                headerClassName: 'header',
+                flex: 1,
+                renderCell: (params) => (
+                  <Button
+                    size="small"
+                    variant="contained"
+                    onClick={() => {
+                      setDetailRecognition(params.row);
+                      setOpenRecognitionDetail(true);
+                    }}
+                  >
+                    Zobraziť
+                  </Button>
+                )
+              }
+            ]}
+             sx={dataGridStyles(theme)}  
+            autoHeight
+            pageSizeOptions={[5, 10]}
+          />
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setOpenTeamRecognitionsDialog(false)}>
+            Zavrieť
+          </Button>
+        </DialogActions>
       </Dialog>
 
 
