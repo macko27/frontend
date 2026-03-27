@@ -36,13 +36,16 @@ const HomeScreen: React.FC = () => {
 
 
   useEffect(() => {
+     if (!isEmployee) return;
+
     api.get("/Goal/MyGoals")
       .then((res) => {
-        console.log("Fetched goals:", res.data);
+        const goals = Array.isArray(res.data) ? res.data : [];
+        console.log("Fetched goals:", goals);
 
         // Počítanie statusov cieľov
         const stats: { [key: string]: number } = {};
-        res.data.forEach((goal: Goal) => {
+        goals.forEach((goal: Goal) => {
           stats[goal.statusDescription] = (stats[goal.statusDescription] || 0) + 1;
         });
 
@@ -52,18 +55,17 @@ const HomeScreen: React.FC = () => {
         setTotalGoals(totalGoalsCount);
 
         // Filter
-        const filtered = res.data
-          .filter((goal: Goal) => goal.statusDescription === "Prebiehajúci")
-          .map((goal: Goal) => ({ id: goal.id, goal: goal.name }));
-
-        setFilteredGoals(filtered);
+        const filtered = goals
+        .filter((goal: Goal) => goal.statusDescription === "Prebiehajúci")
+        .map((goal: Goal) => ({ id: Number(goal.id), goal: goal.name }));
+      setFilteredGoals(filtered);
       })
       .catch((err) => {
         console.error(err);
         setFilteredGoals([]);
         setGoalStats({});
       });
-  }, []);
+  }, [userProfile]);
 
   useEffect(() => {
     api.get("/Review/GetPendingReview")

@@ -81,6 +81,42 @@ const CreateCourse: React.FC = () => {
     return res?.data.filePath; 
 };
   const handleSubmit = async () => {
+    //VALIDÁCIA
+    if (!courseName.trim()) {
+      openSnackbar("Zadaj názov kurzu", "error");
+      return;
+    }
+
+    if (!courseType) {
+      openSnackbar("Vyber typ kurzu", "error");
+      return;
+    }
+
+    if (!courseVersion || courseVersion <= 0) {
+      openSnackbar("Zadaj platnú verziu", "error");
+      return;
+    }
+
+    if (selectedEmployees.length === 0) {
+      openSnackbar("Vyber aspoň jedného zamestnanca", "error");
+      return;
+    }
+
+    if (files.length === 0) {
+      openSnackbar("Pridaj aspoň jeden súbor", "error");
+      return;
+    }
+
+    if (!expirationDate) {
+      openSnackbar("Vyber termín dokončenia", "error");
+      return;
+    }
+
+    if (!userProfile?.id) {
+      openSnackbar("Chyba používateľa", "error");
+      return;
+    }
+
     const filePath: FileRequest[] = [];
     console.log("Files:", files);
     for (const file of files) {
@@ -143,7 +179,7 @@ const CreateCourse: React.FC = () => {
         Vybraní zamestnanci:
       </Typography>
       {selectedEmployees.map((emp) => (
-        <Typography key={emp.id}>{emp.name}</Typography>
+        <Typography key={emp.employeeId}>{emp.name}</Typography>
       ))}
     </div>
 
