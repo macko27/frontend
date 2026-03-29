@@ -34,6 +34,7 @@ import utc from 'dayjs/plugin/utc';
 import { EmployeeCard } from "../../../types/EmployeeCard";
 import { RecognitionToApprove } from '../../../types/Recognition/RecognitionToApprove';
 import { RecognitionState } from '../../../types/Recognition/RecognitionState';
+import { CoPresentOutlined } from '@mui/icons-material';
 dayjs.extend(utc);
 
 interface TeamMember {
@@ -617,11 +618,11 @@ const ManageRecognitions: React.FC = () => {
             {/* Príjemca / Odosielateľ */}
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
               <Typography color="text.secondary">
-                {tab === 0 ? "Odosielateľ" : "Príjemca"}
+                {(tab === 0 || tab === 3) ? "Odosielateľ" : "Príjemca"}
               </Typography>
 
               <Box textAlign="right">
-                {tab === 0 ? (
+                {(tab === 0 || tab === 3) ? (
                   <Typography>{detailRecognition?.createdBy?.fullName}</Typography>
                 ) : (
                   detailRecognition?.recipients?.map((r: any) => (
@@ -754,7 +755,11 @@ const ManageRecognitions: React.FC = () => {
 
             {/* Príjemcovia */}
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-              <Typography>
+              <Typography color="text.secondary">
+                Príjemca
+              </Typography>
+
+              <Typography sx={{ textAlign: "right" }}>
                 {pendingRecognition?.recipient?.fullName}
               </Typography>
             </Box>
