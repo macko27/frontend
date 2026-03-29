@@ -14,6 +14,19 @@ const PasswordChange: React.FC = () => {
     const navigate = useNavigate();
     const { openSnackbar } = useSnackbar();
 
+    const autofillSx = {
+        width: "100%",
+        "& .MuiOutlinedInput-root": {
+            "& input:-webkit-autofill": {
+                WebkitBoxShadow: (theme: any) =>
+                    theme.palette.mode === "dark"
+                        ? "0 0 0 1000px #333 inset"
+                        : "0 0 0 1000px #fff inset",
+                WebkitTextFillColor: (theme: any) => theme.palette.text.primary,
+            },
+        },
+    };
+
     // Funkcia na validáciu hesla
     const validatePassword = (password: string) => {
         if (password.length < 13) return "Heslo musí mať minimálne 13 znakov!";
@@ -62,7 +75,7 @@ const PasswordChange: React.FC = () => {
     };
 
     return (
-        <Layout>
+        <Layout fullWidth={true}>
             <Box
                 sx={{
                     height: "100vh",
@@ -87,6 +100,7 @@ const PasswordChange: React.FC = () => {
                         label="Aktuálne heslo"
                         type="password"
                         value={currentPassword}
+                        sx={autofillSx} 
                         onChange={(e) => setCurrentPassword(e.target.value)}
                     />
 
@@ -96,6 +110,7 @@ const PasswordChange: React.FC = () => {
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         error={!!passwordError}
+                        sx={autofillSx} 
                         helperText={passwordError}
                     />
 
@@ -105,6 +120,7 @@ const PasswordChange: React.FC = () => {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         error={!!passwordError}
+                        sx={autofillSx} 
                         helperText={passwordError && "Nové heslá sa musia zhodovať s vyššie uvedenými pravidlami"}
                     />
 
