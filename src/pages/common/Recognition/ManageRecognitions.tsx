@@ -82,6 +82,9 @@ const ManageRecognitions: React.FC = () => {
 
   const [pointsBalance, setPointsBalance] = useState<number>(0);
 
+  const [pointsTransactions, setPointsTransactions] = useState<any[]>([]);
+  const [openPointsDialog, setOpenPointsDialog] = useState(false);
+
   const nav = useNavigate();
   const { openSnackbar } = useSnackbar();
   const profile = useAuth();
@@ -94,6 +97,17 @@ const ManageRecognitions: React.FC = () => {
   const formatDateTime = (dateStr?: string) => {
     if (!dateStr) return '-';
     return dayjs.utc(dateStr).local().format('DD.MM.YYYY HH:mm');
+  };
+
+  const loadPointsTransactions = async () => {
+    try {
+      const res = await api.get(`/Recognition/GetPointsHistory/${creator?.employeeId}`);
+      setPointsTransactions(res.data);
+      setOpenPointsDialog(true);
+    } catch (err) {
+      console.error(err);
+      openSnackbar('Nepodarilo sa načítať históriu bodov', 'error');
+    }
   };
 
   const loadRecognitions = async (employeeId: string, selectedTab: number) => {
@@ -175,7 +189,29 @@ const ManageRecognitions: React.FC = () => {
   }, [creator, tab]);
 
 
+  const handleShowRecognitionFromPoints = async (recognitionId: string) => {
+     if (!recognitionId) {
+      openSnackbar('Detail nie je k dispozícii', 'error');
+      return;
+    }
+    
+    try {
+      setAttachmentsOpen(false);
+      setAttachments([]);
+
+      const res = await api.get(`/Recognition/GetDetail/${recognitionId}`);
+      setDetailRecognition(res.data);
+      setOpenRecognitionDetail(true);
+
+    } catch (err) {
+      console.error(err);
+      openSnackbar('Nepodarilo sa načítať detail uznania', 'error');
+    }
+  };
+
+
   const handleShowRecognitionDetail = async (recognition: any) => {
+
     // Reset príloh pri každom otvorení
     setAttachmentsOpen(false);
     setAttachments([]);
@@ -438,6 +474,67 @@ const ManageRecognitions: React.FC = () => {
   ];
 
 
+
+  const columnsPoints: GridColDef[] = [
+    {
+      field: 'date',
+      headerName: 'Dátum',
+      headerClassName: 'header',
+      flex: 1,
+      renderCell: (params) => formatDateTime(params.row.date)
+    },
+    {
+      field: 'type',
+      headerName: 'Typ',
+      headerClassName: 'header',
+      flex: 1,
+    },
+    {
+      field: 'description',
+      headerName: 'Popis',
+      headerClassName: 'header',
+      flex: 2,
+    },
+    {
+      field: 'points',
+      headerName: 'Body',
+      headerClassName: 'header',
+      flex: 1,
+      renderCell: (params) => {
+        const value = params.row.points as number;
+        const color = value >= 0 ? 'success.main' : 'error.main';
+        return (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',   // horizontálne centrovanie
+              alignItems: 'center',       // vertikálne centrovanie
+              height: '100%',             // zaberá celú výšku bunky
+              width: '100%',
+            }}
+          >
+            <Typography sx={{ color }}>
+              {value}
+            </Typography>
+          </Box>
+        );
+      }
+    },
+    {
+      field: 'actions',
+      headerName: 'Akcia',
+      flex: 1,
+      minWidth: 160,
+      sortable: false,
+      headerClassName: 'header',
+      disableColumnMenu: true,
+      renderCell: (params) => (
+        <Button size="small" variant="contained" onClick={() => handleShowRecognitionFromPoints(params.row.recognitionId)}>Zobraziť</Button>
+      )
+    }
+  ];
+
+
   //zalozka Moj tim
   const columnsMyTeam: GridColDef[] = [
     {
@@ -494,17 +591,29 @@ const ManageRecognitions: React.FC = () => {
               Moje body
             </Typography>
 
-            <Typography
-              variant="h5"
+            <Box
+              onClick={loadPointsTransactions}
               sx={{
+                padding: '8px 16px',
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
-                gap: 0.5,
-                fontWeight: 'bold'
+                justifyContent: 'center',
+                minWidth: 120,
+                cursor: 'pointer',
+                '&:hover': {
+                  backgroundColor: 'action.hover',
+                  borderRadius: 2
+                }
               }}
             >
-              🪙 {pointsBalance}
-            </Typography>
+
+              <Typography variant="h5" fontWeight="bold">
+                {pointsBalance}
+              </Typography>
+
+            </Box>
+
           </Box>
 
         </Box>
@@ -1047,6 +1156,42 @@ const ManageRecognitions: React.FC = () => {
 
         <DialogActions>
           <Button onClick={() => setOpenTeamRecognitionsDialog(false)}>
+            Zavrieť
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+
+
+      <Dialog
+        open={openPointsDialog}
+        onClose={() => setOpenPointsDialog(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          História bodov
+          <IconButton
+            onClick={() => setOpenPointsDialog(false)}
+            sx={{ position: "absolute", right: 16, top: 16 }}
+          >
+            ✕
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent>
+          <DataGrid
+            rows={pointsTransactions}
+            columns={columnsPoints}
+            getRowId={(row) => row.id}
+            sx={dataGridStyles(theme)}
+            autoHeight
+            pageSizeOptions={[5, 10, 25]}
+          />
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setOpenPointsDialog(false)}>
             Zavrieť
           </Button>
         </DialogActions>
