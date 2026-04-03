@@ -577,44 +577,55 @@ const ManageRecognitions: React.FC = () => {
             Uznania a odmeny
           </Typography>
 
-          <Box
-            sx={{
-              padding: '8px 16px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              minWidth: 120
-            }}
-          >
-            <Typography variant="h5" fontWeight="bold">
-              Moje body
-            </Typography>
-
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            {/* Box Moje body */}
             <Box
-              onClick={loadPointsTransactions}
               sx={{
                 padding: '8px 16px',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                minWidth: 120,
-                cursor: 'pointer',
-                '&:hover': {
-                  backgroundColor: 'action.hover',
-                  borderRadius: 2
-                }
+                minWidth: 120
               }}
             >
-
               <Typography variant="h5" fontWeight="bold">
-                {pointsBalance}
+                Moje body
               </Typography>
 
+              <Box
+                onClick={loadPointsTransactions}
+                sx={{
+                  padding: '8px 16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: 120,
+                  cursor: 'pointer',
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                    borderRadius: 2
+                  }
+                }}
+              >
+                <Typography variant="h5" fontWeight="bold">
+                  {pointsBalance}
+                </Typography>
+              </Box>
             </Box>
 
+            <Button
+              variant="contained"
+              color="info"
+              sx={{ height: 56 }}
+              onClick={() => nav('/shop')}
+            >
+              Prejsť do e-shopu
+            </Button>
           </Box>
+
+
 
         </Box>
 

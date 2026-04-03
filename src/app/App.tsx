@@ -55,6 +55,9 @@ import ManageSurveys from "../pages/veduci zamestnanec/Survey/ManageSurveys";
 import CreateSurvey from "../pages/veduci zamestnanec/Survey/CreateSurvey";
 import ManageRecognitions from "../pages/common/Recognition/ManageRecognitions";
 import CreateRecognition from "../pages/common/Recognition/CreateRecognition/CreateRecognition";
+import ManageShop from "../pages/shop admin/ManageShop";
+import ManageCategory from "../pages/shop admin/Category/ManageCategory";
+import ManageProduct from "../pages/shop admin/Product/ManageProduct";
 
 type AppProps = {
     toggleTheme: () => void;
@@ -84,6 +87,7 @@ const App: React.FC<AppProps> = ({ toggleTheme, mode }) => {
                                 <Route path="/notifications" element={<NotificationsPage />} />
                                 <Route path="/recognitions" element={<ManageRecognitions />} />
                                 <Route path="/createRecognition" element={<CreateRecognition />} />
+                                <Route path="/shop" element={<ManageShop />} />
                                 {/* Role protected routes */}
                                 {/* Spravca */}
                                 <Route element={<ProtectedRoute allowedRoles={[Roles.Spravca]} />}>
@@ -140,6 +144,13 @@ const App: React.FC<AppProps> = ({ toggleTheme, mode }) => {
                                     <Route path="/myReviews" element={<ManageReviewsZam/>}/>     
                                     <Route path="/updateReviewZam" element={<UpdateReviewZam/>} />
                                     <Route path="/adaptation" element={<MyAdaptation/>} />
+                                </Route>
+
+
+                                <Route element={<ProtectedRoute allowedRoles={[Roles.ShopAdmin]}/>}>
+                                    <Route path="/shop" element={<ManageShop/>} />
+                                    <Route path="/manageCategory" element={<ManageCategory />} />    
+                                    <Route path="/manageProduct" element={<ManageProduct />} />
                                 </Route>
                             
                             </Route>
