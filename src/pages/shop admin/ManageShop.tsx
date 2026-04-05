@@ -1,40 +1,125 @@
-import { Box, TextField, Button, Typography } from "@mui/material";
+import { Box, Typography, Card, CardContent, CardMedia, Chip, IconButton, Grid } from "@mui/material";
+import AddIcon from '@mui/icons-material/Add';
 import { useEffect, useState } from "react";
 import Layout from "../../components/Layout";
 import api from "../../app/api";
-import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "../../hooks/SnackBarContext";
 import ShopHeader from "./ShopHeader";
 
+type ShopCategory = {
+  id: string;
+  name: string;
+};
+
+type Product = {
+  id: string;
+  name: string;
+  info: string;
+  price: number;
+  shopCategory: ShopCategory;
+  imageUrl?: string;
+};
+
 const ManageShop: React.FC = () => {
-    const [pointsBalance, setPointsBalance] = useState<number>(0);
-    const [creator, setCreator] = useState<any>(null);
-    const { openSnackbar } = useSnackbar();
+  const [pointsBalance, setPointsBalance] = useState<number>(0);
+  const [creator, setCreator] = useState<any>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const { openSnackbar } = useSnackbar();
 
-    useEffect(() => {
+  useEffect(() => {
     api.get(`/EmployeeCard/GetEmployeeCardLoggedIn/`)
-        .then(res => setCreator(res.data));
-    }, []);
+      .then(res => setCreator(res.data))
+      .catch(() => openSnackbar('Nepodarilo sa načítať údaje používateľa', 'error'));
+  }, []);
 
-    useEffect(() => {
-        if (!creator?.employeeId) return;
-        api.get(`/Recognition/GetPointsBalance/${creator?.employeeId}`)
-            .then(res => setPointsBalance(res.data))
-            .catch(() => openSnackbar('Nepodarilo sa načítať body', 'error'));
-    }, [creator]);
-    
-    return (
-        <Layout fullWidth={true}>
-        <Box sx={{ p: 3 }}>
-            
-            <ShopHeader points={pointsBalance} />
+  useEffect(() => {
+    if (!creator?.employeeId) return;
+    api.get(`/Recognition/GetPointsBalance/${creator?.employeeId}`)
+      .then(res => setPointsBalance(res.data))
+      .catch(() => openSnackbar('Nepodarilo sa načítať body', 'error'));
+  }, [creator]);
 
-            <Typography variant="h4" mt={3}>
-                Správa obchodu
-            </Typography>
+  const loadProducts = async () => {
+    try {
+      const res = await api.get('/Shop/GetAll');
 
-        </Box>
-        </Layout>
+      setProducts(
+        res.data.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          info: p.info,
+          price: p.price,
+          imageUrl: p.productAttachment?.fileUrl,
+          shopCategory: {
+            id: p.shopCategory?.id,
+            name: p.shopCategory?.name,
+          },
+        }))
+      );
+
+      setLoaded(true);
+    } catch (err) {
+      console.error(err);
+      openSnackbar('Nepodarilo sa načítať produkty', 'error');
+    }
+  };
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const handleAddToCart = (product: Product) => {
+    openSnackbar(`Produkt "${product.name}" pridaný do košíka`, 'success');
+    // Tu môžeš doplniť logiku na pridanie do košíka
+  };
+
+  return (
+    <Layout fullWidth={true}>
+      <Box sx={{ p: 3 }}>
+        <ShopHeader points={pointsBalance} />
+
+        <Typography variant="h4" mt={3} mb={2}>
+          Správa obchodu
+        </Typography>
+
+        {loaded ? (
+          <Grid container spacing={3}>
+            {products.map(product => (
+              <Grid item xs={12} sm={6} md={4} key={product.id}>
+                <Card sx={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                  {product.imageUrl && (
+                    <CardMedia
+                      component="img"
+                      height="150"
+                      image={product.imageUrl}
+                      alt={product.name}
+                    />
+                  )}
+                  <CardContent sx={{ flex: 1 }}>
+                    <Typography variant="h6" fontWeight="bold">
+                      {product.name}
+                    </Typography>
+                    <Chip label={product.shopCategory?.name} size="small" variant="outlined" sx={{ my: 1 }} />
+
+                    <Typography fontWeight="bold">{product.price} bodov</Typography>
+                  </CardContent>
+                  <IconButton
+                    color="primary"
+                    sx={{ position: 'absolute', bottom: 8, right: 8, backgroundColor: 'white', '&:hover': { backgroundColor: 'lightgray' } }}
+                    onClick={() => handleAddToCart(product)}
+                  >
+                    <AddIcon />
+                  </IconButton>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        ) : (
+          <Typography>Načítavam produkty...</Typography>
+        )}
+      </Box>
+    </Layout>
   );
 };
 
