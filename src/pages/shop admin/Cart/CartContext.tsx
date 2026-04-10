@@ -4,6 +4,8 @@ import { useEffect } from "react";
 
 interface CartContextType {
   items: CartItem[];
+  userId: string | null;
+  setUserId: (id: string) => void;
   pointsBalance: number;
   setPointsBalance: (points: number) => void;
   addToCart: (item: CartItem) => boolean;
@@ -26,26 +28,33 @@ export const useCart = () => {
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const [pointsBalance, setPointsBalance] = useState<number>(0);
+  const [userId, setUserId] = useState<string | null>(null);
 
-  const [items, setItems] = useState<CartItem[]>(() => {
-    if (typeof window === "undefined") return [];
-
-    const savedCart = localStorage.getItem("cart");
-    if (!savedCart) return [];
-
-    try {
-      return JSON.parse(savedCart);
-    } catch (e) {
-      console.error("Invalid cart data in localStorage");
-      return [];
-    }
-  });
-
-
+  const [items, setItems] = useState<CartItem[]>([]);
 
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(items));
-  }, [items]);
+    if (!userId) return;
+
+    const savedCart = localStorage.getItem(`cart_${userId}`);
+
+    if (!savedCart) {
+      setItems([]);
+      return;
+    }
+
+    try {
+      setItems(JSON.parse(savedCart));
+    } catch {
+      setItems([]);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    localStorage.setItem("cart_user", userId);
+    localStorage.setItem(`cart_${userId}`, JSON.stringify(items));
+  }, [items, userId]);
 
 
   const addToCart = (newItem: CartItem): boolean => {
@@ -110,7 +119,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearCart = () => setItems([]);
 
   return (
-    <CartContext.Provider value={{ items, pointsBalance, setPointsBalance, addToCart, removeFromCart, updateQuantity, clearCart }}>
+    <CartContext.Provider value={{ items, userId, setUserId, pointsBalance, setPointsBalance, addToCart, removeFromCart, updateQuantity, clearCart }}>
       {children}
     </CartContext.Provider>
   );

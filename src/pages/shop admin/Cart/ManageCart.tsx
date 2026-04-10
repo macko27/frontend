@@ -17,7 +17,7 @@ import { useSnackbar } from "../../../hooks/SnackBarContext";
 
 const ManageCart: React.FC = () => {
   const { openSnackbar } = useSnackbar();
-  const { items, updateQuantity, removeFromCart, pointsBalance, setPointsBalance } = useCart();
+  const { items, updateQuantity, removeFromCart, pointsBalance, setUserId } = useCart();
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 

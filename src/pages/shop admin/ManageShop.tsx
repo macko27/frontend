@@ -28,7 +28,7 @@ const ManageShop: React.FC = () => {
   const [loaded, setLoaded] = useState(false);
   const { openSnackbar } = useSnackbar();
   const navigate = useNavigate();
-  const { addToCart, pointsBalance, setPointsBalance } = useCart();
+  const { addToCart, pointsBalance, setPointsBalance, setUserId } = useCart();
 
   useEffect(() => {
     api.get(`/EmployeeCard/GetEmployeeCardLoggedIn/`)
@@ -44,6 +44,12 @@ const ManageShop: React.FC = () => {
       .then(res => setPointsBalance(res.data))
       .catch(() => openSnackbar('Nepodarilo sa načítať body', 'error'));
   }, [creator]);
+
+  useEffect(() => {
+    if (creator?.employeeId) {
+      setUserId(creator.employeeId);
+    }
+  }, [creator, setUserId]);
 
   const loadProducts = async () => {
     try {
