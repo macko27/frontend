@@ -17,7 +17,7 @@ import { useSnackbar } from "../../hooks/SnackBarContext";
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams();
-  const { addToCart } = useCart();
+  const { addToCart, pointsBalance } = useCart();
   const { openSnackbar } = useSnackbar();
 
   const [product, setProduct] = useState<any>(null);
@@ -35,14 +35,19 @@ const ProductDetail: React.FC = () => {
   if (!product) return <div>Loading...</div>;
 
   const handleAddToCart = () => {
-    addToCart({
+    const success = addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
       image: product.productAttachment?.fileUrl,
       quantity: quantity,
     });
-    openSnackbar(`Produkt "${product.name}" pridaný do košíka`, 'success');
+
+    if (success) {
+      openSnackbar(`Produkt "${product.name}" pridaný do košíka`, 'success');
+    } else {
+      openSnackbar("Nemáš dostatok bodov", "error");
+    }
   };
 
   return (
@@ -63,7 +68,7 @@ const ProductDetail: React.FC = () => {
         </Button>
 
         <ShopHeaderRight
-            points={0}
+            points={pointsBalance}
         />
         </Box>
 

@@ -156,6 +156,12 @@ const Layout: React.FC<LayoutProps> = ({ children, fullWidth = false }) => {
             component: null,
         },
         {
+            role: Roles.ShopAdmin,
+            label: "Spätná vázba",
+            path: "/manageFeedback",
+            component: null,
+        },
+        {
             role: Roles.Veduci,
             label: "Spätná vázba",
             path: "/manageFeedback",
@@ -191,7 +197,12 @@ const Layout: React.FC<LayoutProps> = ({ children, fullWidth = false }) => {
             path: null,
             component: <OrganizationHierarchy />,
         },
-
+{
+            role: Roles.ShopAdmin,
+            label: "Organizačná hierarchia",
+            path: null,
+            component: <OrganizationHierarchy />,
+        },
         {
             role: Roles.Veduci,
             label: "Posudzovanie cieľov",
@@ -205,6 +216,12 @@ const Layout: React.FC<LayoutProps> = ({ children, fullWidth = false }) => {
             component: null,
         },
         {
+            role: Roles.ShopAdmin,
+            label: "Moje ciele a rozvoj",
+            path: "/employeeGoals",
+            component: null,
+        },
+        {
             role: Roles.Zamestnanec,
             label: "Posudzovanie cieľov",
             path: "/myReviews",
@@ -212,6 +229,18 @@ const Layout: React.FC<LayoutProps> = ({ children, fullWidth = false }) => {
         },
         {
             role: Roles.Zamestnanec,
+            label: "Adaptácia zamestnancov",
+            path: "/adaptation",
+            component: null,
+        },
+        {
+            role: Roles.ShopAdmin,
+            label: "Posudzovanie cieľov",
+            path: "/myReviews",
+            component: null,
+        },
+        {
+            role: Roles.ShopAdmin,
             label: "Adaptácia zamestnancov",
             path: "/adaptation",
             component: null,
@@ -248,6 +277,18 @@ const Layout: React.FC<LayoutProps> = ({ children, fullWidth = false }) => {
             component: null,
         },
         {
+            role: Roles.ShopAdmin,
+            label: "Moje kurzy",
+            path: "/manageCourses",
+            component: null,
+        },
+        {
+            role: Roles.ShopAdmin,
+            label: "Ankety",
+            path: "/surveys",
+            component: null,
+        },
+        {
             role: Roles.Veduci,
             label: "Ankety",
             path: "/surveys",
@@ -255,6 +296,12 @@ const Layout: React.FC<LayoutProps> = ({ children, fullWidth = false }) => {
         },
         {
             role: Roles.Zamestnanec,
+            label: "Uznania a odmeny",
+            path: "/recognitions",
+            component: null,
+        },
+        {
+            role: Roles.ShopAdmin,
             label: "Uznania a odmeny",
             path: "/recognitions",
             component: null,

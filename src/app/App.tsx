@@ -116,7 +116,7 @@ const App: React.FC<AppProps> = ({ toggleTheme, mode }) => {
 
                                 </Route>
 
-                                <Route element={<ProtectedRoute allowedRoles={[Roles.Veduci, Roles.Zamestnanec]} />}>
+                                <Route element={<ProtectedRoute allowedRoles={[Roles.Veduci, Roles.Zamestnanec, Roles.ShopAdmin]} />}>
                                     <Route path="/manageFeedback" element={<ManageFeedback />} />
                                     <Route path="/newFeedback" element={<NewFeedback />} />
                                     <Route path="/manageCourses" element={<ManageCourses/>} />
@@ -142,7 +142,7 @@ const App: React.FC<AppProps> = ({ toggleTheme, mode }) => {
                                     <Route path="/updateAdaptation" element={<UpdateAdaptation/>} />
                                 </Route>
 
-                                <Route element={<ProtectedRoute allowedRoles={[Roles.Zamestnanec]}/>}>
+                                <Route element={<ProtectedRoute allowedRoles={[Roles.Zamestnanec, Roles.ShopAdmin]}/>}>
                                     <Route path="/employeeGoals" element={<EmployeeGoals />} />    
                                     <Route path="/myReviews" element={<ManageReviewsZam/>}/>     
                                     <Route path="/updateReviewZam" element={<UpdateReviewZam/>} />

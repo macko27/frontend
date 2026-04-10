@@ -23,13 +23,12 @@ type Product = {
 };
 
 const ManageShop: React.FC = () => {
-  const [pointsBalance, setPointsBalance] = useState<number>(0);
   const [creator, setCreator] = useState<any>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loaded, setLoaded] = useState(false);
   const { openSnackbar } = useSnackbar();
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const { addToCart, pointsBalance, setPointsBalance } = useCart();
 
   useEffect(() => {
     api.get(`/EmployeeCard/GetEmployeeCardLoggedIn/`)
@@ -40,7 +39,7 @@ const ManageShop: React.FC = () => {
   useEffect(() => {
     if (!creator?.employeeId) return;
     if (pointsBalance !== 0) return;
-    
+
     api.get(`/Recognition/GetPointsBalance/${creator?.employeeId}`)
       .then(res => setPointsBalance(res.data))
       .catch(() => openSnackbar('Nepodarilo sa načítať body', 'error'));
@@ -76,13 +75,18 @@ const ManageShop: React.FC = () => {
   }, []);
 
   const handleAddToCart = (product: Product) => {
-    addToCart({
+    const success = addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
       image: product.imageUrl,
       quantity: 1,
     });
+
+    if (!success) {
+      openSnackbar("Nemáš dostatok bodov", "error");
+      return;
+    }
 
     openSnackbar(`Produkt "${product.name}" pridaný do košíka`, 'success');
   };
