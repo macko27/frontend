@@ -5,6 +5,7 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import App from "./app/App";
 import { themeOptions } from "./theme/theme";
+import { CartProvider } from "./pages/shop admin/Cart/CartContext";
 
 const AppWithTheme: React.FC = () => {
   const [mode, setMode] = React.useState<"light" | "dark">(() => {
@@ -26,7 +27,9 @@ const AppWithTheme: React.FC = () => {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <AuthProvider>
-        <App toggleTheme={toggleTheme} mode={mode}/>
+        <CartProvider>
+          <App toggleTheme={toggleTheme} mode={mode}/>
+        </CartProvider>
       </AuthProvider>
     </ThemeProvider>
   );

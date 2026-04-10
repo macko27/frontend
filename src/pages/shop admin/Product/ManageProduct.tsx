@@ -34,6 +34,7 @@ const ManageProductList: React.FC = () => {
 
 
   const handleOpenEdit = (product: Product) => {
+    return;
     setEditingProduct(product);
     setOpenAddDialog(true);
     };

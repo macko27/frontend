@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from "react";
 import api from '../../app/api';
 import { useSnackbar } from '../../hooks/SnackBarContext';
+import ShopHeaderRight from "./ShopHeaderRight";
 
 interface Props {
   points: number;
@@ -89,39 +90,9 @@ const ShopHeader: React.FC<Props> = ({ points }) => {
       </Box>
 
       {/*PRAVÁ ČASŤ*/}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: { xs: "space-between", md: "flex-end" },
-          alignItems: "center",
-          gap: 1,
-          width: { xs: "100%", md: "auto" },
-        }}
-      >
-        <IconButton>
-          <ShoppingCartIcon />
-        </IconButton>
-
-        <IconButton>
-          <Inventory2Icon />
-        </IconButton>
-
-        {/* Body */}
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            px: 2,
-            py: 1,
-            borderRadius: 999,
-            boxShadow: 1,
-          }}
-        >
-          <MonetizationOnIcon color="warning" />
-          <span>{points}</span>
-        </Box>
-      </Box>
+      <ShopHeaderRight
+        points={points}
+      />
     </Box>
   );
 };

@@ -5,7 +5,6 @@ import { useAuth } from "../hooks/AuthProvider";
 import ProtectedRoute from "../auth/ProtectedRoute";
 import RequiresAuth from "../auth/RequiresAuth";
 import HomePage from "../pages/common/HomePage";
-import "./App.css";
 import Roles from "../types/Roles";
 import RegisterUser from "../pages/spravca/Users/RegisterUser";
 import ManageUsers from "../pages/spravca/Users/ManageUsers";
@@ -58,6 +57,8 @@ import CreateRecognition from "../pages/common/Recognition/CreateRecognition/Cre
 import ManageShop from "../pages/shop admin/ManageShop";
 import ManageCategory from "../pages/shop admin/Category/ManageCategory";
 import ManageProduct from "../pages/shop admin/Product/ManageProduct";
+import ProductDetail from "../pages/shop admin/ProductDetail";
+import ManageCart from "../pages/shop admin/Cart/ManageCart";
 
 type AppProps = {
     toggleTheme: () => void;
@@ -88,6 +89,8 @@ const App: React.FC<AppProps> = ({ toggleTheme, mode }) => {
                                 <Route path="/recognitions" element={<ManageRecognitions />} />
                                 <Route path="/createRecognition" element={<CreateRecognition />} />
                                 <Route path="/shop" element={<ManageShop />} />
+                                <Route path="/shop/product/:id" element={<ProductDetail />} />
+                                <Route path="/shop/cart" element={<ManageCart />} />
                                 {/* Role protected routes */}
                                 {/* Spravca */}
                                 <Route element={<ProtectedRoute allowedRoles={[Roles.Spravca]} />}>

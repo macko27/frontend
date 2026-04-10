@@ -305,7 +305,7 @@ const Layout: React.FC<LayoutProps> = ({ children, fullWidth = false }) => {
                         <MenuIcon />
                     </IconButton>
                     <img
-                        src="logoSiemensFull.png"
+                        src="/logoSiemensFull.png"
                         onClick={() => {
                             nav("/home");
                         }}
