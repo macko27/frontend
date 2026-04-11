@@ -14,11 +14,13 @@ import api from "../../app/api";
 import ShopHeaderRight from "./ShopHeaderRight";
 import { useCart } from "./Cart/CartContext";
 import { useSnackbar } from "../../hooks/SnackBarContext";
+import { useNavigate } from "react-router-dom";
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams();
   const { addToCart, pointsBalance } = useCart();
   const { openSnackbar } = useSnackbar();
+  const navigate = useNavigate();
 
   const [product, setProduct] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
@@ -63,7 +65,8 @@ const ProductDetail: React.FC = () => {
                 gap: 2,
             }}
         >
-        <Button variant="contained" href="/shop">
+        <Button variant="contained"  
+          onClick={() => navigate("/shop")}>
             Späť do e-shopu
         </Button>
 

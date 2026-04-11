@@ -13,11 +13,13 @@ import Layout from "../../../components/Layout";
 import { CartItem } from "../../../types/Shop/CartItem";
 import { useCart } from "./CartContext";
 import { useSnackbar } from "../../../hooks/SnackBarContext";
+import { useNavigate } from "react-router-dom";
 
 
 const ManageCart: React.FC = () => {
   const { openSnackbar } = useSnackbar();
   const { items, updateQuantity, removeFromCart, pointsBalance, setUserId } = useCart();
+  const navigate = useNavigate();
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -149,7 +151,10 @@ const ManageCart: React.FC = () => {
               </Paper>
             ))}
 
-            <Button variant="contained" href="/shop" sx={{ mt: 4 }}>
+            <Button 
+              variant="contained" 
+              onClick={() => navigate("/shop")} 
+              sx={{ mt: 4 }}>
                 Späť do e-shopu
             </Button>
           </Box>
