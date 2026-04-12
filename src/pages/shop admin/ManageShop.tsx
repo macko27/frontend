@@ -1,6 +1,6 @@
-import { Box, Typography, Card, CardContent, CardMedia, Chip, IconButton, Grid } from "@mui/material";
+import { Box, Typography, Card, CardContent, CardMedia, Chip, IconButton, Grid, Button } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Layout from "../../components/Layout";
 import api from "../../app/api";
 import { useSnackbar } from "../../hooks/SnackBarContext";
@@ -29,6 +29,11 @@ const ManageShop: React.FC = () => {
   const { openSnackbar } = useSnackbar();
   const navigate = useNavigate();
   const { addToCart, pointsBalance, setPointsBalance, setUserId } = useCart();
+  const [page, setPage] = useState(0);
+  const [size] = useState(12);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const loadedRef = useRef(false);
 
   useEffect(() => {
     api.get(`/EmployeeCard/GetEmployeeCardLoggedIn/`)
@@ -51,33 +56,48 @@ const ManageShop: React.FC = () => {
     }
   }, [creator, setUserId]);
 
-  const loadProducts = async () => {
-    try {
-      const res = await api.get('/Shop/GetAll');
 
-      setProducts(
-        res.data.map((p: any) => ({
-          id: p.id,
-          name: p.name,
-          info: p.info,
-          price: p.price,
-          imageUrl: p.productAttachment?.fileUrl,
-          shopCategory: {
-            id: p.shopCategory?.id,
-            name: p.shopCategory?.name,
-          },
-        }))
+  const loadProducts = async (nextPage = 0) => {
+    try {
+      setLoadingMore(true);
+
+      const res = await api.get(
+        `/Shop/GetAll?page=${nextPage}&size=${size}`
       );
 
+      const newProducts = res.data.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        info: p.info,
+        price: p.price,
+        imageUrl: p.productAttachment?.fileUrl,
+        shopCategory: {
+          id: p.shopCategory?.id,
+          name: p.shopCategory?.name,
+        },
+      }));
+
+      setProducts(prev => [...prev, ...newProducts]);
+
+      if (newProducts.length < size) {
+        setHasMore(false);
+      }
+
+      setPage(nextPage);
       setLoaded(true);
     } catch (err) {
       console.error(err);
       openSnackbar('Nepodarilo sa načítať produkty', 'error');
+    } finally {
+      setLoadingMore(false);
     }
   };
 
   useEffect(() => {
-    loadProducts();
+    if (loadedRef.current) return;
+
+    loadedRef.current = true;
+    loadProducts(0);
   }, []);
 
   const handleAddToCart = (product: Product) => {
@@ -114,49 +134,94 @@ const ManageShop: React.FC = () => {
           </Typography>
 
           {loaded ? (
-            <Grid container spacing={3}>
-              {products.map(product => (
-                <Grid item xs={12} sm={6} md={4} key={product.id}>
-                  <Card sx={{
-                    position: 'relative',
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s',
-                    '&:hover': { transform: 'scale(1.02)' }
-                  }}
-                  onClick={() => handleOpenDetail(product)}>
-                    {product.imageUrl && (
-                      <CardMedia
-                        component="img"
-                        height="150"
-                        image={product.imageUrl}
-                        alt={product.name}
-                      />
-                    )}
-                    <CardContent sx={{ flex: 1 }}>
-                      <Typography variant="h6" fontWeight="bold">
-                        {product.name}
-                      </Typography>
-                      <Chip label={product.shopCategory?.name} size="small" variant="outlined" sx={{ my: 1 }} />
-
-                      <Typography fontWeight="bold">{product.price} bodov</Typography>
-                    </CardContent>
-                    <IconButton
-                      color="primary"
-                      sx={{ position: 'absolute', bottom: 8, right: 8, backgroundColor: 'white', '&:hover': { backgroundColor: 'lightgray' } }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddToCart(product)
+            <>
+              <Grid container spacing={3}>
+                {products.map(product => (
+                  <Grid item xs={12} sm={6} md={4} key={product.id}>
+                    <Card
+                      sx={{
+                        position: 'relative',
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        cursor: 'pointer',
+                        transition: 'transform 0.2s',
+                        '&:hover': { transform: 'scale(1.02)' }
                       }}
+                      onClick={() => handleOpenDetail(product)}
                     >
-                      <AddIcon />
-                    </IconButton>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
+                      {product.imageUrl && (
+                        <CardMedia
+                          component="img"
+                          height="150"
+                          image={product.imageUrl}
+                          alt={product.name}
+                        />
+                      )}
+
+                      <CardContent sx={{ flex: 1 }}>
+                        <Typography variant="h6" fontWeight="bold">
+                          {product.name}
+                        </Typography>
+
+                        <Chip
+                          label={product.shopCategory?.name}
+                          size="small"
+                          variant="outlined"
+                          sx={{ my: 1 }}
+                        />
+
+                        <Typography fontWeight="bold">
+                          {product.price} bodov
+                        </Typography>
+                      </CardContent>
+
+                      <IconButton
+                        color="primary"
+                        sx={{
+                          position: 'absolute',
+                          bottom: 8,
+                          right: 8,
+                          backgroundColor: 'white',
+                          '&:hover': { backgroundColor: 'lightgray' }
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddToCart(product);
+                        }}
+                      >
+                        <AddIcon />
+                      </IconButton>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+
+              {hasMore && (
+                <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+
+                  <Button
+                    onClick={() => loadProducts(page + 1)}
+                    disabled={loadingMore}
+                    variant="contained"
+                    color="info"
+                    sx={{
+                      height: 40,
+                      borderRadius: 999,
+                      px: 2,
+                      minWidth: "auto",
+                      whiteSpace: "nowrap",
+                      textTransform: "none",
+                      fontSize: "0.8rem",
+                      width: { xs: "100%", md: "auto" },
+                    }}
+                  >
+                    {loadingMore ? "Načítavam..." : "Načítať viac"}
+                  </Button>
+
+                </Box>
+              )}
+            </>
           ) : (
             <Typography>Načítavam produkty...</Typography>
           )}
