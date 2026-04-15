@@ -16,12 +16,22 @@ import Layout from '../../../components/Layout';
 import api from '../../../app/api';
 import { ShopCategory } from '../../../types/Shop/ShopCategory';
 import { useSnackbar } from '../../../hooks/SnackBarContext';
+import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton from '@mui/material/IconButton';
+
 
 const ManageCategory: React.FC = () => {
   const [categories, setCategories] = useState<ShopCategory[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<ShopCategory | null>(null);
+
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [categoryToEdit, setCategoryToEdit] = useState<ShopCategory | null>(null);
+  const [editName, setEditName] = useState('');
 
   const { openSnackbar } = useSnackbar();
 
@@ -54,14 +64,58 @@ const ManageCategory: React.FC = () => {
     }
   };
 
-  const handleDeleteCategory = async (id: string) => {
+  const handleOpenEdit = (category: ShopCategory) => {
+    setCategoryToEdit(category);
+    setEditName(category.name);
+    setEditDialogOpen(true);
+  };
+
+
+  const handleUpdateCategory = async () => {
+    if (!categoryToEdit) return;
+
     try {
-      await api.delete(`/Shop/DeleteCategory/${id}`);
-      openSnackbar('Kategória bola odstránená', 'success');
+      await api.post(`/Shop/UpdateCategory/${categoryToEdit.id}`, {
+        name: editName,
+      });
+
+      openSnackbar('Kategória bola upravená', 'success');
+
+      setEditDialogOpen(false);
+      setCategoryToEdit(null);
+      setEditName('');
+
       loadCategories();
     } catch (err) {
       console.error(err);
-      openSnackbar('Nepodarilo sa odstrániť kategóriu', 'error');
+      openSnackbar('Nepodarilo sa upraviť kategóriu', 'error');
+    }
+  };
+
+
+  const handleOpenDelete = (category: ShopCategory) => {
+    setCategoryToDelete(category);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!categoryToDelete) return;
+
+    try {
+      await api.delete(`/Shop/DeleteCategory/${categoryToDelete.id}`);
+
+      openSnackbar('Kategória bola odstránená', 'success');
+      setDeleteDialogOpen(false);
+      setCategoryToDelete(null);
+      loadCategories();
+    } catch (err: any) {
+      console.error(err);
+
+      const message = err?.response?.data || 'Nepodarilo sa odstrániť kategóriu';
+
+      openSnackbar(message, 'error');
+      setDeleteDialogOpen(false);
+      setCategoryToDelete(null);
     }
   };
 
@@ -73,7 +127,7 @@ const ManageCategory: React.FC = () => {
           <Typography variant="h4" fontWeight="bold">
             Správa kategórií
           </Typography>
-          <Button variant="contained" onClick={() => setOpenAddDialog(true)} disabled={true}>
+          <Button variant="contained" onClick={() => setOpenAddDialog(true)}>
             + Pridať kategóriu
           </Button>
         </Box>
@@ -85,9 +139,17 @@ const ManageCategory: React.FC = () => {
                 <Card key={cat.id}>
                   <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography>{cat.name}</Typography>
-                    <Button variant="outlined" color="error" onClick={() => handleDeleteCategory(cat.id)} disabled={true}>
-                      Zmazať
-                    </Button>
+
+                    <Box>
+                      <IconButton onClick={() => handleOpenEdit(cat)}>
+                        ✏️
+                      </IconButton>
+
+                      <IconButton onClick={() => handleOpenDelete(cat)}>
+                        <DeleteIcon color="error" />
+                      </IconButton>
+                    </Box>
+
                   </CardContent>
                 </Card>
               ))
@@ -119,6 +181,63 @@ const ManageCategory: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+
+      {/* Dialog na odstranenie kategórie */}  
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Potvrdenie mazania</DialogTitle>
+
+        <DialogContent>
+          <Typography>
+            Naozaj chceš zmazať kategóriu{' '}
+            <strong>{categoryToDelete?.name}</strong>?
+          </Typography>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>
+            Zrušiť
+          </Button>
+
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleConfirmDelete}
+          >
+            Zmazať
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Dialog na úpravu kategórie */}  
+      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Upraviť kategóriu</DialogTitle>
+
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Názov kategórie"
+            fullWidth
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+          />
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setEditDialogOpen(false)}>
+            Zrušiť
+          </Button>
+
+          <Button variant="contained" onClick={handleUpdateCategory}>
+            Uložiť
+          </Button>
+        </DialogActions>
+      </Dialog>
+
     </Layout>
   );
 };

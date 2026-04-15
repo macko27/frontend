@@ -17,6 +17,14 @@ import api from '../../../app/api';
 import AddProductDialog, { ProductFormData } from './AddProductDialog';
 import { Product } from '../../../types/Shop/Product';
 import { ShopCategory } from '../../../types/Shop/ShopCategory';
+import DeleteIcon from '@mui/icons-material/Delete';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+} from '@mui/material';
 
 
 
@@ -32,12 +40,14 @@ const ManageProductList: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { openSnackbar } = useSnackbar();
 
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+
 
   const handleOpenEdit = (product: Product) => {
-    return;
     setEditingProduct(product);
     setOpenAddDialog(true);
-    };
+  };
 
   const loadProducts = async () => {
     try {
@@ -73,6 +83,27 @@ const ManageProductList: React.FC = () => {
     } catch (err) {
       console.error(err);
       openSnackbar('Nepodarilo sa načítať kategórie', 'error');
+    }
+  };
+
+  const handleOpenDelete = (product: Product) => {
+    setProductToDelete(product);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!productToDelete) return;
+
+    try {
+      await api.delete(`/Shop/Delete/${productToDelete.id}`);
+
+      openSnackbar('Produkt bol zmazaný', 'success');
+      setDeleteDialogOpen(false);
+      setProductToDelete(null);
+      loadProducts();
+    } catch (err) {
+      console.error(err);
+      openSnackbar('Nepodarilo sa zmazať produkt', 'error');
     }
   };
 
@@ -168,9 +199,10 @@ const ManageProductList: React.FC = () => {
                 sx={{
                     display: 'flex',
                     flexDirection: isMobile ? 'column' : 'row',
-                    cursor: 'pointer', // zmení kurzor
+                    cursor: 'pointer',
                     transition: 'transform 0.2s',
-                    '&:hover': { transform: 'scale(1.02)' } // jemný efekt
+                    position: 'relative',
+                    '&:hover': { transform: 'scale(1.02)' }
                 }}
                 onClick={() => handleOpenEdit(product)}>
                 {product.imageUrl && (
@@ -182,14 +214,36 @@ const ManageProductList: React.FC = () => {
                   />
                 )}
                 <CardContent sx={{ flex: 1 }}>
+
                   <Typography variant="h6" fontWeight="bold">
                     {product.name}
                   </Typography>
+
                   <Chip label={product.shopCategory?.name} size="small" variant="outlined" sx={{ my: 1 }} />
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1, pr: 10 }}>
                     {product.info}
                   </Typography>
+
                   <Typography fontWeight="bold">{product.price} bodov</Typography>
+
+                  <IconButton
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenDelete(product);
+                    }}
+                    sx={{
+                      position: 'absolute',
+                      top: '50%',
+                      right: 8,
+                      transform: 'translateY(-50%)', // 👈 toto ju vycentruje vertikálne
+                      bgcolor: 'rgba(255,255,255,0.8)',
+                      '&:hover': { bgcolor: 'rgba(255,255,255,1)' }
+                    }}
+                  >
+                    <DeleteIcon color="error" />
+                  </IconButton>
+
                 </CardContent>
               </Card>
             ))
@@ -209,6 +263,34 @@ const ManageProductList: React.FC = () => {
         categories={categories}
         editingProduct={editingProduct}
       />
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Potvrdenie mazania</DialogTitle>
+
+        <DialogContent>
+          <Typography>
+            Naozaj chceš zmazať produkt{' '}
+            <strong>{productToDelete?.name}</strong>?
+          </Typography>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>
+            Zrušiť
+          </Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={handleConfirmDelete}
+          >
+            Zmazať
+          </Button>
+        </DialogActions>
+      </Dialog>
+
     </Layout>
   );
 };
