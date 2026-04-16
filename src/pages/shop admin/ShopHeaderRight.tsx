@@ -44,7 +44,7 @@ const ShopHeaderRight: React.FC<Props> = ({
       </Badge>
     </IconButton>
 
-      <IconButton onClick={() => nav("/shop/inventory")}>
+      <IconButton onClick={() => nav("/shop/myOrders")}>
         <Inventory2Icon />
       </IconButton>
 

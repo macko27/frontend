@@ -92,33 +92,33 @@ const ShopHeader: React.FC<Props> = ({ points }) => {
     <Box sx={{ width: "1px", height: 28, backgroundColor: "divider", flexShrink: 0 }} />
 
     {/* Kategória sekcia */}
-<Box sx={{ flex: 1, px: 1.5, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-  <Box sx={{ fontSize: "0.7rem", fontWeight: 600, color: "text.primary", lineHeight: 1 }}>
-    Kategória
-  </Box>
-  <Select
-    size="small"
-    defaultValue=""
-    variant="standard"
-    disableUnderline
-    displayEmpty
-    renderValue={(value) =>
-      value === "" ? (
-        <span style={{ color: "inherit", opacity: 0.5 }}>Zvoľte kategóriu</span>
-      ) : value === "1" ? "Elektronika" : "Darčeky"
-    }
-    sx={{
-      fontSize: "0.8rem",
-      color: "text.secondary",
-      mt: 0.3,
-      "& .MuiSelect-select": { p: 0 },
-    }}
-  >
-    <MenuItem value="">Zvoľte kategóriu</MenuItem>
-    <MenuItem value="1">Elektronika</MenuItem>
-    <MenuItem value="2">Darčeky</MenuItem>
-  </Select>
-</Box>
+    <Box sx={{ flex: 1, px: 1.5, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+      <Box sx={{ fontSize: "0.7rem", fontWeight: 600, color: "text.primary", lineHeight: 1 }}>
+        Kategória
+      </Box>
+      <Select
+        size="small"
+        defaultValue=""
+        variant="standard"
+        disableUnderline
+        displayEmpty
+        renderValue={(value) =>
+          value === "" ? (
+            <span style={{ color: "inherit", opacity: 0.5 }}>Zvoľte kategóriu</span>
+          ) : value === "1" ? "Elektronika" : "Darčeky"
+        }
+        sx={{
+          fontSize: "0.8rem",
+          color: "text.secondary",
+          mt: 0.3,
+          "& .MuiSelect-select": { p: 0 },
+        }}
+      >
+        <MenuItem value="">Zvoľte kategóriu</MenuItem>
+        <MenuItem value="1">Elektronika</MenuItem>
+        <MenuItem value="2">Darčeky</MenuItem>
+      </Select>
+    </Box>
 
     <IconButton size="small" sx={{ mx: 0.5 }} color="primary">
       <SearchIcon />
