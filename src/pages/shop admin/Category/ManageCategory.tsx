@@ -232,7 +232,11 @@ const ManageCategory: React.FC = () => {
             Zrušiť
           </Button>
 
-          <Button variant="contained" onClick={handleUpdateCategory}>
+          <Button 
+            variant="contained" 
+            onClick={handleUpdateCategory}
+            disabled={editName.trim() === categoryToEdit?.name.trim()}
+          >
             Uložiť
           </Button>
         </DialogActions>

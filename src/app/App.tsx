@@ -59,8 +59,8 @@ import ManageCategory from "../pages/shop admin/Category/ManageCategory";
 import ManageProduct from "../pages/shop admin/Product/ManageProduct";
 import ProductDetail from "../pages/shop admin/ProductDetail";
 import ManageCart from "../pages/shop admin/Cart/ManageCart";
-import OrderSuccess from "../pages/shop admin/OrderSuccess";
-import ManageOrders from "../pages/shop admin/ManageOrders";
+import OrderSuccess from "../pages/shop admin/Order/OrderSuccess";
+import ManageOrders from "../pages/shop admin/Order/ManageOrders";
 
 type AppProps = {
     toggleTheme: () => void;

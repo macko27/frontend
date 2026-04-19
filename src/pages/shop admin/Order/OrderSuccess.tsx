@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { Box, Typography, Button, Paper } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
-import Layout from "../../components/Layout";
+import Layout from "../../../components/Layout";
 
 const OrderSuccess = () => {
   const { id } = useParams();
