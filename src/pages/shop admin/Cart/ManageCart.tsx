@@ -19,6 +19,7 @@ import CartList from "./Components/CartList";
 import CartSummary from "./Components/CartSummary";
 import AddressForm from "./Components/AddressForm";
 
+
 const ManageCart: React.FC = () => {
   const { items, pointsBalance } = useCart();
 
@@ -29,6 +30,8 @@ const ManageCart: React.FC = () => {
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const totalPoints = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const remaining = pointsBalance - totalPoints;
+
+  const isCartEmpty = items.length === 0;
 
   return (
     <Layout fullWidth>
@@ -50,6 +53,7 @@ const ManageCart: React.FC = () => {
                 remaining={remaining}
                 buttonLabel="Pokračovať na adresu"
                 onAction={() => setStep("address")}
+                disabled={isCartEmpty}
               />
 
             </Box>

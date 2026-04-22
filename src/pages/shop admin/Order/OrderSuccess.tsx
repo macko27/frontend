@@ -5,7 +5,7 @@ import Layout from "../../../components/Layout";
 
 const OrderSuccess = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
+  const nav = useNavigate();
 
   return (
     <Layout fullWidth={true}>
@@ -60,7 +60,7 @@ const OrderSuccess = () => {
           <Button
             fullWidth
             variant="contained"
-            onClick={() => navigate("/shop/orders")}
+            onClick={() => nav("/shop/myOrders?mode=my")}
             sx={{
               mb: 1.5,
               borderRadius: 999,
@@ -78,7 +78,7 @@ const OrderSuccess = () => {
           <Button
             fullWidth
             variant="outlined"
-            onClick={() => navigate("/shop")}
+            onClick={() => nav("/shop")}
             sx={{
               borderRadius: 999,
               py: 1.4,

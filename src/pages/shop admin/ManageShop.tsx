@@ -124,7 +124,10 @@ const ManageShop: React.FC = () => {
   return (
     <Layout fullWidth={true}>
       <Box sx={{ p: 4, maxWidth: 1800, mx: "auto" }}>
-        <ShopHeader points={pointsBalance} />
+        <ShopHeader 
+          points={pointsBalance} 
+          employeeId={creator?.employeeId} 
+        />
 
         <Box sx={{ p: 3, maxWidth: 1500, display: "flex", flexDirection: "column", gap: 3, mx: "auto" }}>
           
@@ -142,20 +145,27 @@ const ManageShop: React.FC = () => {
                       sx={{
                         position: 'relative',
                         height: '100%',
+                        mx: 2,
                         display: 'flex',
                         flexDirection: 'column',
+                        backgroundImage: "none",
+                        backgroundColor: "transparent",
                         cursor: 'pointer',
                         transition: 'transform 0.2s',
-                        '&:hover': { transform: 'scale(1.02)' }
+                        '&:hover': { transform: 'scale(1.02)' },
+                        boxShadow: 'none',
                       }}
                       onClick={() => handleOpenDetail(product)}
                     >
                       {product.imageUrl && (
                         <CardMedia
                           component="img"
-                          height="150"
                           image={product.imageUrl}
                           alt={product.name}
+                          sx={{
+                            height: 150,
+                            objectFit: "contain", // alebo "cover"
+                          }}
                         />
                       )}
 

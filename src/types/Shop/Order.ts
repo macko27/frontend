@@ -1,4 +1,4 @@
-import { Product } from "./Product";
+import { ProductOrder } from "./ProductOrder";
 
 export type Order = {
   id: string;
@@ -10,7 +10,8 @@ export type Order = {
   telefon: string;
   poznamka: string;
   cena: number;
-  produkty: Product[];
+  produkty: ProductOrder[];
   dateIn: string;
   stav: number;
+  pouzivatel: string;
 }

@@ -11,10 +11,11 @@ import ShopHeaderRight from "./ShopHeaderRight";
 
 interface Props {
   points: number;
+  employeeId: string;
 }
 
 
-const ShopHeader: React.FC<Props> = ({ points }) => {
+const ShopHeader: React.FC<Props> = ({ points, employeeId }) => {
    const nav = useNavigate();
 
   return (
@@ -129,6 +130,7 @@ const ShopHeader: React.FC<Props> = ({ points }) => {
       {/*PRAVÁ ČASŤ*/}
       <ShopHeaderRight
         points={points}
+        employeeId={employeeId}
       />
     </Box>
   );

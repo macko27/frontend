@@ -25,6 +25,14 @@ const ProductDetail: React.FC = () => {
   const [product, setProduct] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
 
+  const [creator, setCreator] = useState<any>(null);
+
+  useEffect(() => {
+    api.get(`/EmployeeCard/GetEmployeeCardLoggedIn/`)
+      .then(res => setCreator(res.data))
+      .catch(() => openSnackbar('Nepodarilo sa načítať údaje používateľa', 'error'));
+  }, []);
+
   useEffect(() => {
     const loadProduct = async () => {
       const res = await api.get(`/Shop/Get/${id}`);
@@ -72,6 +80,7 @@ const ProductDetail: React.FC = () => {
 
         <ShopHeaderRight
             points={pointsBalance}
+            employeeId={creator?.employeeId}
         />
         </Box>
 

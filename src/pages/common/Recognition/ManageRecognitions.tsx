@@ -35,6 +35,7 @@ import { EmployeeCard } from "../../../types/EmployeeCard";
 import { RecognitionToApprove } from '../../../types/Recognition/RecognitionToApprove';
 import { RecognitionState } from '../../../types/Recognition/RecognitionState';
 import { CoPresentOutlined } from '@mui/icons-material';
+import  PointsHistoryDialog  from './PointsHistoryDialog';
 dayjs.extend(utc);
 
 interface TeamMember {
@@ -82,7 +83,6 @@ const ManageRecognitions: React.FC = () => {
 
   const [pointsBalance, setPointsBalance] = useState<number>(0);
 
-  const [pointsTransactions, setPointsTransactions] = useState<any[]>([]);
   const [openPointsDialog, setOpenPointsDialog] = useState(false);
 
   const nav = useNavigate();
@@ -97,17 +97,6 @@ const ManageRecognitions: React.FC = () => {
   const formatDateTime = (dateStr?: string) => {
     if (!dateStr) return '-';
     return dayjs.utc(dateStr).local().format('DD.MM.YYYY HH:mm');
-  };
-
-  const loadPointsTransactions = async () => {
-    try {
-      const res = await api.get(`/Recognition/GetPointsHistory/${creator?.employeeId}`);
-      setPointsTransactions(res.data);
-      setOpenPointsDialog(true);
-    } catch (err) {
-      console.error(err);
-      openSnackbar('Nepodarilo sa načítať históriu bodov', 'error');
-    }
   };
 
   const loadRecognitions = async (employeeId: string, selectedTab: number) => {
@@ -594,7 +583,7 @@ const ManageRecognitions: React.FC = () => {
               </Typography>
 
               <Box
-                onClick={loadPointsTransactions}
+                onClick={() => setOpenPointsDialog(true)}
                 sx={{
                   padding: '8px 16px',
                   display: 'flex',
@@ -1174,39 +1163,11 @@ const ManageRecognitions: React.FC = () => {
 
 
 
-      <Dialog
+      <PointsHistoryDialog
         open={openPointsDialog}
         onClose={() => setOpenPointsDialog(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          História bodov
-          <IconButton
-            onClick={() => setOpenPointsDialog(false)}
-            sx={{ position: "absolute", right: 16, top: 16 }}
-          >
-            ✕
-          </IconButton>
-        </DialogTitle>
-
-        <DialogContent>
-          <DataGrid
-            rows={pointsTransactions}
-            columns={columnsPoints}
-            getRowId={(row) => row.id}
-            sx={dataGridStyles(theme)}
-            autoHeight
-            pageSizeOptions={[5, 10, 25]}
-          />
-        </DialogContent>
-
-        <DialogActions>
-          <Button onClick={() => setOpenPointsDialog(false)}>
-            Zavrieť
-          </Button>
-        </DialogActions>
-      </Dialog>
+        employeeId={creator?.employeeId ?? null}
+      />
 
 
     </Layout>

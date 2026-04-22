@@ -6,18 +6,23 @@ import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "./Cart/CartContext";
 import { Badge } from "@mui/material";
+import PointsHistoryDialog from "./../common/Recognition/PointsHistoryDialog";
 
 
 interface Props {
   points: number;
+  employeeId: string;
   onCartClick?: () => void;
   onInventoryClick?: () => void;
 }
 
 const ShopHeaderRight: React.FC<Props> = ({
   points,
+  employeeId,
 }) => {  
   
+  const [openPointsDialog, setOpenPointsDialog] = React.useState(false);
+
   const nav = useNavigate();
 
   const { items } = useCart();
@@ -25,45 +30,60 @@ const ShopHeaderRight: React.FC<Props> = ({
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: { xs: "space-between", md: "flex-end" },
-        alignItems: "center",
-        gap: 1,
-        width: { xs: "100%", md: "auto" },
-      }}
-    >
-      <IconButton onClick={() => nav("/shop/cart")}>
-      <Badge 
-        badgeContent={cartCount} 
-        color="error"
-        invisible={cartCount === 0}
-      >
-        <ShoppingCartIcon />
-      </Badge>
-    </IconButton>
-
-      <IconButton onClick={() => nav("/shop/myOrders")}>
-        <Inventory2Icon />
-      </IconButton>
-
-      {/* Body */}
+    <>
       <Box
         sx={{
           display: "flex",
+          justifyContent: { xs: "space-between", md: "flex-end" },
           alignItems: "center",
           gap: 1,
-          px: 2,
-          py: 1,
-          borderRadius: 999,
-          boxShadow: 1,
+          width: { xs: "100%", md: "auto" },
         }}
       >
-        <MonetizationOnIcon color="warning" />
-        <span>{points}</span>
+        <IconButton onClick={() => nav("/shop/cart")}>
+        <Badge 
+          badgeContent={cartCount} 
+          color="error"
+          invisible={cartCount === 0}
+        >
+          <ShoppingCartIcon />
+        </Badge>
+      </IconButton>
+
+        <IconButton onClick={() => nav("/shop/myOrders?mode=my")}>
+          <Inventory2Icon />
+        </IconButton>
+
+        {/* Body */}
+        <Box
+          onClick={() => setOpenPointsDialog(true)}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            px: 2,
+            py: 1,
+            borderRadius: 999,
+            boxShadow: 1,
+            cursor: "pointer",
+            '&:hover': {
+              backgroundColor: 'action.hover'
+            }
+          }}
+        >
+          <MonetizationOnIcon color="warning" />
+          <span>{points}</span>
+        </Box>
+
       </Box>
-    </Box>
+
+      <PointsHistoryDialog
+        open={openPointsDialog}
+        onClose={() => setOpenPointsDialog(false)}
+        employeeId={employeeId}
+      />
+      
+    </>
   );
 };
 

@@ -12,13 +12,24 @@ import {
   Chip,
   Paper,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  IconButton,
+  Divider,
+  Select,
+  MenuItem,
+  FormControl
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import { useNavigate } from "react-router-dom";
 import Layout from "../../../components/Layout";
 import api from "../../../app/api";
 import { useSnackbar } from "../../../hooks/SnackBarContext";
 import { EmployeeCard } from "../../../types/EmployeeCard";
 import { Order } from "../../../types/Shop/Order";
+import { useSearchParams } from "react-router-dom";
+import { useAuth } from "../../../hooks/AuthProvider";
 
 const statusColors: Record<number, { bg: string; color: string }> = {
   0: { bg: "#ededed", color: "#3c3c3c" },
@@ -36,6 +47,23 @@ const statusLabels: Record<number, string> = {
   4: "Zrušená",
 };
 
+const allowedTransitions: Record<number, number[]> = {
+  0: [1, 4], // Vytvorená → Potvrdená / Zrušená
+  1: [2, 4], // Potvrdená → Odoslaná / Zrušená
+  2: [3, 4], // Odoslaná → Doručená / Zrušená
+  3: [4],    // Doručená → Zrušená (len fallback)
+  4: [],     // Zrušená → nič
+};
+
+
+const getAvailableStatuses = (currentStatus: number) => {
+  const next = allowedTransitions[currentStatus] ?? [];
+
+  const safe = Array.from(new Set([currentStatus, ...next]));
+
+  return safe;
+};
+
 const formatDate = (dateStr: string) => {
   const d = new Date(dateStr);
   return `${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}`;
@@ -50,33 +78,81 @@ const ManageOrders = () => {
   const navigate = useNavigate();
   const { openSnackbar } = useSnackbar();
 
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [open, setOpen] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [draftStatus, setDraftStatus] = useState<number | null>(null);
+  const isChanged = draftStatus !== selectedOrder?.stav;
+
+  const [searchParams] = useSearchParams();
+  const mode = searchParams.get("mode"); // "my" | "all"
+  const profile = useAuth();
+  const role = profile.userProfile?.role;
+  const isAdmin = role === "Shop Admin";  
+
   useEffect(() => {
     setLoaded(false);
 
-    api
-      .get(`/EmployeeCard/GetEmployeeCardLoggedIn/`)
-      .then((res) => setCreator(res.data))
-      .catch(() => {
-        openSnackbar("Nepodarilo sa nacitat udaje pouzivatela", "error");
-        setLoaded(true);
-      });
-  }, [openSnackbar]);
+    const load = async () => {
+      try {
+        const userRes = await api.get(`/EmployeeCard/GetEmployeeCardLoggedIn/`);
+        const creatorData = userRes.data;
+        setCreator(creatorData);
 
-  useEffect(() => {
-    if (!creator?.employeeId) return;
+        const rolee = profile.userProfile?.role;
+        const isAdminn = rolee === "Shop Admin";
 
-    setLoaded(false);
-    api
-      .get(`/Shop/GetMyOrders/${creator.employeeId}`)
-      .then((res) => {
-        setOrders(res.data);
+        const shouldLoadAll = mode === "all" && isAdminn;
+
+        if (shouldLoadAll) {
+          // SHOP ADMIN VIEW
+          const res = await api.get(`/Shop/GetAllOrders`);
+          setOrders(res.data);
+        } else {
+          // DEFAULT = moje objednavky
+          const res = await api.get(`/Shop/GetMyOrders/${creatorData.employeeId}`);
+          setOrders(res.data);
+        }
+
         setLoaded(true);
-      })
-      .catch(() => {
+      } catch (e) {
         openSnackbar("Nepodarilo sa nacitat objednavky", "error");
         setLoaded(true);
+      }
+    };
+
+    load();
+  }, [mode, profile.userProfile?.role]);
+
+
+  const handleSaveStatus = async () => {
+    if (!selectedOrder || draftStatus == null) return;
+
+    try {
+      setUpdatingStatus(true);
+
+      await api.put(`/Shop/UpdateOrderStatus/${selectedOrder.id}`, {
+        stav: draftStatus,
       });
-  }, [creator, openSnackbar]);
+
+      const updatedOrder = { ...selectedOrder, stav: draftStatus };
+
+      setSelectedOrder(updatedOrder);
+
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === selectedOrder.id ? { ...o, stav: draftStatus } : o
+        )
+      );
+
+      openSnackbar("Stav objednávky bol aktualizovaný", "success");
+      setOpen(false);
+    } catch {
+      openSnackbar("Nepodarilo sa zmeniť stav", "error");
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
 
   return (
     <Layout fullWidth={true}>
@@ -198,7 +274,11 @@ const ManageOrders = () => {
                         <Button
                           variant="outlined"
                           size="small"
-                          //onClick={() => navigate(`/shop/orders/${order.id}`)}
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setDraftStatus(order.stav);
+                            setOpen(true);
+                          }}
                           sx={{
                             borderRadius: 999,
                             textTransform: "none",
@@ -227,6 +307,206 @@ const ManageOrders = () => {
           </TableContainer>
         )}
       </Box>
+
+
+      {/* Detail objednavky - dialog */}
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          Objednávka {selectedOrder?.cisloObjednavky}
+          <IconButton onClick={() => setOpen(false)}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent>
+          {selectedOrder && (
+            <>
+              {/* STATUS + DATE */}
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  py: 1.5,
+                  flexWrap: "wrap",
+                }}
+              >
+
+                {isAdmin && (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: 2,
+                      width: "100%",
+                    }}
+                  >
+                    <Typography variant="body2" color="text.secondary">
+                      Používateľ
+                    </Typography>
+
+                    <Typography variant="body2">
+                      {selectedOrder.pouzivatel}
+                    </Typography>
+                  </Box>
+                )}
+
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 2,
+                    width: "100%",
+                  }}
+                >
+
+                  <Typography variant="body2" color="text.secondary">
+                    Stav
+                  </Typography>
+
+                  {isAdmin ? (
+                    <FormControl size="small" sx={{ minWidth: 180 }}>
+                      <Select
+                        value={draftStatus ?? selectedOrder.stav}
+                        onChange={(e) => setDraftStatus(Number(e.target.value))}
+                        disabled={updatingStatus}
+                      >
+                        {getAvailableStatuses(selectedOrder.stav).map((key) => (
+                          <MenuItem key={key} value={key}>
+                            {statusLabels[key]}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  ) : (
+                    <Chip
+                      label={statusLabels[selectedOrder.stav]}
+                      sx={{
+                        backgroundColor: statusColors[selectedOrder.stav]?.bg,
+                        color: statusColors[selectedOrder.stav]?.color,
+                      }}
+                    />
+                  )}
+                </Box>
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 2,
+                    pb: 1.5,
+                    width: "100%", 
+                  }}
+                >
+                  <Typography variant="body2" color="text.secondary">
+                    Dátum a čas
+                  </Typography>
+
+                  <Typography variant="body2">
+                    {new Date(selectedOrder.dateIn).toLocaleString("sk-SK")}
+                  </Typography>
+                </Box>
+
+              </Box>
+
+              {/* PRODUKTY */}
+
+              <Typography variant="body2" color="text.secondary">
+                Položky objednávky
+              </Typography>
+
+              <Divider sx={{ mt: 1 }} />
+
+              {selectedOrder.produkty?.map((p, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                    py: 1.5,
+                  }}
+                >
+                  {/* IMAGE */}
+                  <Box
+                    component="img"
+                    src={p.imageUrl}
+                    alt={p.name}
+                    sx={{
+                      width: 60,
+                      height: 60,
+                      objectFit: "cover",
+                      borderRadius: 2,
+                      backgroundColor: "#f5f5f5",
+                    }}
+                  />
+
+                  {/* INFO */}
+                  <Box sx={{ flex: 1, minWidth: 120 }}>
+                    <Typography fontWeight={500} fontSize="0.95rem">
+                      {p.name}
+                    </Typography>
+
+                    <Typography variant="body2" color="text.secondary">
+                      {p.quantity}x
+                    </Typography>
+                  </Box>
+
+                  {/* PRICE */}
+                  <Typography
+                    fontWeight={500}
+                    sx={{
+                      ml: "auto",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {formatPrice(p.price)}
+                  </Typography>
+                </Box>
+              ))}
+
+              <Divider sx={{ mb: 2 }} />
+
+              {/* CELKOM */}
+              <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
+                <Typography fontWeight={600}>Celkom</Typography>
+                <Typography fontWeight={600}>
+                  {formatPrice(selectedOrder.cena)}
+                </Typography>
+              </Box>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: 2,
+                  mt: 3,
+                }}
+              >
+                <Button
+                  onClick={() => setOpen(false)}
+                >
+                  Zavrieť
+                </Button>
+
+                <Button
+                  variant="contained"
+                  color="info"
+                  onClick={handleSaveStatus}
+                  disabled={!isChanged || updatingStatus}
+                >
+                  Uložiť
+                </Button>
+              </Box>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
     </Layout>
   );
 };

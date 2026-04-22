@@ -16,6 +16,7 @@ interface CartSummaryProps {
   remaining: number;
   buttonLabel: string;
   onAction: () => void;
+  disabled?: boolean;
 }
 
 const CartSummary: React.FC<CartSummaryProps> = ({
@@ -25,6 +26,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({
   remaining,
   buttonLabel,
   onAction,
+  disabled
 }) => {
   return (
     <Box sx={{ flex: 1 }}>
@@ -59,6 +61,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({
             color="info"
             sx={{ mt: 3, borderRadius: 5 }}
             onClick={onAction}
+            disabled={disabled}
             >
             {buttonLabel}
             </Button>

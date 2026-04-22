@@ -335,6 +335,12 @@ const Layout: React.FC<LayoutProps> = ({ children, fullWidth = false }) => {
             label: "Správa produktov",
             path: "/manageProduct",
             component: null,
+        },
+        {
+            role: Roles.ShopAdmin,
+            label: "Správa objednávok",
+            path: "/shop/myOrders?mode=all",
+            component: null,
         }
     ];
 

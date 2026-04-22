@@ -33,6 +33,11 @@ const AddressForm: React.FC<AddressFormProps> = ({
   const [creator, setCreator] = useState<any>(null);
 
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({
+    psc: "",
+    telefon: "",
+    cisloDomu: "",
+  });
 
   const [form, setForm] = useState({
     ulica: "",
@@ -51,6 +56,33 @@ const AddressForm: React.FC<AddressFormProps> = ({
       }));
     };
 
+
+  const validate = () => {
+    let valid = true;
+    const newErrors = { psc: "", telefon: "", cisloDomu: "" };
+
+    // PSČ – presne 5 číslic
+    if (!/^\d{5}$/.test(form.psc)) {
+      newErrors.psc = "PSČ musí mať 5 číslic";
+      valid = false;
+    }
+
+    // Telefón – začína 09 a má 10 číslic
+    if (!/^09\d{8}$/.test(form.telefon)) {
+      newErrors.telefon = "Telefón musí byť v tvare 09XXXXXXXX";
+      valid = false;
+    }
+
+    // Číslo domu – len číslo
+    if (!/^\d+$/.test(form.cisloDomu)) {
+      newErrors.cisloDomu = "Číslo domu musí byť číslo";
+      valid = false;
+    }
+
+    setErrors(newErrors);
+    return valid;
+  };
+
   const handleSubmit = async () => {
     if (
       !form.ulica ||
@@ -60,6 +92,10 @@ const AddressForm: React.FC<AddressFormProps> = ({
       !form.telefon
     ) {
       openSnackbar("Vyplň všetky povinné polia", 'error');
+      return;
+    }
+
+     if (!validate()) {
       return;
     }
 
@@ -135,6 +171,8 @@ const AddressForm: React.FC<AddressFormProps> = ({
           sx={{ mb: 2 }}
           value={form.cisloDomu}
           onChange={handleChange("cisloDomu")}
+          error={!!errors.cisloDomu}
+          helperText={errors.cisloDomu}
         />
 
         <TextField
@@ -153,6 +191,8 @@ const AddressForm: React.FC<AddressFormProps> = ({
           sx={{ mb: 2 }}
           value={form.psc}
           onChange={handleChange("psc")}
+          error={!!errors.psc}
+          helperText={errors.psc}
         />
 
         <TextField
@@ -162,6 +202,8 @@ const AddressForm: React.FC<AddressFormProps> = ({
           sx={{ mb: 2 }}
           value={form.telefon}
           onChange={handleChange("telefon")}
+          error={!!errors.telefon}
+          helperText={errors.telefon}
         />
 
         <TextField
