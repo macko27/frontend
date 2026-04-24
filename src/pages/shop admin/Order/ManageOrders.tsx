@@ -126,41 +126,12 @@ const ManageOrders = () => {
   }, [mode, profile.userProfile?.role]);
 
 
-  const handleSaveStatus = async () => {
-    if (!selectedOrder || draftStatus == null) return;
-
-    try {
-      setUpdatingStatus(true);
-
-      await api.put(`/Shop/UpdateOrderStatus/${selectedOrder.id}`, {
-        stav: draftStatus,
-      });
-
-      const updatedOrder = { ...selectedOrder, stav: draftStatus };
-
-      setSelectedOrder(updatedOrder);
-
-      setOrders((prev) =>
-        prev.map((o) =>
-          o.id === selectedOrder.id ? { ...o, stav: draftStatus } : o
-        )
-      );
-
-      openSnackbar("Stav objednávky bol aktualizovaný", "success");
-      setOpen(false);
-    } catch {
-      openSnackbar("Nepodarilo sa zmeniť stav", "error");
-    } finally {
-      setUpdatingStatus(false);
-    }
-  };
-
   return (
     <Layout fullWidth={true}>
       <Box sx={{ p: 4, maxWidth: 1000, mx: "auto" }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
           <Typography variant="h5" fontWeight="700">
-            Moje objednávky
+            {mode === "all" && isAdmin ? "Objednávky" : "Moje objednávky"}
           </Typography>
 
           <Button
@@ -222,7 +193,12 @@ const ManageOrders = () => {
                     },
                   }}
                 >
-                  {["Číslo objednávky", "Cena", "Stav", "Dátum", ""].map((header) => (
+                  {[
+                    "Číslo objednávky", 
+                    mode === "all" && isAdmin ? "Používateľ" : "Cena",
+                    "Stav", 
+                    "Dátum", ""
+                  ].map((header) => (
                     <TableCell
                       key={header}
                       sx={{
@@ -252,7 +228,13 @@ const ManageOrders = () => {
                       }}
                     >
                       <TableCell sx={{ fontWeight: 500 }}>{order.cisloObjednavky}</TableCell>
-                      <TableCell >{formatPrice(order.cena)}</TableCell>
+
+                      <TableCell >
+                        {mode === "all" && isAdmin
+                          ? order.pouzivatel
+                          : formatPrice(order.cena)}
+                      </TableCell>
+
                       <TableCell>
                         <Chip
                           label={statusLabel}
