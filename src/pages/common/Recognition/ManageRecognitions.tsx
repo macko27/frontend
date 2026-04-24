@@ -36,6 +36,7 @@ import { RecognitionToApprove } from '../../../types/Recognition/RecognitionToAp
 import { RecognitionState } from '../../../types/Recognition/RecognitionState';
 import { CoPresentOutlined } from '@mui/icons-material';
 import  PointsHistoryDialog  from './PointsHistoryDialog';
+import RecognitionDetailDialog from './RecognitionDetailDialog';
 dayjs.extend(utc);
 
 interface TeamMember {
@@ -704,131 +705,25 @@ const ManageRecognitions: React.FC = () => {
       </Box>
 
 
-      <Dialog
+      <RecognitionDetailDialog
         open={openRecognitionDetail}
-        onClose={() => { setOpenRecognitionDetail(false); setAttachmentsOpen(false); setAttachments([]); }}
-        maxWidth="sm"
-        fullWidth
-        fullScreen={isMobile}
-      >
-        <DialogTitle sx={{ fontWeight: "bold" }}>
-          {detailRecognition?.predmet}
-          <IconButton
-            onClick={() => setOpenRecognitionDetail(false)}
-            sx={{ position: "absolute", right: 16, top: 16 }}
-          >
-            ✕
-          </IconButton>
-        </DialogTitle>
-
-        <DialogContent sx={{ pt: 2 }}>
-          <Stack spacing={3}>
-
-            {/* Príjemca / Odosielateľ */}
-            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-              <Typography color="text.secondary">
-                {(tab === 0 || tab === 3) ? "Odosielateľ" : "Príjemca"}
-              </Typography>
-
-              <Box textAlign="right">
-                {(tab === 0 || tab === 3) ? (
-                  <Typography>{detailRecognition?.createdBy?.fullName}</Typography>
-                ) : (
-                  detailRecognition?.recipients?.map((r: any) => (
-                    <Typography key={r.id}>{r.fullName}</Typography>
-                  ))
-                )}
-              </Box>
-            </Box>
-
-            {/* Text uznania */}
-            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-              <Typography color="text.secondary">
-                Text uznania
-              </Typography>
-
-              <Typography sx={{ maxWidth: 350, textAlign: "right" }}>
-                {detailRecognition?.text}
-              </Typography>
-            </Box>
-
-            {/* Odmena */}
-            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-              <Typography color="text.secondary">
-                Odmena
-              </Typography>
-
-              <Typography sx={{ maxWidth: 350, textAlign: "right" }}>
-                {detailRecognition?.odmena}
-              </Typography>
-            </Box>
-
-            {/* Prílohy */}
-            <Box>
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <Typography color="text.secondary">Prílohy</Typography>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  disabled={attachmentsLoading}
-                  onClick={() =>
-                    handleToggleAttachments(
-                      tab === 2
-                        ? pendingRecognition!.recognitionId
-                        : detailRecognition!.id
-                    )
-                  }
-                >
-                  {attachmentsLoading ? 'Načítavam...' : attachmentsOpen ? 'Skryť' : 'Zobraziť'}
-                </Button>
-              </Box>
-
-              {attachmentsOpen && (
-                <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                  {attachments.length === 0 ? (
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                      Žiadne prílohy
-                    </Typography>
-                  ) : (
-                    attachments.map((file, i) => (
-                      <Button
-                        key={i}
-                        size="small"
-                        variant="text"
-                        sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
-                        onClick={() => handleDownloadAttachment(file.id, file.fileName)}
-                      >
-                        📎 {file.fileName}
-                      </Button>
-                    ))
-                  )}
-                </Box>
-              )}
-            </Box>
-
-            {/* Dátum */}
-            {detailRecognition?.dateIn && (
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography color="text.secondary">
-                  Dátum odoslania
-                </Typography>
-
-                <Typography>
-                  {formatDateTime(detailRecognition.dateIn)}
-                </Typography>
-              </Box>
-            )}
-
-          </Stack>
-        </DialogContent>
-
-
-        <DialogActions sx={{ p: 3 }}>
-          <Button variant="contained" onClick={() => setOpenRecognitionDetail(false)}>
-            Zatvoriť
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onClose={() => {
+          setOpenRecognitionDetail(false);
+          setAttachmentsOpen(false);
+          setAttachments([]);
+        }}
+        recognition={detailRecognition}
+        isMobile={isMobile}
+        formatDateTime={formatDateTime}
+        attachments={attachments}
+        attachmentsOpen={attachmentsOpen}
+        attachmentsLoading={attachmentsLoading}
+        onToggleAttachments={() =>
+          handleToggleAttachments(detailRecognition!.id)
+        }
+        onDownload={handleDownloadAttachment}
+        tab={tab}
+      />
 
 
 

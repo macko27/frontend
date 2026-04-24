@@ -30,6 +30,7 @@ import { EmployeeCard } from "../../../types/EmployeeCard";
 import { Order } from "../../../types/Shop/Order";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../../../hooks/AuthProvider";
+import OrderDetailDialog from "./OrderDetailDialog";
 
 const statusColors: Record<number, { bg: string; color: string }> = {
   0: { bg: "#ededed", color: "#3c3c3c" },
@@ -310,202 +311,19 @@ const ManageOrders = () => {
 
 
       {/* Detail objednavky - dialog */}
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          Objednávka {selectedOrder?.cisloObjednavky}
-          <IconButton onClick={() => setOpen(false)}>
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-
-        <DialogContent>
-          {selectedOrder && (
-            <>
-              {/* STATUS + DATE */}
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                  py: 1.5,
-                  flexWrap: "wrap",
-                }}
-              >
-
-                {isAdmin && (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      gap: 2,
-                      width: "100%",
-                    }}
-                  >
-                    <Typography variant="body2" color="text.secondary">
-                      Používateľ
-                    </Typography>
-
-                    <Typography variant="body2">
-                      {selectedOrder.pouzivatel}
-                    </Typography>
-                  </Box>
-                )}
-
-
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    gap: 2,
-                    width: "100%",
-                  }}
-                >
-
-                  <Typography variant="body2" color="text.secondary">
-                    Stav
-                  </Typography>
-
-                  {isAdmin ? (
-                    <FormControl size="small" sx={{ minWidth: 180 }}>
-                      <Select
-                        value={draftStatus ?? selectedOrder.stav}
-                        onChange={(e) => setDraftStatus(Number(e.target.value))}
-                        disabled={updatingStatus}
-                      >
-                        {getAvailableStatuses(selectedOrder.stav).map((key) => (
-                          <MenuItem key={key} value={key}>
-                            {statusLabels[key]}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  ) : (
-                    <Chip
-                      label={statusLabels[selectedOrder.stav]}
-                      sx={{
-                        backgroundColor: statusColors[selectedOrder.stav]?.bg,
-                        color: statusColors[selectedOrder.stav]?.color,
-                      }}
-                    />
-                  )}
-                </Box>
-
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    gap: 2,
-                    pb: 1.5,
-                    width: "100%", 
-                  }}
-                >
-                  <Typography variant="body2" color="text.secondary">
-                    Dátum a čas
-                  </Typography>
-
-                  <Typography variant="body2">
-                    {new Date(selectedOrder.dateIn).toLocaleString("sk-SK")}
-                  </Typography>
-                </Box>
-
-              </Box>
-
-              {/* PRODUKTY */}
-
-              <Typography variant="body2" color="text.secondary">
-                Položky objednávky
-              </Typography>
-
-              <Divider sx={{ mt: 1 }} />
-
-              {selectedOrder.produkty?.map((p, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 2,
-                    py: 1.5,
-                  }}
-                >
-                  {/* IMAGE */}
-                  <Box
-                    component="img"
-                    src={p.imageUrl}
-                    alt={p.name}
-                    sx={{
-                      width: 60,
-                      height: 60,
-                      objectFit: "cover",
-                      borderRadius: 2,
-                      backgroundColor: "#f5f5f5",
-                    }}
-                  />
-
-                  {/* INFO */}
-                  <Box sx={{ flex: 1, minWidth: 120 }}>
-                    <Typography fontWeight={500} fontSize="0.95rem">
-                      {p.name}
-                    </Typography>
-
-                    <Typography variant="body2" color="text.secondary">
-                      {p.quantity}x
-                    </Typography>
-                  </Box>
-
-                  {/* PRICE */}
-                  <Typography
-                    fontWeight={500}
-                    sx={{
-                      ml: "auto",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {formatPrice(p.price)}
-                  </Typography>
-                </Box>
-              ))}
-
-              <Divider sx={{ mb: 2 }} />
-
-              {/* CELKOM */}
-              <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
-                <Typography fontWeight={600}>Celkom</Typography>
-                <Typography fontWeight={600}>
-                  {formatPrice(selectedOrder.cena)}
-                </Typography>
-              </Box>
-
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  gap: 2,
-                  mt: 3,
-                }}
-              >
-                <Button
-                  onClick={() => setOpen(false)}
-                >
-                  Zavrieť
-                </Button>
-
-                <Button
-                  variant="contained"
-                  color="info"
-                  onClick={handleSaveStatus}
-                  disabled={!isChanged || updatingStatus}
-                >
-                  Uložiť
-                </Button>
-              </Box>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      <OrderDetailDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        order={selectedOrder}
+        isAdmin={isAdmin}
+        onStatusUpdated={(id, status) => {
+          setOrders(prev =>
+            prev.map(o =>
+              o.id === id ? { ...o, stav: status } : o
+            )
+          );
+        }}
+      />
 
     </Layout>
   );
