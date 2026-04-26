@@ -34,7 +34,6 @@ type FormData = z.infer<typeof schema>;
 const NewGoal: React.FC = () => {
     const nav = useNavigate();
     const [error, setError] = useState<string>();
-    const [dueDate, setDueDate] = React.useState<Dayjs | null>(dayjs('2024-11-09'));
     const [categoryOption, setCategoryOptions] = useState<{ id: string; label: string }[]>([]);
     const [showTable, setShowTable] = useState(false);
     const [employeeData, setEmployeeData] = useState<EmployeeCard[]>([]);
@@ -42,6 +41,7 @@ const NewGoal: React.FC = () => {
     const [openCardDialog, setOpenCardDialog] = useState(false);
     const [selectedEmployee, setSelectedEmployee] = useState<UserProfile | null>(null); 
     const { openSnackbar } = useSnackbar();
+    const [dueDate, setDueDate] = React.useState<Dayjs | null>(dayjs().add(1, "day"));
 
 
     const {
@@ -115,7 +115,10 @@ const NewGoal: React.FC = () => {
                 console.log("employeeCards", res.data); 
             })
             .catch((err) => console.error("Error fetching employee cards:", err));
-        
+            
+            if (dueDate) {
+                handleDateChange(dueDate);
+            }
     }, []);
 
     /*
@@ -185,7 +188,8 @@ const NewGoal: React.FC = () => {
         setEmployeeIds(updated);
         setValue("employeeIds", updated); // Aktualizácia pre validáciu
     };
-    
+
+
 
     return (
         <Layout>
@@ -265,6 +269,7 @@ const NewGoal: React.FC = () => {
                             label="Termín dokončenia"
                             value={dueDate}
                             onChange={(newValue) => handleDateChange(newValue)}
+                            minDate={dayjs().add(1, "day")}
                         />
                                 
                     </LocalizationProvider>
