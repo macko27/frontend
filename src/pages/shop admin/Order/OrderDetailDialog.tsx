@@ -72,6 +72,7 @@ const OrderDetailDialog = ({
 
   const [draftStatus, setDraftStatus] = useState<number | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
     if (order) {
@@ -106,139 +107,189 @@ const OrderDetailDialog = ({
   if (!order) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        Objednávka {order.cisloObjednavky}
-        <IconButton onClick={onClose}>
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+    <>
+      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          Objednávka {order.cisloObjednavky}
+          <IconButton onClick={onClose}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
 
-      <DialogContent>
-        {/* INFO */}
-        <Box sx={{ display: "flex", gap: 2, py: 1.5, flexWrap: "wrap" }}>
+        <DialogContent>
+          {/* INFO */}
+          <Box sx={{ display: "flex", gap: 2, py: 1.5, flexWrap: "wrap" }}>
 
-          {isAdmin && (
+            {isAdmin && (
+              <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+                <Typography variant="body2" color="text.secondary">
+                  Používateľ
+                </Typography>
+                <Typography variant="body2">
+                  {order.pouzivatel}
+                </Typography>
+              </Box>
+            )}
+
+            {/* STATUS */}
             <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
               <Typography variant="body2" color="text.secondary">
-                Používateľ
+                Stav
               </Typography>
+
+              {isAdmin ? (
+                <FormControl size="small" sx={{ minWidth: 180 }}>
+                  <Select
+                    value={draftStatus ?? order.stav}
+                    onChange={(e) => setDraftStatus(Number(e.target.value))}
+                    disabled={updatingStatus}
+                  >
+                    {getAvailableStatuses(order.stav).map((key) => (
+                      <MenuItem key={key} value={key}>
+                        {statusLabels[key]}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              ) : (
+                <Chip
+                  label={statusLabels[order.stav]}
+                  sx={{
+                    backgroundColor: statusColors[order.stav]?.bg,
+                    color: statusColors[order.stav]?.color,
+                  }}
+                />
+              )}
+            </Box>
+
+            {/* DATE */}
+            <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+              <Typography variant="body2" color="text.secondary">
+                Dátum a čas
+              </Typography>
+
               <Typography variant="body2">
-                {order.pouzivatel}
+                {new Date(order.dateIn).toLocaleString("sk-SK")}
               </Typography>
             </Box>
-          )}
+          </Box>
 
-          {/* STATUS */}
-          <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
-            <Typography variant="body2" color="text.secondary">
-              Stav
-            </Typography>
+          {/* PRODUKTY */}
+          <Typography variant="body2" color="text.secondary">
+            Položky objednávky
+          </Typography>
 
-            {isAdmin ? (
-              <FormControl size="small" sx={{ minWidth: 180 }}>
-                <Select
-                  value={draftStatus ?? order.stav}
-                  onChange={(e) => setDraftStatus(Number(e.target.value))}
-                  disabled={updatingStatus}
-                >
-                  {getAvailableStatuses(order.stav).map((key) => (
-                    <MenuItem key={key} value={key}>
-                      {statusLabels[key]}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            ) : (
-              <Chip
-                label={statusLabels[order.stav]}
+          <Divider sx={{ mt: 1 }} />
+
+          {order.produkty?.map((p, index) => (
+            <Box key={index} sx={{ display: "flex", gap: 2, py: 1.5 }}>
+              <Box
+                component="img"
+                src={p.imageUrl}
+                alt={p.name}
                 sx={{
-                  backgroundColor: statusColors[order.stav]?.bg,
-                  color: statusColors[order.stav]?.color,
+                  width: 60,
+                  height: 60,
+                  objectFit: "cover",
+                  borderRadius: 2,
+                  backgroundColor: "#f5f5f5",
                 }}
               />
-            )}
-          </Box>
 
-          {/* DATE */}
-          <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
-            <Typography variant="body2" color="text.secondary">
-              Dátum a čas
-            </Typography>
+              <Box sx={{ flex: 1 }}>
+                <Typography fontWeight={500}>
+                  {p.name}
+                </Typography>
 
-            <Typography variant="body2">
-              {new Date(order.dateIn).toLocaleString("sk-SK")}
-            </Typography>
-          </Box>
-        </Box>
+                <Typography variant="body2" color="text.secondary">
+                  {p.quantity}x
+                </Typography>
+              </Box>
 
-        {/* PRODUKTY */}
-        <Typography variant="body2" color="text.secondary">
-          Položky objednávky
-        </Typography>
-
-        <Divider sx={{ mt: 1 }} />
-
-        {order.produkty?.map((p, index) => (
-          <Box key={index} sx={{ display: "flex", gap: 2, py: 1.5 }}>
-            <Box
-              component="img"
-              src={p.imageUrl}
-              alt={p.name}
-              sx={{
-                width: 60,
-                height: 60,
-                objectFit: "cover",
-                borderRadius: 2,
-                backgroundColor: "#f5f5f5",
-              }}
-            />
-
-            <Box sx={{ flex: 1 }}>
               <Typography fontWeight={500}>
-                {p.name}
-              </Typography>
-
-              <Typography variant="body2" color="text.secondary">
-                {p.quantity}x
+                {formatPrice(p.price)}
               </Typography>
             </Box>
+          ))}
 
-            <Typography fontWeight={500}>
-              {formatPrice(p.price)}
+          <Divider sx={{ mb: 2 }} />
+
+          {/* CELKOM */}
+          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
+            <Typography fontWeight={600}>Celkom</Typography>
+            <Typography fontWeight={600}>
+              {formatPrice(order.cena)}
             </Typography>
           </Box>
-        ))}
 
-        <Divider sx={{ mb: 2 }} />
+          {/* ACTIONS */}
+          <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 3 }}>
+            <Button onClick={onClose}>
+              Zavrieť
+            </Button>
 
-        {/* CELKOM */}
-        <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
-          <Typography fontWeight={600}>Celkom</Typography>
-          <Typography fontWeight={600}>
-            {formatPrice(order.cena)}
+            {!isAdmin && (
+              <Button
+                color="info"
+                variant="contained"
+                onClick={() => setConfirmOpen(true)}
+                disabled={order.stav !== 0}
+              >
+                Zrušiť objednávku
+              </Button>
+            )}
+            
+
+            {isAdmin && (
+              <Button
+                variant="contained"
+                color="info"
+                onClick={handleSaveStatus}
+                disabled={!isChanged || updatingStatus}
+              >
+                Uložiť
+              </Button>
+            )}
+          </Box>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+        <DialogTitle>Potvrdenie</DialogTitle>
+
+        <DialogContent>
+          <Typography>
+            Naozaj chceš zrušiť túto objednávku?
           </Typography>
-        </Box>
+        </DialogContent>
 
-        {/* ACTIONS */}
-        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 3 }}>
-          <Button onClick={onClose}>
-            Zavrieť
+        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, p: 2 }}>
+          <Button onClick={() => setConfirmOpen(false)}>
+            Nie
           </Button>
 
-          {isAdmin && (
-            <Button
-              variant="contained"
-              color="info"
-              onClick={handleSaveStatus}
-              disabled={!isChanged || updatingStatus}
-            >
-              Uložiť
-            </Button>
-          )}
+          <Button
+            color="error"
+            variant="contained"
+            onClick={async () => {
+              try {
+                await api.put(`/Shop/CancelOrder/${order.id}`);
+
+                openSnackbar("Objednávka bola zrušená", "success");
+                onStatusUpdated?.(order.id, 4);
+                onClose();
+              } catch {
+                openSnackbar("Nepodarilo sa zrušiť objednávku", "error");
+              } finally {
+                setConfirmOpen(false);
+              }
+            }}
+          >
+            Áno, zrušiť
+          </Button>
         </Box>
-      </DialogContent>
-    </Dialog>
+      </Dialog>
+    </>
   );
 };
 

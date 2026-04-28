@@ -11,6 +11,9 @@ import api from "../../../../app/api";
 
 import CartSummary from "./CartSummary";
 import { useCart } from "../CartContext";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
+import { useTheme } from "@mui/material/styles";
 
 interface AddressFormProps {
   totalItems: number;
@@ -31,6 +34,9 @@ const AddressForm: React.FC<AddressFormProps> = ({
   const { items, clearCart, setPointsBalance } = useCart();
   const { openSnackbar } = useSnackbar();
   const [creator, setCreator] = useState<any>(null);
+
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({
@@ -67,9 +73,20 @@ const AddressForm: React.FC<AddressFormProps> = ({
       valid = false;
     }
 
-    // Telefón – začína 09 a má 10 číslic
-    if (!/^09\d{8}$/.test(form.telefon)) {
-      newErrors.telefon = "Telefón musí byť v tvare 09XXXXXXXX";
+    // Telefón – kontrola podľa predvoľby krajiny
+    const phoneValidation: Record<string, { regex: RegExp; hint: string }> = {
+      "421": { regex: /^4219\d{8}$/, hint: "SK: +421 9XX XXX XXX" },
+      "420": { regex: /^4206?\d{8}$/, hint: "CZ: +420 XXX XXX XXX" },
+    };
+
+    const matchedCountry = Object.keys(phoneValidation).find((prefix) =>
+      form.telefon.startsWith(prefix)
+    );
+
+    if (!matchedCountry || !phoneValidation[matchedCountry].regex.test(form.telefon)) {
+      newErrors.telefon = `Neplatné telefónne číslo (${
+        matchedCountry ? phoneValidation[matchedCountry].hint : "neznáma krajina"
+      })`;
       valid = false;
     }
 
@@ -195,16 +212,79 @@ const AddressForm: React.FC<AddressFormProps> = ({
           helperText={errors.psc}
         />
 
-        <TextField
-          label="Tel. č."
-          required
-          fullWidth
-          sx={{ mb: 2 }}
-          value={form.telefon}
-          onChange={handleChange("telefon")}
-          error={!!errors.telefon}
-          helperText={errors.telefon}
-        />
+        <Box
+          sx={{
+            mb: 2,
+            "& .react-tel-input .form-control:focus": {
+              borderColor: theme.palette.primary.main,
+              boxShadow: `0 0 0 1px ${theme.palette.primary.main}`,
+            },
+            "& .react-tel-input .flag-dropdown": {
+              backgroundColor: theme.palette.background.default,
+              borderColor: isDark ? "rgba(255,255,255,0.23)" : "rgba(0,0,0,0.23)",
+            },
+            "& .react-tel-input .flag-dropdown:hover": {
+              backgroundColor: isDark ? "#2c2c2c" : "#f5f5f5",
+            },
+            "& .react-tel-input .flag-dropdown.open": {
+              backgroundColor: `${theme.palette.background.default} !important`,
+            },
+            "& .react-tel-input .flag-dropdown.open .selected-flag": {
+              backgroundColor: `${theme.palette.background.default} !important`,
+            },
+            "& .react-tel-input .selected-flag": {
+              backgroundColor: `${theme.palette.background.default} !important`,
+            },
+            "& .react-tel-input .selected-flag:hover": {
+              backgroundColor: `${isDark ? "#2c2c2c" : "#f5f5f5"} !important`,
+            },
+            "& .react-tel-input .selected-flag:focus": {
+              backgroundColor: `${theme.palette.background.default} !important`,
+            },
+            "& .react-tel-input .country-list .country:hover": {
+              backgroundColor: isDark ? "#2c2c2c" : "#f5f5f5",
+            },
+            "& .react-tel-input .country-list .country.highlight": {
+              backgroundColor: isDark ? "#3a3a3a" : "#e8e8e8",
+            },
+          }}
+        >
+          <PhoneInput
+            country={"sk"}
+            onlyCountries={["sk", "cz"]}
+            value={form.telefon}
+            onChange={(value) =>
+              setForm((prev) => ({
+                ...prev,
+                telefon: value,
+              }))
+            }
+            inputStyle={{
+              width: "100%",
+              height: "56px",
+              fontSize: "16px",
+              backgroundColor: theme.palette.background.default,
+              color: theme.palette.text.primary,
+              border: `1px solid ${isDark ? "rgba(255,255,255,0.23)" : "rgba(0,0,0,0.23)"}`,
+            }}
+            buttonStyle={{
+              borderTopLeftRadius: "4px",
+              borderBottomLeftRadius: "4px",
+              backgroundColor: theme.palette.background.default,
+              border: `1px solid ${isDark ? "rgba(255,255,255,0.23)" : "rgba(0,0,0,0.23)"}`,
+            }}
+            dropdownStyle={{
+              backgroundColor: theme.palette.background.default,
+              color: theme.palette.text.primary,
+            }}
+            specialLabel="Tel. č."
+          />
+          {errors.telefon && (
+            <Typography color="error" fontSize={12}>
+              {errors.telefon}
+            </Typography>
+          )}
+        </Box>
 
         <TextField
           label="Poznámka"

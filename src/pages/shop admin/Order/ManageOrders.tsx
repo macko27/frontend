@@ -31,6 +31,7 @@ import { Order } from "../../../types/Shop/Order";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../../../hooks/AuthProvider";
 import OrderDetailDialog from "./OrderDetailDialog";
+import OrderStatusFilterPopover from "./OrderStatusFilterPopover";
 
 const statusColors: Record<number, { bg: string; color: string }> = {
   0: { bg: "#ededed", color: "#3c3c3c" },
@@ -57,13 +58,6 @@ const allowedTransitions: Record<number, number[]> = {
 };
 
 
-const getAvailableStatuses = (currentStatus: number) => {
-  const next = allowedTransitions[currentStatus] ?? [];
-
-  const safe = Array.from(new Set([currentStatus, ...next]));
-
-  return safe;
-};
 
 const formatDate = (dateStr: string) => {
   const d = new Date(dateStr);
@@ -89,7 +83,13 @@ const ManageOrders = () => {
   const mode = searchParams.get("mode"); // "my" | "all"
   const profile = useAuth();
   const role = profile.userProfile?.role;
-  const isAdmin = role === "Shop Admin";  
+  const isAdmin = role === "Shop Admin"; 
+  
+  const [filterCreated, setFilterCreated] = useState(true);
+  const [filterConfirmed, setFilterConfirmed] = useState(true);
+  const [filterSent, setFilterSent] = useState(true);
+  const [filterDelivered, setFilterDelivered] = useState(true);
+  const [filterCancelled, setFilterCancelled] = useState(true);
 
   useEffect(() => {
     setLoaded(false);
@@ -126,6 +126,27 @@ const ManageOrders = () => {
   }, [mode, profile.userProfile?.role]);
 
 
+  const filteredOrders = orders.filter((o) => {
+    if (o.stav === 0 && !filterCreated) return false;
+    if (o.stav === 1 && !filterConfirmed) return false;
+    if (o.stav === 2 && !filterSent) return false;
+    if (o.stav === 3 && !filterDelivered) return false;
+    if (o.stav === 4 && !filterCancelled) return false;
+
+    return true;
+  });
+
+  const getActiveFilters = () => {
+    return [
+      filterCreated,
+      filterConfirmed,
+      filterSent,
+      filterDelivered,
+      filterCancelled,
+    ].filter(Boolean).length;
+  };
+
+
   return (
     <Layout fullWidth={true}>
       <Box sx={{ p: 4, maxWidth: 1000, mx: "auto" }}>
@@ -134,32 +155,47 @@ const ManageOrders = () => {
             {mode === "all" && isAdmin ? "Objednávky" : "Moje objednávky"}
           </Typography>
 
-          <Button
-            variant="contained"
-            onClick={() => navigate("/shop")}
-            sx={{
-              borderRadius: 999,
-              textTransform: "none",
-              fontWeight: 500,
-              fontSize: "0.9rem",
-              backgroundColor: "#6b6b6b",
-              color: "white",
-              px: 2,
-              py: 0.5,
-              boxShadow: "none",
-              "&:hover": { backgroundColor: "#4f4f4f" },
-            }}
-          >
-            Späť do e-shopu
-          </Button>
+          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center" }}>
+            <OrderStatusFilterPopover
+              filterCreated={filterCreated}
+              filterConfirmed={filterConfirmed}
+              filterSent={filterSent}
+              filterDelivered={filterDelivered}
+              filterCancelled={filterCancelled}
+              orders={orders}
+              setFilterCreated={setFilterCreated}
+              setFilterConfirmed={setFilterConfirmed}
+              setFilterSent={setFilterSent}
+              setFilterDelivered={setFilterDelivered}
+              setFilterCancelled={setFilterCancelled}
+            />
 
+            <Button
+              variant="contained"
+              onClick={() => navigate("/shop")}
+              sx={{
+                borderRadius: 999,
+                textTransform: "none",
+                fontWeight: 500,
+                fontSize: "0.9rem",
+                backgroundColor: "#6b6b6b",
+                color: "white",
+                px: 2,
+                py: 0.5,
+                boxShadow: "none",
+                "&:hover": { backgroundColor: "#4f4f4f" },
+              }}
+            >
+              Späť do e-shopu
+            </Button>
+          </Box>
         </Box>
 
         {!loaded ? (
           <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
             <CircularProgress />
           </Box>
-        ) : orders.length === 0 ? (
+        ) : filteredOrders.length === 0 ? (
           <Typography color="text.secondary">Nemáte žiadne objednávky.</Typography>
         ) : (
           <TableContainer
@@ -213,7 +249,7 @@ const ManageOrders = () => {
               </TableHead>
 
               <TableBody>
-                {orders.map((order) => {
+                {filteredOrders.map((order) => {
                   const statusStyle = statusColors[order.stav] ?? { bg: "#eee", color: "#333" };
                   const statusLabel = statusLabels[order.stav] ?? order.stav;
                   return (
