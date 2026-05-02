@@ -34,6 +34,8 @@ const ManageShop: React.FC = () => {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const loadedRef = useRef(false);
+  const [searchName, setSearchName] = useState("");
+  const [categoryId, setCategoryId] = useState("");
 
   useEffect(() => {
     api.get(`/EmployeeCard/GetEmployeeCardLoggedIn/`)
@@ -57,13 +59,18 @@ const ManageShop: React.FC = () => {
   }, [creator, setUserId]);
 
 
-  const loadProducts = async (nextPage = 0) => {
+  const loadProducts = async (nextPage = 0, reset = false) => {
     try {
       setLoadingMore(true);
 
-      const res = await api.get(
-        `/Shop/GetAll?page=${nextPage}&size=${size}`
-      );
+      const res = await api.get(`/Shop/GetAll`, {
+        params: {
+          page: nextPage,
+          size,
+          name: searchName || undefined,
+          categoryId: categoryId || undefined,
+        }
+      });
 
       const newProducts = res.data.map((p: any) => ({
         id: p.id,
@@ -77,7 +84,7 @@ const ManageShop: React.FC = () => {
         },
       }));
 
-      setProducts(prev => [...prev, ...newProducts]);
+      setProducts(prev => reset ? newProducts : [...prev, ...newProducts]);
 
       if (newProducts.length < size) {
         setHasMore(false);
@@ -91,6 +98,13 @@ const ManageShop: React.FC = () => {
     } finally {
       setLoadingMore(false);
     }
+  };
+
+  const handleSearch = () => {
+    setProducts([]);
+    setHasMore(true);
+    setPage(0);
+    loadProducts(0, true);
   };
 
   useEffect(() => {
@@ -126,7 +140,12 @@ const ManageShop: React.FC = () => {
       <Box sx={{ p: 4, maxWidth: 1800, mx: "auto" }}>
         <ShopHeader 
           points={pointsBalance} 
-          employeeId={creator?.employeeId} 
+          employeeId={creator?.employeeId}
+          searchName={searchName}
+          setSearchName={setSearchName}
+          categoryId={categoryId}
+          setCategoryId={setCategoryId}
+          onSearch={handleSearch}
         />
 
         <Box sx={{ p: 3, maxWidth: 1500, display: "flex", flexDirection: "column", gap: 3, mx: "auto" }}>
