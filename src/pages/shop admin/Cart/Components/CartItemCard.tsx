@@ -18,8 +18,13 @@ interface CartItemCardProps {
 }
 
 const CartItemCard = ({ item }: CartItemCardProps) => {
-  const { updateQuantity, removeFromCart } = useCart();
+  const { updateQuantity, removeFromCart, items } = useCart();
   const { openSnackbar } = useSnackbar();
+
+  const cartItem = items.find(i => i.id === item.id);
+
+  const remainingStock =
+    (item.size ?? 0) - (cartItem?.quantity ?? 0);
 
   return (
     <Paper sx={{ p: 2, mb: 2, display: "flex", justifyContent: "space-between" }}>
@@ -30,18 +35,30 @@ const CartItemCard = ({ item }: CartItemCardProps) => {
 
       <Stack direction="row" spacing={3} alignItems="center">
         <IconButton onClick={() => {
-          const ok = updateQuantity(item.id, -1);
-          if (!ok) openSnackbar("Nemáš dostatok bodov", "error");
+          const result = updateQuantity(item.id, -1);
+          if (result === "points") {
+            openSnackbar("Nemáš dostatok bodov", "error");
+          }
+          if (result === "stock") {
+            openSnackbar("Nie je dostatok kusov na sklade", "error");
+          }
         }}>
           <Remove />
         </IconButton>
 
         <Typography>{item.quantity}</Typography>
 
-        <IconButton onClick={() => {
-          const ok = updateQuantity(item.id, 1);
-          if (!ok) openSnackbar("Nemáš dostatok bodov", "error");
-        }}>
+        <IconButton 
+          disabled={remainingStock <= 0}
+          onClick={() => {
+            const result = updateQuantity(item.id, 1);
+            if (result === "points") {
+              openSnackbar("Nemáš dostatok bodov", "error");
+            }
+            if (result === "stock") {
+              openSnackbar("Nie je dostatok kusov na sklade", "error");
+            }
+          }}>
           <Add />
         </IconButton>
 

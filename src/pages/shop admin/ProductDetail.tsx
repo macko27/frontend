@@ -18,7 +18,7 @@ import { useNavigate } from "react-router-dom";
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams();
-  const { addToCart, pointsBalance } = useCart();
+  const { addToCart, pointsBalance, items, initialized, setUserId } = useCart();
   const { openSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
@@ -29,7 +29,10 @@ const ProductDetail: React.FC = () => {
 
   useEffect(() => {
     api.get(`/EmployeeCard/GetEmployeeCardLoggedIn/`)
-      .then(res => setCreator(res.data))
+      .then(res => {
+        setCreator(res.data);
+        setUserId(res.data.employeeId);
+      })
       .catch(() => openSnackbar('Nepodarilo sa načítať údaje používateľa', 'error'));
   }, []);
 
@@ -42,15 +45,35 @@ const ProductDetail: React.FC = () => {
     loadProduct();
   }, [id]);
 
-  if (!product) return <div>Loading...</div>;
+  if (!product || !initialized) return <div>Loading...</div>;
+
+  const cartItem = items.find(i => i.id === product.id);
+
+  const alreadyInCart = cartItem?.quantity || 0;
+
+  const remainingStock = Math.max(0, product.size - alreadyInCart);
 
   const handleAddToCart = () => {
+    if (remainingStock <= 0) {
+      openSnackbar("Nie je dostatok kusov na sklade", "error");
+      return;
+    }
+
+    if (quantity > remainingStock) {
+      openSnackbar(
+        `Môžeš pridať maximálne ${remainingStock} ks`,
+        "error"
+      );
+      return;
+    }
+
     const success = addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
       image: product.productAttachment?.fileUrl,
       quantity: quantity,
+      size: product.size,
     });
 
     if (success) {
@@ -123,6 +146,16 @@ const ProductDetail: React.FC = () => {
               {product.info}
             </Typography>
 
+            {remainingStock > 0 ? (
+              <Typography fontWeight="bold" mb={2}>
+                Na sklade {remainingStock} ks
+              </Typography>
+            ) : (
+              <Typography fontWeight="bold" mb={2} color="error">
+                Produkt nie je dostupný
+              </Typography>
+            )}
+
             {/* QUANTITY */}
             <Stack direction="row" spacing={2} alignItems="center" mb={3}>
               <Paper
@@ -136,19 +169,23 @@ const ProductDetail: React.FC = () => {
               >
                 <IconButton
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  disabled={remainingStock === 0 || quantity <= 1}
                 >
                   <Remove />
                 </IconButton>
 
                 <Typography sx={{ mx: 2 }}>{quantity}</Typography>
 
-                <IconButton onClick={() => setQuantity((q) => q + 1)}>
+                <IconButton 
+                  disabled={remainingStock === 0 || quantity >= remainingStock} 
+                  onClick={() => setQuantity((q) => q + 1)}>
                   <Add />
                 </IconButton>
               </Paper>
 
               <Button
                 variant="contained"
+                disabled={remainingStock === 0}
                 size="large"
                 color="info"
                 onClick={handleAddToCart}

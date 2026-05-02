@@ -20,22 +20,29 @@ type Product = {
   price: number;
   shopCategory: ShopCategory;
   imageUrl?: string;
+  size: number;
 };
 
 const ManageShop: React.FC = () => {
   const [creator, setCreator] = useState<any>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loaded, setLoaded] = useState(false);
+
   const { openSnackbar } = useSnackbar();
   const navigate = useNavigate();
-  const { addToCart, pointsBalance, setPointsBalance, setUserId } = useCart();
+
+  const { addToCart, pointsBalance, setPointsBalance, setUserId, items } = useCart();
+
   const [page, setPage] = useState(0);
   const [size] = useState(12);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const loadedRef = useRef(false);
+
   const [searchName, setSearchName] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [priceFrom, setPriceFrom] = useState("");
+  const [priceTo, setPriceTo] = useState("");
 
   useEffect(() => {
     api.get(`/EmployeeCard/GetEmployeeCardLoggedIn/`)
@@ -58,7 +65,6 @@ const ManageShop: React.FC = () => {
     }
   }, [creator, setUserId]);
 
-
   const loadProducts = async (nextPage = 0, reset = false) => {
     try {
       setLoadingMore(true);
@@ -69,6 +75,8 @@ const ManageShop: React.FC = () => {
           size,
           name: searchName || undefined,
           categoryId: categoryId || undefined,
+          priceFrom: priceFrom ? Number(priceFrom) : undefined,
+          priceTo: priceTo ? Number(priceTo) : undefined,
         }
       });
 
@@ -77,6 +85,7 @@ const ManageShop: React.FC = () => {
         name: p.name,
         info: p.info,
         price: p.price,
+        size: p.size,
         imageUrl: p.productAttachment?.fileUrl,
         shopCategory: {
           id: p.shopCategory?.id,
@@ -90,8 +99,13 @@ const ManageShop: React.FC = () => {
         setHasMore(false);
       }
 
+      if (newProducts.length === 0 && nextPage === 0) {
+        openSnackbar("Pre zvolený filter sa nenašli žiadne produkty!", "error");
+      }
+
       setPage(nextPage);
       setLoaded(true);
+
     } catch (err) {
       console.error(err);
       openSnackbar('Nepodarilo sa načítať produkty', 'error');
@@ -100,11 +114,21 @@ const ManageShop: React.FC = () => {
     }
   };
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
+    if (
+      priceFrom &&
+      priceTo &&
+      Number(priceFrom) > Number(priceTo)
+    ) {
+      openSnackbar("Cena od nesmie byť väčšia ako Cena do", "error");
+      return;
+    }
+
     setProducts([]);
     setHasMore(true);
     setPage(0);
-    loadProducts(0, true);
+
+    await loadProducts(0, true);
   };
 
   useEffect(() => {
@@ -114,13 +138,26 @@ const ManageShop: React.FC = () => {
     loadProducts(0);
   }, []);
 
+  const handleOpenDetail = (product: Product) => {
+    navigate(`/shop/product/${product.id}`);
+  };
+
   const handleAddToCart = (product: Product) => {
+    const cartItem = items.find(i => i.id === product.id);
+    const remainingQuantity = product.size - (cartItem?.quantity || 0);
+
+    if (remainingQuantity <= 0) {
+      openSnackbar("Nie je dostatok kusov na sklade", "error");
+      return;
+    }
+
     const success = addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
       image: product.imageUrl,
       quantity: 1,
+      size: product.size,
     });
 
     if (!success) {
@@ -128,37 +165,39 @@ const ManageShop: React.FC = () => {
       return;
     }
 
-    openSnackbar(`Produkt "${product.name}" pridaný do košíka`, 'success');
-  };
-
-  const handleOpenDetail = (product: Product) => {
-    navigate(`/shop/product/${product.id}`);
+    openSnackbar(`Produkt "${product.name}" pridaný do košíka`, "success");
   };
 
   return (
-    <Layout fullWidth={true}>
+    <Layout fullWidth>
       <Box sx={{ p: 4, maxWidth: 1800, mx: "auto" }}>
-        <ShopHeader 
-          points={pointsBalance} 
+
+        <ShopHeader
+          points={pointsBalance}
           employeeId={creator?.employeeId}
           searchName={searchName}
           setSearchName={setSearchName}
           categoryId={categoryId}
           setCategoryId={setCategoryId}
+          priceFrom={priceFrom}
+          setPriceFrom={setPriceFrom}
+          priceTo={priceTo}
+          setPriceTo={setPriceTo}
           onSearch={handleSearch}
         />
 
-        <Box sx={{ p: 3, maxWidth: 1500, display: "flex", flexDirection: "column", gap: 3, mx: "auto" }}>
-          
+        <Typography variant="h4" mt={3} mb={2}>
+          Správa obchodu
+        </Typography>
 
-          <Typography variant="h4" mt={3} mb={2}>
-            Správa obchodu
-          </Typography>
+        {loaded ? (
+          <>
+            <Grid container spacing={3}>
+              {products.map(product => {
+                const cartItem = items.find(i => i.id === product.id);
+                const remainingQuantity = product.size - (cartItem?.quantity || 0);
 
-          {loaded ? (
-            <>
-              <Grid container spacing={3}>
-                {products.map(product => (
+                return (
                   <Grid item xs={12} sm={6} md={4} key={product.id}>
                     <Card
                       sx={{
@@ -176,15 +215,13 @@ const ManageShop: React.FC = () => {
                       }}
                       onClick={() => handleOpenDetail(product)}
                     >
+
                       {product.imageUrl && (
                         <CardMedia
                           component="img"
                           image={product.imageUrl}
                           alt={product.name}
-                          sx={{
-                            height: 150,
-                            objectFit: "contain", // alebo "cover"
-                          }}
+                          sx={{ height: 150, objectFit: "contain" }}
                         />
                       )}
 
@@ -203,10 +240,12 @@ const ManageShop: React.FC = () => {
                         <Typography fontWeight="bold">
                           {product.price} bodov
                         </Typography>
+
                       </CardContent>
 
                       <IconButton
                         color="primary"
+                        disabled={remainingQuantity <= 0}
                         sx={{
                           position: 'absolute',
                           bottom: 8,
@@ -221,40 +260,29 @@ const ManageShop: React.FC = () => {
                       >
                         <AddIcon />
                       </IconButton>
+
                     </Card>
                   </Grid>
-                ))}
-              </Grid>
+                );
+              })}
+            </Grid>
 
-              {hasMore && (
-                <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-
-                  <Button
-                    onClick={() => loadProducts(page + 1)}
-                    disabled={loadingMore}
-                    variant="contained"
-                    color="info"
-                    sx={{
-                      height: 40,
-                      borderRadius: 999,
-                      px: 2,
-                      minWidth: "auto",
-                      whiteSpace: "nowrap",
-                      textTransform: "none",
-                      fontSize: "0.8rem",
-                      width: { xs: "100%", md: "auto" },
-                    }}
-                  >
-                    {loadingMore ? "Načítavam..." : "Načítať viac"}
-                  </Button>
-
-                </Box>
-              )}
-            </>
-          ) : (
-            <Typography>Načítavam produkty...</Typography>
-          )}
-        </Box>
+            {hasMore && (
+              <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+                <Button
+                  onClick={() => loadProducts(page + 1)}
+                  disabled={loadingMore}
+                  variant="contained"
+                  color="info"
+                >
+                  {loadingMore ? "Načítavam..." : "Načítať viac"}
+                </Button>
+              </Box>
+            )}
+          </>
+        ) : (
+          <Typography>Načítavam produkty...</Typography>
+        )}
       </Box>
     </Layout>
   );

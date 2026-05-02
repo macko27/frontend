@@ -7,5 +7,6 @@ export type Product = {
   price: number;
   shopCategory: ShopCategory;
   imageUrl: string;
+  size: number;
 };
 

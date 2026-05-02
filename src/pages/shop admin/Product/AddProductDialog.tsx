@@ -34,6 +34,7 @@ export interface ProductFormData {
   categoryId: string;
   image: File | null;
   info: string;
+  size?: number;
   price: number | '';
 }
 
@@ -47,30 +48,32 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({ open, onClose, onSa
         categoryId: '',
         image: null,
         info: '',
+        size: undefined,
         price: '',
     });
     const [imageFileName, setImageFileName] = useState<string>('');
 
     useEffect(() => {
-    if (editingProduct) {
-        setForm({
-        name: editingProduct.name || '',
-        info: editingProduct.info || '',
-        price: editingProduct.price || 0,
-        categoryId: editingProduct.shopCategory?.id || '',
-        image: null, // input file ostáva prázdny
-        });
-        setExistingImageUrl(editingProduct.imageUrl || null);
-        setImageFileName(editingProduct.imageUrl ? 'Zmena obrázku' : '');
-    } else {
-        setForm({ name: '', info: '', price: '', categoryId: '', image: null });
-        setExistingImageUrl(null);
-        setImageFileName('');
-    }
+        if (editingProduct) {
+            setForm({
+                name: editingProduct.name || '',
+                info: editingProduct.info || '',
+                size: editingProduct.size ?? undefined,
+                price: editingProduct.price ?? 0,
+                categoryId: editingProduct.shopCategory?.id || '',
+                image: null, // input file ostáva prázdny
+            });
+            setExistingImageUrl(editingProduct.imageUrl || null);
+            setImageFileName(editingProduct.imageUrl ? 'Zmena obrázku' : '');
+        } else {
+            setForm({ name: '', info: '', price: '', categoryId: '', image: null, size: undefined });
+            setExistingImageUrl(null);
+            setImageFileName('');
+        }
     }, [editingProduct, open]);
 
     const handleReset = () => {
-        setForm({ name: '', categoryId: '', image: null, info: '', price: '' });
+        setForm({ name: '', categoryId: '', image: null, info: '', price: '', size: undefined });
         setImageFileName('');
     };
 
@@ -105,7 +108,9 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({ open, onClose, onSa
         form.categoryId !== '' &&
         form.info.trim() !== '' &&
         form.price !== '' &&
-        Number(form.price) > 0;
+        Number(form.price) > 0 &&
+        form.size !== undefined &&
+        Number(form.size) > 0;
 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
@@ -174,6 +179,17 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({ open, onClose, onSa
                 onChange={(e) => setForm((p) => ({ ...p, info: e.target.value }))}
             />
 
+            {/* Počet kusov */}
+            <TextField
+                label="Počet kusov *"
+                placeholder="Uveďte počet kusov produktu."
+                fullWidth
+                type="number"
+                inputProps={{ min: 0 }}
+                value={form.size ?? ''}
+                onChange={(e) => setForm((p) => ({ ...p, size: e.target.value === '' ? undefined : Number(e.target.value) }))}
+            />
+
             {/* Cena */}
             <TextField
                 label="Cena produktu *"
@@ -181,7 +197,7 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({ open, onClose, onSa
                 fullWidth
                 type="number"
                 inputProps={{ min: 0 }}
-                value={form.price}
+                value={form.price ?? ''}
                 onChange={(e) => setForm((p) => ({ ...p, price: e.target.value === '' ? '' : Number(e.target.value) }))}
             />
 

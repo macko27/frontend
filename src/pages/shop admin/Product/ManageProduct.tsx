@@ -25,6 +25,7 @@ import {
   DialogActions,
   IconButton,
 } from '@mui/material';
+import { DAY_SIZE } from '@mui/x-date-pickers/internals/constants/dimensions';
 
 
 
@@ -59,6 +60,7 @@ const ManageProductList: React.FC = () => {
           name: p.name,
           info: p.info,
           price: p.price,
+          size: p.size,
           imageUrl: p.productAttachment?.fileUrl,
           shopCategory: {
             id: p.shopCategory?.id,
@@ -134,6 +136,11 @@ const ManageProductList: React.FC = () => {
             return;
         }
 
+        if (!formData.size || formData.size < 0) {
+            openSnackbar('Vyber počet kusov', 'error');
+            return;
+        }
+
         if (!formData.image && !formData.id) {
             openSnackbar('Obrázok je povinný', 'error');
             return;
@@ -150,6 +157,7 @@ const ManageProductList: React.FC = () => {
         data.append('info', formData.info.trim());
         data.append('price', String(formData.price));
         data.append('shopCategoryId', formData.categoryId);
+        data.append('size', String(formData.size));
         if (formData.image) {
             data.append('file', formData.image);
         }

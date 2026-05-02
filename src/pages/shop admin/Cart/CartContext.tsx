@@ -4,13 +4,14 @@ import { useEffect } from "react";
 
 interface CartContextType {
   items: CartItem[];
+  initialized: boolean;
   userId: string | null;
   setUserId: (id: string) => void;
   pointsBalance: number;
   setPointsBalance: (points: number) => void;
   addToCart: (item: CartItem) => boolean;
   removeFromCart: (id: string) => void;
-  updateQuantity: (id: string, change: number) => boolean;
+  updateQuantity: (id: string, change: number) => "ok" | "points" | "stock";
   clearCart: () => void;
 }
 
@@ -31,23 +32,26 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [userId, setUserId] = useState<string | null>(null);
 
   const [items, setItems] = useState<CartItem[]>([]);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
 
     const savedCart = localStorage.getItem(`cart_${userId}`);
 
-    if (!savedCart) {
+    if (savedCart) {
+      try {
+        setItems(JSON.parse(savedCart));
+      } catch {
+        setItems([]);
+      }
+    } else {
       setItems([]);
-      return;
     }
-
-    try {
-      setItems(JSON.parse(savedCart));
-    } catch {
-      setItems([]);
-    }
+    setInitialized(true);
   }, [userId]);
+
+
 
   useEffect(() => {
     if (!userId) return;
@@ -91,8 +95,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 
 
-  const updateQuantity = (id: string, change: number): boolean => {
-    let success = true;
+  const updateQuantity = (id: string, change: number): "ok" | "points" | "stock" => {
+    let result: "ok" | "points" | "stock" = "ok";
 
     setItems(prev => {
       const updated = prev.map(item => {
@@ -100,26 +104,31 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const newQuantity = Math.max(1, item.quantity + change);
 
+        if (item.size && newQuantity > item.size) {
+          result = "stock";
+          return item;
+        }
+
         return { ...item, quantity: newQuantity };
       });
 
       const total = getTotalPoints(updated);
 
       if (total > pointsBalance) {
-        success = false;
+        result = "points";
         return prev; // revert
       }
 
       return updated;
     });
 
-    return success;
+    return result;
   };
 
   const clearCart = () => setItems([]);
 
   return (
-    <CartContext.Provider value={{ items, userId, setUserId, pointsBalance, setPointsBalance, addToCart, removeFromCart, updateQuantity, clearCart }}>
+    <CartContext.Provider value={{ items, initialized, userId, setUserId, pointsBalance, setPointsBalance, addToCart, removeFromCart, updateQuantity, clearCart }}>
       {children}
     </CartContext.Provider>
   );
