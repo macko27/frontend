@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import api from "../../app/api";
 import Goal from "../../types/Goal";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "@mui/material/styles";
 
 type Review = {
   reviewIds: string[];
@@ -33,6 +34,7 @@ const HomeScreen: React.FC = () => {
   const [totalGoals, setTotalGoals] = useState(0);
   const [reviews, setReviews] = useState([]);
   const isEmployee = userProfile?.role === "Zamestnanec";
+  const theme = useTheme();
 
 
   useEffect(() => {
@@ -134,11 +136,12 @@ const HomeScreen: React.FC = () => {
               alignItems: "center",
               justifyContent: "flex-start",
               width: "100%",
-              height: 330,  // Výška pre tabuľku
-              background: "#fff",
-              color: "#000",
+              height: 330,
+              backgroundColor: theme.palette.background.paper,
+              color: theme.palette.text.primary,
               marginTop: "10px",
-              overflowY: "auto",  // Povolenie posúvania
+              overflowY: "auto",
+              borderRadius: "8px",
             }}
           >
             <DataGrid
@@ -177,10 +180,11 @@ const HomeScreen: React.FC = () => {
                   alignItems: "center",
                   justifyContent: "flex-start",
                   width: "100%",
-                  background: "#fff",
-                  color: "#000",
+                  backgroundColor: theme.palette.background.paper,
+                  color: theme.palette.text.primary,
                   marginTop: "30px",
                   overflowY: "auto",
+                  borderRadius: "8px",
                 }}
               >
                 <DataGrid
@@ -215,36 +219,44 @@ const HomeScreen: React.FC = () => {
         </Grid>
         {isEmployee && (
         <Grid item xs={12} md={6} sx={{ display: "flex", justifyContent: "flex-start", alignItems: "flex-start" }}>
+          
           <Box
             sx={{
               display: "flex",
               flexDirection: "column",
               alignItems: "flex-start",
-              justifyContent: "flex-start", 
+              justifyContent: "flex-start",
               width: "100%",
               height: 325,
               padding: "20px",
-              border: "2px solid #008080", 
-              borderRadius: "8px", 
-              backgroundColor: "#f7f7f7", 
-              marginTop: "10px"
+              border: `1px solid ${theme.palette.divider}`,
+              borderRadius: "8px",
+              backgroundColor: theme.palette.background.paper,
+              color: theme.palette.text.primary,
+              marginTop: "10px",
             }}
           >
-            <Typography variant="h5" sx={{ marginBottom: "16px" }}>Stav cieľov</Typography>
+            <Typography
+              variant="h5"
+              sx={{
+                marginBottom: "16px",
+                color: theme.palette.text.primary,
+              }}
+            >
+              Stav cieľov
+            </Typography>
 
             <Box
               sx={{
                 display: "flex",
-                flexDirection: "row", 
-                justifyContent: "flex-start", 
+                flexDirection: "row",
+                justifyContent: "flex-start",
                 alignItems: "flex-start",
                 width: "100%",
-                
               }}
             >
               {pieData.length > 0 && (
                 <>
-                  {/* PieChart */}
                   <PieChart
                     series={[
                       {
@@ -265,17 +277,31 @@ const HomeScreen: React.FC = () => {
                     width={250}
                     height={250}
                     sx={{
-                      [`& .${pieArcLabelClasses.root}`]: { fontWeight: "bold", fill: "white" },
+                      [`& .${pieArcLabelClasses.root}`]: {
+                        fontWeight: "bold",
+                        fill: theme.palette.text.primary,
+                      },
                     }}
                   />
 
-                  {/* Legend next to the PieChart */}
                   <Box sx={{ marginLeft: "5px", textAlign: "left" }}>
-                    <Typography variant="body1" fontWeight="bold">
+                    <Typography
+                      variant="body1"
+                      fontWeight="bold"
+                      sx={{ color: theme.palette.text.primary }}
+                    >
                       Celkom: {totalGoals}
                     </Typography>
+
                     {pieData.map((item) => (
-                      <Box key={item.id} sx={{ display: "flex", alignItems: "center", marginTop: "5px" }}>
+                      <Box
+                        key={item.id}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          marginTop: "5px",
+                        }}
+                      >
                         <Box
                           sx={{
                             width: 12,
@@ -285,7 +311,11 @@ const HomeScreen: React.FC = () => {
                             marginRight: "20px",
                           }}
                         />
-                        <Typography variant="body2">
+
+                        <Typography
+                          variant="body2"
+                          sx={{ color: theme.palette.text.primary }}
+                        >
                           {item.label}: {item.value}
                         </Typography>
                       </Box>

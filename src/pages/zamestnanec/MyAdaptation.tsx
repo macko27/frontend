@@ -12,8 +12,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useSnackbar } from '../../hooks/SnackBarContext';
 import {useForm, SubmitHandler } from "react-hook-form";
 import { EmployeeCard } from "../../types/EmployeeCard";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { format as formatDate } from 'date-fns';
+import { useTheme } from "@mui/material/styles";
 
 type Task = {
     id: string;
@@ -58,6 +58,8 @@ const MyAdaptation: React.FC = () => {
     const [activeTab, setActiveTab] = useState(0);
     const [editTaskIndex, setEditTaskIndex] = useState<number | null>(null);
     const [editDocIndex, setEditDocIndex] = useState<number | null>(null);
+
+    const theme = useTheme();
 
     const {
         register,
@@ -177,30 +179,31 @@ const MyAdaptation: React.FC = () => {
     }, [fieldsTask]);
 
     
-    const CustomTabs = styled(Tabs)({
-         
+    const CustomTabs = styled(Tabs)(({ theme }) => ({
         minHeight: "auto",
+
         "& .MuiTabs-indicator": {
-            backgroundColor: "#008080", 
+            backgroundColor: theme.palette.primary.main,
             height: "3px",
         },
-    });
+    }));
 
-    const CustomTab = styled(Tab)({
-        borderBottom: "1px solid #e0e0e0",
-        textTransform: "none", 
+    const CustomTab = styled(Tab)(({ theme }) => ({
+        borderBottom: `1px solid ${theme.palette.divider}`,
+        textTransform: "none",
         minWidth: 0,
         minHeight: "auto",
         fontWeight: 500,
         fontSize: "16px",
+
         "&.Mui-selected": {
-            color: "#000000", 
-        },
-        "&:not(.Mui-selected)": {
-            color: "#555555", 
+            color: theme.palette.text.primary,
         },
 
-    });
+        "&:not(.Mui-selected)": {
+            color: theme.palette.text.secondary,
+        },
+    }));
 
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setActiveTab(newValue);
@@ -258,7 +261,7 @@ const MyAdaptation: React.FC = () => {
                                 <TableBody>
                                     {fieldsTask.length > 0 ? (
                                     fieldsTask.map((task, index) => (
-                                        <TableRow key={index} sx={{ backgroundColor: "#fff", boxShadow: "0 1px 6px rgba(0,0,0,0.1)" }}>
+                                        <TableRow key={index} sx={{ backgroundColor: theme.palette.background.paper, boxShadow: "0 1px 6px rgba(0,0,0,0.1)" }}>
                                         <TableCell sx={{borderLeft: ' 6px solid #EC6602'}}>
                                             <Checkbox
                                                 checked={task.checked}
@@ -300,7 +303,7 @@ const MyAdaptation: React.FC = () => {
                                 <TableBody>
                                     {fieldsDocs.length > 0 ? (
                                     fieldsDocs.map((doc, index) => (
-                                    <TableRow key={index} sx={{ backgroundColor: "#fff", boxShadow: "0 1px 6px rgba(0,0,0,0.1)" }}>
+                                    <TableRow key={index} sx={{ backgroundColor: theme.palette.background.paper, boxShadow: "0 1px 6px rgba(0,0,0,0.1)" }}>
                                         <TableCell>{doc.text}</TableCell>
                                         <TableCell align="right">
                                         <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -320,7 +323,14 @@ const MyAdaptation: React.FC = () => {
                                     ))
                                     ) : (
                                     <TableRow>
-                                        <TableCell colSpan={3} align="center" sx={{ fontStyle: "italic", color: "#999" }}>
+                                        <TableCell
+                                            colSpan={3}
+                                            align="center"
+                                            sx={{
+                                                fontStyle: "italic",
+                                                color: theme.palette.text.secondary,
+                                            }}
+                                            >
                                         Žiadne dokumenty
                                         </TableCell>
                                     </TableRow>
