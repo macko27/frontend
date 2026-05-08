@@ -162,7 +162,10 @@ const ShopHeader: React.FC<Props> = ({ points, employeeId, searchName, setSearch
                   "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": { WebkitAppearance: "none" },
                 }}
                 value={priceFrom}
-                onChange={(e) => setPriceFrom(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, "");
+                  setPriceFrom(value);
+                }}
               />
             </Box>
 
@@ -186,7 +189,10 @@ const ShopHeader: React.FC<Props> = ({ points, employeeId, searchName, setSearch
                   "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": { WebkitAppearance: "none" },
                 }}
                 value={priceTo}
-                onChange={(e) => setPriceTo(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, "");
+                  setPriceTo(value);
+                }}
               />
             </Box>
 
