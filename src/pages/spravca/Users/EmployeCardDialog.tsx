@@ -285,6 +285,8 @@ const EmployeeCardDialog: React.FC<EmployeeCardDialogProps> = ({userId, user, op
             id: employee?.employeeId,
             userId: userId,
             points: points,
+            birth: birth ? birth.format("YYYY-MM-DD") : "",
+            startWorkDate: startWorkDate ? startWorkDate.format("YYYY-MM-DD") : "",
         };
 
         await api.post("/EmployeeCard/Update", requestData) 
@@ -306,7 +308,7 @@ const EmployeeCardDialog: React.FC<EmployeeCardDialogProps> = ({userId, user, op
             const timezoneOffset = localDate?.getTimezoneOffset();
             localDate?.setMinutes(localDate.getMinutes() - timezoneOffset!);
             const isoString = localDate?.toISOString();
-            setValue("startWorkDate", isoString || "");  // Set value for form submission
+            setValue("startWorkDate", newValue ? newValue.format("yyyy-MM-DD") : "");
         }
     };
 
@@ -321,9 +323,7 @@ const EmployeeCardDialog: React.FC<EmployeeCardDialogProps> = ({userId, user, op
             const timezoneOffset = localDate.getTimezoneOffset();
             localDate.setMinutes(localDate.getMinutes() - timezoneOffset);
             const isoString = localDate.toISOString();
-            setValue("birth", newValue?.toISOString() ?? "");
-            console.log("Adjusted Date:", adjustedDate.format('YYYY-MM-DD'));
-            console.log("Local Adjusted ISO String:", isoString);
+            setValue("birth", newValue ? newValue.format("yyyy-MM-DD") : "");
         }
     };
 
