@@ -62,12 +62,14 @@ const EmployeeCardDialog: React.FC<EmployeeCardDialogProps> = ({userId, user, op
     const [contractTypeOptions, setConstractTypeOptions] = useState<{ id: string; label: string }[]>([]);
     const [selectedConstractType, setSelectedConstractType] = useState<{ id: string; label: string } | null>(null);
 
-    const [birth, setBirth] = useState<Dayjs | null>();
+    const [birth, setBirth] = useState<Dayjs | null>(null);
     const [startWorkDate, setStartWorkDate] = useState<Dayjs | null>(null);
     const [level, setLevel] = useState<String | null>();
     const [workTime, setWorkTime] = useState<number>(0);
     const [employee, setEmployee] = useState<EmployeeCard|null>();
     const { openSnackbar } = useSnackbar();
+
+    const [loading, setLoading] = useState(false);
 
     // Schema with Dayjs handling
     const schema = z.object({
@@ -205,6 +207,8 @@ const EmployeeCardDialog: React.FC<EmployeeCardDialogProps> = ({userId, user, op
         if (!open) return;
         const fetchEmployeeData = async () => {
             try {
+                setLoading(true);
+
                 const res = await api.get(`/Profile/ByUserId/${userId}`, {
                     params: {
                         userId: userId,
@@ -230,23 +234,16 @@ const EmployeeCardDialog: React.FC<EmployeeCardDialogProps> = ({userId, user, op
                 const birthdate = res.data.birthdate;
 
                 if (birthdate) {
-                    const parsed = dayjs(birthdate, "DD/MM/YYYY HH:mm:ss");
-
-                    if (parsed.isValid()) {
-                        setBirth(parsed);
-                        handleDateChange(parsed);
-                    } else {
-                        console.error("Invalid birthdate format:", birthdate);
-                        setBirth(null);
-                    }
-                    } else {
-                        setBirth(null);
+                    const parsed = dayjs(birthdate);
+                    setBirth(parsed);
+                } else {
+                    setBirth(null);
                 }
 
                 const startWorkDate = res.data.startWorkDate;
                 if (startWorkDate) {
-                    const startDateObj = new Date(startWorkDate);
-                    setStartWorkDate(dayjs(startDateObj));
+                    const startDateObj = dayjs(startWorkDate);
+                    setStartWorkDate(startDateObj);
                 } else {
                     setStartWorkDate(null);
                 }
@@ -270,6 +267,8 @@ const EmployeeCardDialog: React.FC<EmployeeCardDialogProps> = ({userId, user, op
                 const selectLevel = res.data.position;
                 const foundLevel = levelOptions.find(option => option.id === selectLevel);
                 setSelectedLevel(foundLevel || null);
+
+                setLoading(false);
             } catch (err) {
                 console.error("Error fetching employee data:", err);
             } 
@@ -322,7 +321,7 @@ const EmployeeCardDialog: React.FC<EmployeeCardDialogProps> = ({userId, user, op
             const timezoneOffset = localDate.getTimezoneOffset();
             localDate.setMinutes(localDate.getMinutes() - timezoneOffset);
             const isoString = localDate.toISOString();
-            setValue("birth", isoString);
+            setValue("birth", newValue?.toISOString() ?? "");
             console.log("Adjusted Date:", adjustedDate.format('YYYY-MM-DD'));
             console.log("Local Adjusted ISO String:", isoString);
         }
@@ -358,7 +357,9 @@ const EmployeeCardDialog: React.FC<EmployeeCardDialogProps> = ({userId, user, op
                             <Stack direction="column" gap={3}>
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DatePicker
+                                        key={birth?.toString() ?? "empty"}
                                         label="Dátum narodenia"
+                                        format="DD/MM/YYYY"
                                         value={birth}
                                         onChange={(newValue) => handleDateChange(newValue)}
                                         slotProps={{
@@ -510,7 +511,9 @@ const EmployeeCardDialog: React.FC<EmployeeCardDialogProps> = ({userId, user, op
                                 />
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DatePicker
+                                        key={startWorkDate?.toString() ?? "empty"}
                                         label="Dátum nástupu"
+                                        format="DD/MM/YYYY"
                                         value={startWorkDate}
                                         onChange={(newValue) => handleStartWorkDateChange(newValue)}
                                         slotProps={{

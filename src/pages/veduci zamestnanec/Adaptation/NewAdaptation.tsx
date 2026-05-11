@@ -14,6 +14,7 @@ import TaskModal from './TaskModal';
 import DocumentModal from './DocumentModal';
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { format as formatDate } from 'date-fns';
+import { useTheme } from "@mui/material/styles";
 
 
 type Task = {
@@ -23,10 +24,10 @@ type Task = {
     isDone: boolean;
   };
   
-type Document = {
-    id: string;
-    description: string;
-    file: File | null;
+type DocumentItem = {
+  text: string;
+  filePath: string;
+  fileName?: string;
 };
 
 
@@ -47,7 +48,7 @@ const NewAdaptation: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const nav = useNavigate();  
     const [fieldsTask, setFieldsTask] = useState<{ text: string, date: Date, checked: boolean }[]>([]);
-    const [fieldsDocs, setFieldsDocs] = useState<{ text: string, filePath: string }[]>([]);
+    const [fieldsDocs, setFieldsDocs] = useState<{ text: string, filePath: string, fileName?: string }[]>([]);
     
     const [employeeOptions, setEmployeeOptions] = useState<EmployeeCard[]>([]);
     
@@ -61,6 +62,7 @@ const NewAdaptation: React.FC = () => {
     const [editTaskIndex, setEditTaskIndex] = useState<number | null>(null);
     const [editDocIndex, setEditDocIndex] = useState<number | null>(null);
     const [loadedUsers,setLoadedUsers] = useState(false);
+    const theme = useTheme();
 
     const {
         register,
@@ -151,31 +153,45 @@ const NewAdaptation: React.FC = () => {
     
     const openEmployeeModal = () => {
         setOpenModal(true);
-    };
+        };
 
-    const CustomTabs = styled(Tabs)({
-         
+        const CustomTabs = styled(Tabs)(({ theme }) => ({
         minHeight: "auto",
+
         "& .MuiTabs-indicator": {
-            backgroundColor: "#008080", 
+            backgroundColor: theme.palette.info.main,
             height: "3px",
         },
-    });
+    }));
 
-    const CustomTab = styled(Tab)({
-        borderBottom: "1px solid #e0e0e0",
-        textTransform: "none", 
+    const CustomTab = styled(Tab)(({ theme }) => ({
+        borderBottom: `1px solid ${theme.palette.divider}`,
+        textTransform: "none",
         minWidth: 0,
         minHeight: "auto",
         fontWeight: 500,
         fontSize: "16px",
-        "&.Mui-selected": {
-            color: "#000000", 
-        },
-        "&:not(.Mui-selected)": {
-            color: "#555555", 
-        },
+        color: theme.palette.text.secondary,
 
+        "&.Mui-selected": {
+            color: theme.palette.text.primary,
+            fontWeight: 600,
+        },
+    }));
+
+    const tableRowSx = (theme: any) => ({
+        backgroundColor: theme.palette.background.paper,
+        boxShadow:
+            theme.palette.mode === "light"
+                ? "0 1px 6px rgba(0,0,0,0.1)"
+                : "0 1px 6px rgba(0,0,0,0.6)",
+    });
+
+    const dividerSx = (theme: any) => ({
+        height: 24,
+        width: "1px",
+        alignSelf: "center",
+        backgroundColor: theme.palette.divider,
     });
 
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -232,7 +248,14 @@ const NewAdaptation: React.FC = () => {
     return (
         <Layout>
             <form onSubmit={handleSubmit(onSubmit)}>
-                <Box sx={{ padding: 4 }}>
+                <Box
+                    sx={(theme) => ({
+                        padding: 4,
+                        backgroundColor: theme.palette.background.default,
+                        color: theme.palette.text.primary,
+                        minHeight: "100vh",
+                    })}
+                >
                     <Typography variant="h4" fontWeight="bold" gutterBottom>
                         Vytvoriť novú adaptáciu
                     </Typography>
@@ -255,20 +278,52 @@ const NewAdaptation: React.FC = () => {
                                     loading={!loadedUsers}
                                     columns={columnsUser}
                                     rows={employeeOptions}
-                                    initialState={{
-                                    pagination: {
-                                        paginationModel: {
-                                            pageSize: 6,
-                                        },
-                                    },
-                                    
-                                    }}
-                                    pageSizeOptions={[5, 10, 25]}
+                                    getRowId={(row) => row.employeeId}
                                     pagination
-                                    getRowId={(row) => row.employeeId}     
+                                    pageSizeOptions={[5, 10, 25]}
+                                    initialState={{
+                                        pagination: {
+                                            paginationModel: {
+                                                pageSize: 6,
+                                            },
+                                        },
+                                    }}
+                                    sx={(theme) => ({
+                                        border: 0,
+                                        color: theme.palette.text.primary,
+                                        backgroundColor: theme.palette.background.paper,
 
-                                    />
-                                    </Box>
+                                        "& .MuiDataGrid-cell": {
+                                            borderColor: theme.palette.divider,
+                                        },
+
+                                        "& .MuiDataGrid-columnHeaders": {
+                                            backgroundColor:
+                                                theme.palette.mode === "light"
+                                                    ? "#f5f5f5"
+                                                    : "#1e1e1e",
+
+                                            borderBottom: `1px solid ${theme.palette.divider}`,
+                                        },
+
+                                        "& .MuiDataGrid-footerContainer": {
+                                            backgroundColor:
+                                                theme.palette.mode === "light"
+                                                    ? "#f5f5f5"
+                                                    : "#1e1e1e",
+
+                                            borderTop: `1px solid ${theme.palette.divider}`,
+                                        },
+
+                                        "& .MuiDataGrid-row:hover": {
+                                            backgroundColor:
+                                                theme.palette.mode === "light"
+                                                    ? "#f9f9f9"
+                                                    : "#2a2a2a",
+                                        },
+                                    })}
+                                />
+                            </Box>
                         </DialogTitle>
                         <DialogActions>
                             <Button variant="outlined" color="secondary" onClick={() => setOpenModal(false)}>
@@ -313,7 +368,7 @@ const NewAdaptation: React.FC = () => {
                             {/*  Zoznam pridanych uloh */}
                             <Table  size="small" sx={{ borderCollapse: "separate", borderSpacing: "0 4px" }}>
                                 <TableHead>
-                                    <TableRow sx={{ fontStyle: "italic"}}>
+                                    <TableRow sx={tableRowSx}>
                                     <TableCell></TableCell>
                                     <TableCell>Názov úlohy</TableCell>
                                     <TableCell></TableCell>
@@ -324,7 +379,7 @@ const NewAdaptation: React.FC = () => {
                                 <TableBody>
                                     {fieldsTask.length > 0 ? (
                                     fieldsTask.map((task, index) => (
-                                        <TableRow key={index} sx={{ backgroundColor: "#fff", boxShadow: "0 1px 6px rgba(0,0,0,0.1)" }}>
+                                        <TableRow key={index} sx={tableRowSx}>
                                         <TableCell sx={{borderLeft: ' 6px solid #EC6602'}}>
                                             <Checkbox
                                                 checked={task.checked}
@@ -369,10 +424,18 @@ const NewAdaptation: React.FC = () => {
                                     ))
                                     ) : (
                                     <TableRow>
-                                        <TableCell colSpan={4} align="center" sx={{ fontStyle: "italic", color: "#999" }}>
+                                        <TableCell
+                                            colSpan={5}
+                                            align="center"
+                                            sx={(theme) => ({
+                                                fontStyle: "italic",
+                                                color: theme.palette.text.secondary,
+                                            })}
+                                        >
                                         Žiadne úlohy
                                         </TableCell>
                                     </TableRow>
+                                    
                                     )}
                                 </TableBody>
                             </Table>
@@ -429,7 +492,7 @@ const NewAdaptation: React.FC = () => {
                             {/* Pridane dokumenty */}
                             <Table size="small" sx={{ borderCollapse: "separate", borderSpacing: "0 6px", mt: 2 }}>
                                 <TableHead>
-                                    <TableRow sx={{ fontStyle: "italic"}}>
+                                    <TableRow sx={tableRowSx}>
                                     <TableCell >Popis</TableCell>
                                     <TableCell align="right" >Akcie</TableCell>
                                     </TableRow>
@@ -437,7 +500,7 @@ const NewAdaptation: React.FC = () => {
                                 <TableBody>
                                     {fieldsDocs.length > 0 ? (
                                     fieldsDocs.map((doc, index) => (
-                                    <TableRow key={index} sx={{ backgroundColor: "#fff", boxShadow: "0 1px 6px rgba(0,0,0,0.1)" }}>
+                                    <TableRow key={index} sx={tableRowSx}>
                                         <TableCell>{doc.text}</TableCell>
                                         <TableCell align="right">
                                         <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -486,7 +549,14 @@ const NewAdaptation: React.FC = () => {
                                     ))
                                     ) : (
                                     <TableRow>
-                                        <TableCell colSpan={3} align="center" sx={{ fontStyle: "italic", color: "#999" }}>
+                                        <TableCell
+                                            colSpan={4}
+                                            align="center"
+                                            sx={(theme) => ({
+                                                fontStyle: "italic",
+                                                color: theme.palette.text.secondary,
+                                            })}
+                                        >
                                         Žiadne dokumenty
                                         </TableCell>
                                     </TableRow>
@@ -506,7 +576,8 @@ const NewAdaptation: React.FC = () => {
                                 open={showDocModal}
                                 initialData={editDocIndex !== null ? {
                                 description: fieldsDocs[editDocIndex].text,
-                                file: undefined // no re-upload for existing files
+                                file: undefined,
+                                fileName: fieldsDocs[editDocIndex].fileName ?? null
                                 } : undefined}
                                 onClose={() => {
                                     setShowDocModal(false);
@@ -519,7 +590,8 @@ const NewAdaptation: React.FC = () => {
 
                                     const newDoc = {
                                         text: doc.description,
-                                        filePath: uploadedFilePath 
+                                        filePath: uploadedFilePath,
+                                        fileName: doc.file?.name ?? null
                                     };
 
                                     const updated = [...fieldsDocs];
@@ -531,7 +603,9 @@ const NewAdaptation: React.FC = () => {
                                     setFieldsDocs(updated);
                                     setShowDocModal(false);
                                 }}
+                                
                             />   
+
                         </>
                     )}
                 </Box>

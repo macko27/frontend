@@ -154,7 +154,11 @@ const ShopHeader: React.FC<Props> = ({ points, employeeId, searchName, setSearch
                 size="small"
                 variant="standard"
                 fullWidth
-                type="number"
+                type="tel"
+                inputProps={{
+                  inputMode: "numeric",
+                  pattern: "[0-9]*"
+                }}
                 InputProps={{ disableUnderline: true }}
                 sx={{
                   "& input": { fontSize: "0.8rem", color: "text.secondary", p: 0, mt: 0.3 },
@@ -181,7 +185,11 @@ const ShopHeader: React.FC<Props> = ({ points, employeeId, searchName, setSearch
                 size="small"
                 variant="standard"
                 fullWidth
-                type="number"
+                type="tel"
+                inputProps={{
+                  inputMode: "numeric",
+                  pattern: "[0-9]*"
+                }}
                 InputProps={{ disableUnderline: true }}
                 sx={{
                   "& input": { fontSize: "0.8rem", color: "text.secondary", p: 0, mt: 0.3 },

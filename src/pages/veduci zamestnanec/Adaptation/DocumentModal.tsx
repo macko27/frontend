@@ -12,7 +12,8 @@ import {
 
 type DocumentType = {
   description: string;
-  file: File;
+  file: File | null;
+  fileName?: string | null;
 };
 
 type DocumentModalProps = {
@@ -25,17 +26,24 @@ type DocumentModalProps = {
 const DocumentModal: React.FC<DocumentModalProps> = ({ open, onSave, onClose, initialData }) => {
   const [description, setDescription] = useState('');
   const [file, setFile] = useState<File | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
 
    useEffect(() => {
       if (open) {
         setDescription(initialData?.description || '');
         setFile(initialData?.file || null);
+        setFileName(initialData?.fileName || null);
       }
     }, [initialData, open]);
 
   const handleSave = () => {
-    if (!description || !file) return;
-    onSave({ description, file });
+    if (!description || (!file && !fileName)) return;
+
+    onSave({
+      description,
+      file: file ?? null,
+      fileName: fileName ?? null
+    });
     onClose();
   };
 
@@ -51,43 +59,55 @@ const DocumentModal: React.FC<DocumentModalProps> = ({ open, onSave, onClose, in
           onChange={(e) => setDescription(e.target.value)}
         />
 
-<Box
-  mt={2}
-  p={3}
-  border="2px dashed #ccc"
-  borderRadius={2}
-  textAlign="center"
-  onDragOver={(e) => e.preventDefault()}
-  onDrop={(e) => {
-    e.preventDefault();
-    const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile) setFile(droppedFile);
-  }}
->
-  <Typography variant="body2" color="textSecondary">
-    Pretiahnite súbor sem alebo kliknite na výber
-  </Typography>
-  <input
-    type="file"
-    accept=".pdf,.pptx,.docx,.xlsx"
-    style={{ display: 'none' }}
-    id="fileInput"
-    onChange={(e) => {
-      const selectedFile = e.target.files?.[0];
-      if (selectedFile) setFile(selectedFile);
-    }}
-  />
-  <label htmlFor="fileInput">
-    <Button variant="outlined" component="span" sx={{ mt: 1 }}>
-      Vybrať súbor
-    </Button>
-  </label>
-  {file && (
-    <Typography variant="body2" mt={1}>
-      {file.name}
-    </Typography>
-  )}
-</Box>
+        <Box
+          mt={2}
+          p={3}
+          border="2px dashed #ccc"
+          borderRadius={2}
+          textAlign="center"
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            const droppedFile = e.dataTransfer.files[0];
+            if (droppedFile) {
+              setFile(droppedFile);
+              setFileName(droppedFile.name);
+            }
+          }}
+        >
+          <Typography variant="body2" color="textSecondary">
+            Pretiahnite súbor sem alebo kliknite na výber
+          </Typography>
+          <input
+            type="file"
+            accept=".pdf,.pptx,.docx,.xlsx"
+            style={{ display: 'none' }}
+            id="fileInput"
+            onChange={(e) => {
+              const selectedFile = e.target.files?.[0];
+              if (selectedFile) {
+                setFile(selectedFile);
+                setFileName(selectedFile.name);
+              }
+            }}
+          />
+          <label htmlFor="fileInput">
+            <Button variant="outlined" component="span" sx={{ mt: 1 }}>
+              Vybrať súbor
+            </Button>
+          </label>
+          {file && (
+            <Typography variant="body2" mt={1}>
+              {file.name}
+            </Typography>
+          )}
+        </Box>
+
+        {fileName && !file && (
+          <Typography variant="body2" mt={1}>
+            Aktuálny súbor: {fileName}
+          </Typography>
+        )}
 
       </DialogContent>
       <DialogActions>
