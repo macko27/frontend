@@ -151,19 +151,19 @@ const Layout: React.FC<LayoutProps> = ({ children, fullWidth = false }) => {
         },
         {
             role: Roles.Zamestnanec,
-            label: "Spätná vázba",
+            label: "Spätná väzba",
             path: "/manageFeedback",
             component: null,
         },
         {
             role: Roles.ShopAdmin,
-            label: "Spätná vázba",
+            label: "Spätná väzba",
             path: "/manageFeedback",
             component: null,
         },
         {
             role: Roles.Veduci,
-            label: "Spätná vázba",
+            label: "Spätná väzba",
             path: "/manageFeedback",
             component: null,
         },

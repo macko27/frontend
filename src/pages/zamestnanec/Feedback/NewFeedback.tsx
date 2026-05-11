@@ -107,7 +107,7 @@ const NewFeedback: React.FC = () => {
     ];
 
     useEffect(() => {
-        api.get("/EmployeeCard/GetAllEmployees")
+        api.get("/EmployeeCard/GetAllEmployeesExceptMe")
             .then((res) => {
                 setEmployeeData(res.data);
             })

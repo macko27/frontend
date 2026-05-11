@@ -21,12 +21,15 @@ import AddSuccessionGoalDialog from "../../../components/AddSuccessionGoalDialog
 import { useAuth } from "../../../hooks/AuthProvider";
 import Roles from "../../../types/Roles";
 import useLoading from "../../../hooks/LoadingData";
+import { useTheme } from "@mui/material/styles";
+
 const schema = z.object({
     status: z.string().min(1, "Stav cieľa je povinný!"),
     finishedDate: z.string().nullable().optional(),
     fullfilmentRate: z.number().min(0, "Miera splnenia musí byť medzi 0 a 100").max(100, "Miera splnenia musí byť medzi 0 a 100").nullable().optional(), // Optional completion rate
     description: z.string().min(0, "Popis cieľa je povinný!")
 });
+
 
 type FormData = z.infer<typeof schema>;
 
@@ -84,6 +87,7 @@ const ManageSuccessions: React.FC = () => {
     const [openGoalDetailsDialog, setOpenGoalDetailsDialog] = useState(false);
     const [openSuccessionGoalModal, setOpenSuccessionGoalModal] = useState(false);
     const [loaded, setLoaded] = useState(false);
+    const theme = useTheme();
 
     const {
             register,
@@ -282,31 +286,34 @@ const ManageSuccessions: React.FC = () => {
         }
     };
 
-    const CustomTabs = styled(Tabs)({
-        borderBottom: "1px solid #e0e0e0", 
+    const CustomTabs = styled(Tabs)(({ theme }) => ({
+        borderBottom: `1px solid ${theme.palette.divider}`,
         minHeight: "auto",
         "& .MuiTabs-indicator": {
-            backgroundColor: "#008080", 
+            backgroundColor: theme.palette.primary.main,
             height: "3px",
         },
-    });
+    }));
     
-    const CustomTab = styled(Tab)({
-        textTransform: "none", // Keep original casing
+    const CustomTab = styled(Tab)(({ theme }) => ({
+        textTransform: "none",
         minWidth: 0,
         minHeight: "auto",
         fontWeight: 500,
         fontSize: "14px",
+
         "&.Mui-selected": {
-            color: "#000000", // Selected tab text color
+            color: theme.palette.text.primary,
         },
+
         "&:not(.Mui-selected)": {
-            color: "#555555", // Unselected tab text color (grayish)
+            color: theme.palette.text.secondary,
         },
+
         "&:not(:last-of-type)": {
-            borderRight: "1px solid #e0e0e0", // Light gray line
+            borderRight: `1px solid ${theme.palette.divider}`,
         },
-    });
+    }));
 
     const columnsUser: GridColDef<EmployeeCard>[] = [
         { field: "employeeId", headerName: "ID zamestnanca", width: 300 },
@@ -424,9 +431,13 @@ const ManageSuccessions: React.FC = () => {
                         plans.map((plan, index) => (
                             <TableRow 
                                 key={index} 
-                                sx={{ backgroundColor: "#fff", 
-                                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                                }}>
+                                sx={{
+                                    backgroundColor: theme.palette.background.paper,
+                                    boxShadow: theme.palette.mode === "dark"
+                                        ? "0 2px 8px rgba(0,0,0,0.6)"
+                                        : "0 2px 8px rgba(0,0,0,0.1)",
+                                }}
+                            >
                 
                             {columns.map((col, idx) => (
                                 <TableCell key={idx} sx={{
@@ -485,8 +496,10 @@ const ManageSuccessions: React.FC = () => {
                                 <TableRow
                                     key={index}
                                     sx={{
-                                        backgroundColor: "#fff",
-                                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                                        backgroundColor: theme.palette.background.paper,
+                                        boxShadow: theme.palette.mode === "dark"
+                                            ? "0 2px 8px rgba(0,0,0,0.6)"
+                                            : "0 2px 8px rgba(0,0,0,0.1)",
                                     }}
                                 >
                                     <TableCell sx={{ borderLeft: `6px solid ${color}` }}>
@@ -676,8 +689,14 @@ const ManageSuccessions: React.FC = () => {
                         {/*  Hlavný zoznam */}
                         <Button
                             variant="contained"
-                            color="primary"
-                            sx={{ marginBottom: 2 }}
+                            sx={{
+                                marginBottom: 2,
+                                backgroundColor: theme.palette.primary.main,
+                                textTransform: "none",
+                                "&:hover": {
+                                    backgroundColor: theme.palette.primary.dark,
+                                },
+                            }}
                             onClick={() => nav("/newSuccession")}
                         >
                             Pridať
